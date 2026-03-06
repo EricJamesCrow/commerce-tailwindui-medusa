@@ -1,7 +1,7 @@
 import ProductGrid from "components/layout/product-grid";
 import { defaultSort, sorting } from "lib/constants";
 import { getProducts } from "lib/medusa";
-import { safeJsonLd } from "lib/sanitize";
+import { safeJsonLd } from "lib/json-ld";
 import { baseUrl } from "lib/utils";
 import { Metadata } from "next";
 

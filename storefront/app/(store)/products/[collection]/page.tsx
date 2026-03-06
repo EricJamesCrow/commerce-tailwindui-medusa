@@ -5,7 +5,7 @@ import {
   getCollectionProducts,
   getCollections,
 } from "lib/medusa";
-import { safeJsonLd } from "lib/sanitize";
+import { safeJsonLd } from "lib/json-ld";
 import { baseUrl } from "lib/utils";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";

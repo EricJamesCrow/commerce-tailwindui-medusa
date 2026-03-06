@@ -2,7 +2,7 @@
 
 import { ProductProvider } from "components/product/product-context";
 import ProductWrapper from "components/product/product-wrapper";
-import { safeJsonLd } from "lib/sanitize";
+import { safeJsonLd } from "lib/json-ld";
 import { Product, ProductReviews } from "lib/types";
 import { baseUrl, transformProductToTailwindDetail } from "lib/utils";
 import { notFound } from "next/navigation";
