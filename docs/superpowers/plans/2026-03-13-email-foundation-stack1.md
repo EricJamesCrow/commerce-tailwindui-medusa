@@ -414,11 +414,13 @@ Verify the import at line 1 reads `import { getThemeColors } from "./theme-color
 
 No other changes needed — spacing, fonts, radii, shadows are identical between systems.
 
-**Important:** The `getThemeObject` function in `theme.ts` spreads `getThemeColors(theme)` into the Tailwind config. Because we rewrote `theme-colors.ts` to a lean structure, the Tailwind config will only have the semantic tokens we defined. This is intentional — email templates only reference these tokens.
+- [ ] **Step 2: Verify lean theme compatibility**
+
+Read the copied `theme.ts` and confirm that `getThemeObject()` simply spreads `getThemeColors(theme)` at the top of the returned object (line 7: `...getThemeColors(theme)`). It does NOT destructure specific keys from it. This means our lean `getThemeColors()` is safe — missing keys simply won't generate Tailwind utilities, and the 15 semantic tokens we defined cover every class used in our shared components and templates. If `theme.ts` ever destructured specific keys (e.g., `const { backgroundColor } = getThemeColors(theme)`), that would need to match our lean structure — but it doesn't.
 
 ---
 
-### Task 8: Create utility — cx.ts
+### Task 9: Create utility — cx.ts
 
 **Files:**
 - Create: `backend/src/modules/resend/templates/utils/cx.ts`
@@ -438,7 +440,7 @@ export function cx(...classes: (string | undefined | null | false)[]): string {
 
 ---
 
-### Task 9: Create email config
+### Task 10: Create email config
 
 **Files:**
 - Create: `backend/src/modules/resend/templates/_config/email-config.ts`
@@ -520,7 +522,7 @@ export function getEmailConfig(
 
 ---
 
-### Task 10: Copy verbatim shared components (5 files)
+### Task 11: Copy verbatim shared components (5 files)
 
 **Files:**
 - Create: `backend/src/modules/resend/templates/_components/tailwind.tsx`
@@ -547,7 +549,7 @@ Verify each file's relative import paths resolve correctly:
 
 ---
 
-### Task 11: Copy and adapt header.tsx
+### Task 12: Copy and adapt header.tsx
 
 **Files:**
 - Create: `backend/src/modules/resend/templates/_components/header.tsx`
@@ -625,7 +627,7 @@ Apply the same pattern to all other 5 variants.
 
 ---
 
-### Task 12: Copy and adapt footer.tsx
+### Task 13: Copy and adapt footer.tsx
 
 **Files:**
 - Create: `backend/src/modules/resend/templates/_components/footer.tsx`
@@ -654,7 +656,7 @@ The `FooterProps` interface already has `companyName?: string`. No change needed
 
 ---
 
-### Task 13: Copy line-items.tsx
+### Task 14: Copy line-items.tsx
 
 **Files:**
 - Create: `backend/src/modules/resend/templates/_components/line-items.tsx`
@@ -665,7 +667,7 @@ Copy from `/Users/itsjusteric/Developer/smartpockets/packages/email/emails/_comp
 
 ---
 
-### Task 14: Create shared types
+### Task 15: Create shared types
 
 **Files:**
 - Create: `backend/src/modules/resend/templates/types.ts`
@@ -707,7 +709,7 @@ export interface Address {
 
 ---
 
-### Task 15: Create commerce components (3 files)
+### Task 16: Create commerce components (3 files)
 
 **Files:**
 - Create: `backend/src/modules/resend/templates/_commerce/order-summary.tsx`
@@ -879,7 +881,7 @@ export const OrderStatusBadge = ({ status }: OrderStatusBadgeProps) => {
 
 ---
 
-### Task 16: Build verification + commit
+### Task 17: Build verification + commit
 
 - [ ] **Step 1: Run typecheck**
 
@@ -909,7 +911,7 @@ EOF
 
 ## Chunk 3: PR 3 — Order Confirmation Template (End-to-End Proof)
 
-### Task 17: Create order confirmation template
+### Task 18: Create order confirmation template
 
 **Files:**
 - Create: `backend/src/modules/resend/templates/order-confirmation.tsx`
@@ -1143,7 +1145,7 @@ export default OrderConfirmation;
 
 ---
 
-### Task 18: Register template in Resend service
+### Task 19: Register template in Resend service
 
 **Files:**
 - Modify: `backend/src/modules/resend/service.ts`
@@ -1166,10 +1168,15 @@ private templates: Record<string, React.FC<any>> = {
 
 ---
 
-### Task 19: Create order-placed subscriber
+### Task 20: Create order-placed subscriber
 
 **Files:**
 - Create: `backend/src/subscribers/order-placed.ts`
+
+**Field names verified against Medusa v2 API schema (AdminOrderLineItem):**
+- Item fields: `product_title`, `variant_title`, `thumbnail`, `unit_price`, `quantity` — flat properties on OrderLineItem (NOT nested like `product.title`)
+- Address fields: `first_name`, `last_name`, `address_1`, `address_2`, `city`, `province`, `postal_code`, `country_code`, `phone`
+- Order totals: `item_total`, `shipping_total`, `tax_total`, `discount_total`, `total`
 
 - [ ] **Step 1: Write the subscriber**
 
@@ -1299,7 +1306,7 @@ export const config: SubscriberConfig = {
 
 ---
 
-### Task 20: Build verification + commit
+### Task 21: Build verification + commit
 
 - [ ] **Step 1: Run typecheck**
 
@@ -1331,7 +1338,7 @@ EOF
 
 ---
 
-### Task 21: End-to-end verification
+### Task 22: End-to-end verification
 
 - [ ] **Step 1: Start dev server**
 
