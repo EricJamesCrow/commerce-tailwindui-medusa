@@ -134,7 +134,7 @@ const greeting = recipientName ? `Hi ${recipientName},` : "Hi there,";
 
 ### UntitledUI styling approach
 
-- **All styling via Tailwind classes** — no inline styles, no CSS modules, no style objects
+- **All styling via Tailwind classes** — no inline styles, no CSS modules, no style objects. Exception: the header/footer `Logo` wordmark fallback uses an inline style for the text color (`#111827`) because it renders outside the `<Tailwind>` wrapper context in some paths. Raw hex values are disallowed elsewhere.
 - **Semantic color tokens** — `bg-primary`, `text-tertiary`, never raw hex values in templates
 - **`cx()` utility** for conditional class composition (simple concatenation)
 - **Light/dark theme** — via `<Tailwind theme={theme}>` prop injecting different token values
@@ -228,7 +228,7 @@ Error, warning, and success scales are kept identical to UntitledUI. Red/amber/g
 
 ## 3. Directory Structure
 
-```
+```text
 backend/src/modules/resend/
 ├── index.ts                          # ModuleProvider registration
 ├── service.ts                        # Extends AbstractNotificationProviderService

@@ -49,7 +49,7 @@ Medusa v2 ships with zero pre-built email templates — every notification must 
 
 ### Structural Issues Fixed From v1
 
-1. **Monolithic scope → phased stacks.** The original prompt asked Claude Code to do everything in one session. Now broken into 7 Graphite stacks with 20 focused PRs.
+1. **Monolithic scope → phased stacks.** The original prompt asked Claude Code to do everything in one session. Now broken into 7 Graphite stacks with 18 focused PRs.
 2. **Missing dependency order → explicit sequencing.** Resend module → shared components → templates → subscribers → scheduled jobs. Each PR declares its dependencies.
 3. **Unclear template strategy → concrete design tokens.** "TailwindUI themed" is now defined as specific values: Inter font stack, indigo-600 primary, 4px spacing scale, TailwindUI component defaults for radii and shadows.
 4. **Commerce automation too vague → specific features.** Broken into: restock alerts (Stack 6), admin low-stock warnings (Stack 6), and review requests (Stack 6). Each has its own PR.
@@ -1145,7 +1145,7 @@ For each PR, follow this cycle:
 
 ### Tips for Obra Superpowers Sessions
 
-- **Start each session by stating the PR scope explicitly.** "This session covers PR 8: Abandoned Cart. Do not implement anything from other stacks."
+- **Start each session by stating the PR scope explicitly.** "This session covers PR 10: Abandoned Cart. Do not implement anything from other stacks."
 - **Reference prior PRs by file path.** "Follow the same subscriber pattern as `src/subscribers/order-placed.ts` from PR 3" is more effective than re-describing the pattern.
 - **Brainstorm output = implementation prompt.** Copy the Superpowers design output directly into the Claude Code session. Don't summarize or rephrase — context loss causes drift.
 - **One template + one subscriber per commit** keeps git history clean for Graphite review.
