@@ -9,7 +9,8 @@ import { Tailwind } from "./_components/tailwind";
 import { Text } from "./_components/text";
 import { OrderSummary } from "./_commerce/order-summary";
 import { AddressBlock } from "./_commerce/address-block";
-import { defaultEmailConfig, type EmailBrandConfig } from "./_config/email-config";
+import { PaymentDetails } from "./_components/line-items";
+import { getEmailConfig } from "./_config/email-config";
 import type { CommerceLineItem, Address, BaseTemplateProps } from "./types";
 
 export interface OrderConfirmationProps extends BaseTemplateProps {
@@ -47,7 +48,7 @@ export const OrderConfirmation = ({
   discount,
   brandConfig,
 }: OrderConfirmationProps) => {
-  const config = { ...defaultEmailConfig, ...brandConfig };
+  const config = getEmailConfig(brandConfig);
   const greeting = customerName ? `Hi ${customerName},` : "Hi there,";
 
   return (
@@ -155,20 +156,10 @@ export const OrderConfirmation = ({
                 total={total}
               />
 
-              {/* Payment info */}
-              <Section className="my-6 rounded-lg border border-solid border-secondary bg-secondary p-4">
-                <Row>
-                  <Column>
-                    <Text className="m-0 text-xs font-medium uppercase text-tertiary">
-                      Payment Method
-                    </Text>
-                    <Text className="m-0 mt-1 text-sm text-primary">
-                      {paymentMethod}
-                      {cardLast4 && ` ending in ${cardLast4}`}
-                    </Text>
-                  </Column>
-                </Row>
-              </Section>
+              <PaymentDetails
+                method={paymentMethod}
+                cardLast4={cardLast4}
+              />
 
               <Row>
                 <Column className="w-1/2">

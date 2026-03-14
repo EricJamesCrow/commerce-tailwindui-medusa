@@ -87,7 +87,7 @@ export default async function orderPlacedHandler({
     day: "numeric",
   })
 
-  const storefrontUrl = process.env.STORE_CORS?.split(",")[0] || "http://localhost:3000"
+  const storefrontUrl = process.env.STOREFRONT_URL || "http://localhost:3000"
 
   await notificationModuleService.createNotifications({
     to: order.email,

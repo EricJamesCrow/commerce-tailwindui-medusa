@@ -31,7 +31,7 @@ export const primitiveColors = {
   "brand-50": "#e0e7ff",
   "brand-100": "#c7d2fe",
   "brand-200": "#a5b4fc",
-  "brand-300": "#818cf8",
+  "brand-300": "#a5b4fc",
   "brand-400": "#818cf8",
   "brand-500": "#6366f1",
   "brand-600": "#4f46e5",

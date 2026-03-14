@@ -5,8 +5,8 @@ export interface BaseTemplateProps {
   brandConfig?: Partial<EmailBrandConfig>;
 }
 
-export type { LineItem } from "./_components/line-items";
 import type { LineItem } from "./_components/line-items";
+export type { LineItem };
 
 /** Extended line item for ecommerce templates needing richer item display */
 export interface CommerceLineItem extends LineItem {
