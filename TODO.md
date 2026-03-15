@@ -130,6 +130,7 @@
 
 ## Infrastructure
 
+- [ ] Configure S3 File Provider for Medusa — replace local file storage with S3-compatible provider (AWS S3, DigitalOcean Spaces, MinIO, etc.) for product images, review images, and other uploads. See [Medusa S3 File Provider docs](https://docs.medusajs.com/resources/infrastructure-modules/file/s3)
 - [x] Convert `<img>` tags to Next.js `<Image>` components
 - [x] Convert monorepo to Turborepo with bun workspaces
 - [x] Shared TypeScript tooling (`@repo/typescript`)
