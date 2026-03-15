@@ -20,6 +20,7 @@
     "test:integration:http": "TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
     "test:integration:modules": "TEST_TYPE=integration:modules NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
     "test:unit": "TEST_TYPE=unit NODE_OPTIONS=--experimental-vm-modules jest --silent --runInBand --forceExit",
+    "preview:emails": "email dev --dir ./src/modules/resend/templates -p 3003",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .medusa node_modules"
   },
@@ -29,10 +30,15 @@
     "@medusajs/cli": "2.13.1",
     "@medusajs/framework": "2.13.1",
     "@medusajs/medusa": "2.13.1",
-    "jsonwebtoken": "^9.0.3"
+    "@react-email/components": "^1.0.9",
+    "@react-email/render": "^2.0.4",
+    "@react-email/tailwind": "^2.0.5",
+    "jsonwebtoken": "^9.0.3",
+    "resend": "^6.9.3"
   },
   "devDependencies": {
     "@medusajs/test-utils": "2.13.1",
+    "@react-email/preview-server": "5.2.9",
     "@swc/core": "^1.7.28",
     "@swc/jest": "^0.2.36",
     "@types/jest": "^29.5.13",
@@ -45,6 +51,7 @@
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-email": "^5.2.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.2",
     "vite": "^5.4.14",

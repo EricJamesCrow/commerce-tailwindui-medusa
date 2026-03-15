@@ -85,6 +85,7 @@
 
 ## Content & Communications
 
+- [ ] Order detail page — `/account/orders/[id]` storefront route (email "View your order" link currently 404s)
 - [ ] Integrate Payload CMS — product content management (descriptions, rich media, landing pages)
 - [ ] Abandoned cart recovery emails (Resend)
 - [ ] Generate and send invoices (Resend)

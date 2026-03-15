@@ -59,6 +59,27 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/wishlist",
     },
+    // Resend email notification provider (conditional on RESEND_API_KEY)
+    ...(process.env.RESEND_API_KEY
+      ? [
+          {
+            resolve: "@medusajs/medusa/notification",
+            options: {
+              providers: [
+                {
+                  resolve: "./src/modules/resend",
+                  id: "resend",
+                  options: {
+                    channels: ["email"],
+                    api_key: process.env.RESEND_API_KEY,
+                    from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
+                  },
+                },
+              ],
+            },
+          },
+        ]
+      : []),
     // Stripe payment provider (conditional on STRIPE_API_KEY)
     ...(process.env.STRIPE_API_KEY
       ? [
