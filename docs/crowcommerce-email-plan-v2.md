@@ -151,7 +151,18 @@ src/
 
 ## Implementation Plan: 7 Graphite Stacks × Obra Superpowers Sessions
 
-### Stack 1: Foundation — Resend Module + Base Email Components
+### Stack 1: Foundation — Resend Module + Base Email Components ✅ COMPLETED
+
+> **Status:** All 4 PRs merged (2026-03-14). PRs #13–#16 in GitHub.
+>
+> **Implementation notes:**
+> - Resend module provider with template resolver map pattern
+> - UntitledUI-based shared email components restyled with TailwindUI tokens (using `@react-email/tailwind` instead of inline styles)
+> - Order confirmation template + `send-order-confirmation` workflow (subscriber → workflow pattern)
+> - `formatOrderForEmailStep` reusable step for future order-related emails
+> - `preview:emails` script added (react-email dev server on port 3003)
+> - Uses Medusa's `items.*` query pattern for computed order totals
+> - `sendNotificationsStep` from `@medusajs/medusa/core-flows` for workflow-based notification sending
 
 **Session 1A: Superpowers Brainstorm**
 
@@ -1158,22 +1169,22 @@ For each PR, follow this cycle:
 
 Ship incrementally. Each row is independently deployable once its dependencies are met.
 
-| Priority | PR(s) | Feature | Why |
-|----------|-------|---------|-----|
-| P0 | 1–3 | Resend module + components + order confirmation | Can't launch without order emails |
-| P0 | 4 | Password reset | Can't have accounts without recovery |
-| P0 | 7 | Shipping confirmation | Most-checked email after purchase |
-| P1 | 5 | Admin invite | Needed before onboarding store staff |
-| P1 | 8 | Order canceled + refund + payment failed | Customer trust, reduces support load |
-| P1 | 9 | Admin new order alert | Operations essential |
-| P1 | 10 | Abandoned cart | Direct revenue recovery (~5–10% of abandoned carts convert) |
-| P2 | 6 | Customer welcome | Brand polish, 3× engagement vs promo emails |
-| P2 | 11–12 | Invoice generator | Professional, may be legally required in some jurisdictions |
-| P2 | 13 | Return flow emails | High-anxiety moment, impacts repeat purchases |
-| P3 | 14 | Gift card delivery | Only needed if selling gift cards |
-| P3 | 15 | Admin low stock alert | Prevents stockouts |
-| P3 | 16 | Review request | Drives UGC and social proof |
-| P4 | 17–18 | Quote management | Wholesale-specific, can launch without |
+| Priority | PR(s) | Feature | Status | Why |
+|----------|-------|---------|--------|-----|
+| P0 | 1–3 | Resend module + components + order confirmation | ✅ Done | Can't launch without order emails |
+| P0 | 4 | Password reset | | Can't have accounts without recovery |
+| P0 | 7 | Shipping confirmation | | Most-checked email after purchase |
+| P1 | 5 | Admin invite | | Needed before onboarding store staff |
+| P1 | 8 | Order canceled + refund + payment failed | | Customer trust, reduces support load |
+| P1 | 9 | Admin new order alert | | Operations essential |
+| P1 | 10 | Abandoned cart | | Direct revenue recovery (~5–10% of abandoned carts convert) |
+| P2 | 6 | Customer welcome | | Brand polish, 3× engagement vs promo emails |
+| P2 | 11–12 | Invoice generator | | Professional, may be legally required in some jurisdictions |
+| P2 | 13 | Return flow emails | | High-anxiety moment, impacts repeat purchases |
+| P3 | 14 | Gift card delivery | | Only needed if selling gift cards |
+| P3 | 15 | Admin low stock alert | | Prevents stockouts |
+| P3 | 16 | Review request | | Drives UGC and social proof |
+| P4 | 17–18 | Quote management | | Wholesale-specific, can launch without |
 
 ---
 
@@ -1182,8 +1193,8 @@ Ship incrementally. Each row is independently deployable once its dependencies a
 These IDs are what subscribers pass to `notificationModuleService.createNotifications({ template: "..." })` and what the Resend service resolves to react-email components.
 
 ```
-# Stack 1: Foundation
-order-confirmation
+# Stack 1: Foundation ✅
+order-confirmation          # ✅ implemented
 
 # Stack 2: Auth & Admin
 password-reset
