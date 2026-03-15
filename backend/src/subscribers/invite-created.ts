@@ -18,6 +18,11 @@ export default async function inviteCreatedHandler({
       return
     }
 
+    if (!invite.token) {
+      logger.warn(`Invite ${data.id} has no token, skipping notification`)
+      return
+    }
+
     // Build admin invite URL from configModule (canonical source for admin URL)
     const configModule = container.resolve("configModule")
     const rawBackendUrl = configModule.admin?.backendUrl
