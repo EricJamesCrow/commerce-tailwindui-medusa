@@ -206,7 +206,7 @@ this.templates = {
 
 5. **Customer may have no name.** Storefront signup may only collect email. Template greeting degrades to "Hi there,".
 
-6. **Admin URL construction.** Use `configModule.admin.backendUrl` and `configModule.admin.path` — don't hardcode `/app`. The `backendUrl` defaults to `process.env.MEDUSA_BACKEND_URL || "/"`. When `backendUrl === "/"` (local dev without `MEDUSA_BACKEND_URL` set), fall back to `http://localhost:9000`. In production, `MEDUSA_BACKEND_URL` must be set for email links to work.
+6. **Admin URL construction.** Use `configModule.admin.backendUrl` and `configModule.admin.path` — don't hardcode `/app`. The `backendUrl` defaults to `process.env.MEDUSA_BACKEND_URL || "/"`. When `backendUrl === "/"` (local dev without `MEDUSA_BACKEND_URL` set), fall back to `http://localhost:9000`. In production, `MEDUSA_BACKEND_URL` must be set for email links to work. **This fallback logic lives in the subscriber, not the template.** Templates receive a fully-formed `resetUrl` or `inviteUrl` — they never resolve URLs themselves.
 
 7. **Error handling.** Each subscriber should wrap the notification call in try/catch with structured logging via `container.resolve("logger")`, matching the pattern in `order-placed.ts`.
 
