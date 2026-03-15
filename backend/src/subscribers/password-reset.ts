@@ -22,15 +22,15 @@ export default async function passwordResetHandler({
     let resetUrl: string
 
     if (actorType === "customer") {
-      const storefrontUrl = process.env.STOREFRONT_URL || "http://localhost:3000"
+      const storefrontUrl = (process.env.STOREFRONT_URL || "http://localhost:3000").replace(/\/$/, "")
       resetUrl = `${storefrontUrl}/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`
     } else {
       // Admin user — resolve URL from configModule (canonical source)
       const configModule = container.resolve("configModule")
       const rawBackendUrl = configModule.admin?.backendUrl
-      const backendUrl = (rawBackendUrl && rawBackendUrl !== "/")
+      const backendUrl = ((rawBackendUrl && rawBackendUrl !== "/")
         ? rawBackendUrl
-        : "http://localhost:9000"
+        : "http://localhost:9000").replace(/\/$/, "")
       const adminPath = configModule.admin?.path || "/app"
       resetUrl = `${backendUrl}${adminPath}/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`
     }
