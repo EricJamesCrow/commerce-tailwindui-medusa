@@ -148,6 +148,12 @@
 - [x] Account pages (profile, orders, addresses with CRUD)
 - [x] Auth-aware cart + navigation (cart transfer, account dropdown, route protection)
 
+## Auth Security (from Stack 2 audit)
+
+- [ ] Password reset page — `/reset-password` storefront route accepting `token` and `email` query params (email "Reset Password" button currently links to nonexistent page)
+- [ ] Rate limiting on auth endpoints — prevent brute-force attacks on login, signup, and password reset (consider `express-rate-limit` or Medusa middleware)
+- [ ] Password complexity validation — enforce minimum length (8+ chars) on signup form and server action
+
 ## Known Limitations
 
 - [x] Browser back button broken after navigating to a product page — fixed by using `router.replace` for variant URL updates to prevent back button cycling
