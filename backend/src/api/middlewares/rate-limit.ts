@@ -37,7 +37,16 @@ export function authRateLimit(): RequestHandler {
     const client = getRedis()
     if (!client) return next()
 
-    const ip = req.ip || req.socket.remoteAddress || "unknown"
+    const ip = req.ip || req.socket.remoteAddress
+    if (!ip) {
+      console.warn(
+        "[rate-limit] Could not determine client IP — skipping rate limit.",
+        "x-forwarded-for:", req.headers["x-forwarded-for"],
+        "remoteAddress:", req.socket.remoteAddress,
+        "req.ip:", req.ip,
+      )
+      return next()
+    }
     const key = keyFor(ip)
 
     try {
