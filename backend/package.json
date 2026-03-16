@@ -34,6 +34,7 @@
     "@react-email/components": "^1.0.9",
     "@react-email/render": "^2.0.4",
     "@react-email/tailwind": "^2.0.5",
+    "ioredis": "^5.10.0",
     "jsonwebtoken": "^9.0.3",
     "resend": "^6.9.3"
   },
