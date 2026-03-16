@@ -4,9 +4,10 @@
   "private": true,
   "workspaces": ["storefront", "backend", "tooling/*"],
   "scripts": {
-    "dev": "turbo dev --parallel",
+    "dev": "turbo dev dev:emails --parallel",
     "dev:storefront": "turbo dev --filter=@repo/storefront",
     "dev:backend": "turbo dev --filter=@repo/backend",
+    "dev:emails": "turbo dev:emails --filter=@repo/backend",
     "build": "turbo build",
     "build:storefront": "turbo build --filter=@repo/storefront",
     "build:backend": "turbo build --filter=@repo/backend",
