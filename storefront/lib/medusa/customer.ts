@@ -56,7 +56,7 @@ export async function login(
   prevState: string | null,
   formData: FormData,
 ): Promise<string | null> {
-  const email = (formData.get("email") as string)?.trim();
+  const email = (formData.get("email") as string)?.trim().toLowerCase();
   const password = formData.get("password") as string;
 
   if (!email) return "Email is required";
@@ -92,7 +92,7 @@ export async function signup(
   prevState: string | null,
   formData: FormData,
 ): Promise<string | null> {
-  const email = (formData.get("email") as string)?.trim();
+  const email = (formData.get("email") as string)?.trim().toLowerCase();
   const password = formData.get("password") as string;
   const firstName = (formData.get("first_name") as string)?.trim();
   const lastName = (formData.get("last_name") as string)?.trim();

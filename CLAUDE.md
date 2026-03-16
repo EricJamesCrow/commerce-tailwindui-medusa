@@ -41,9 +41,10 @@ docs/plans/           # Design docs and implementation plans
 
 ```bash
 # Root (Turbo)
-bun run dev              # Start both storefront + backend in parallel
+bun run dev              # Start storefront + backend + email preview in parallel
 bun run dev:storefront   # Storefront only (port 3000)
 bun run dev:backend      # Backend only (port 9000)
+bun run dev:emails       # Email preview only (port 3003)
 bun run build            # Build all workspaces
 bun run test             # Test all workspaces
 bun run typecheck        # Typecheck all workspaces
@@ -160,6 +161,7 @@ gt submit --stack                              # Push all stacked PRs
 
 ## Code Style (Storefront)
 
+- **Normalize emails to lowercase** — always apply `.toLowerCase()` before storing, comparing, or sending emails to the Medusa SDK. Medusa's auth provider uses case-sensitive matching, so `EricCrow@pm.me` and `ericcrow@pm.me` are treated as different accounts. Normalize at the server action boundary (e.g., `customer.ts`, `checkout.ts`), not in UI components.
 - **TailwindPlus (Tailwind UI) components as the design system** — always use TailwindPlus components as the starting point for any new UI. Reference the component catalog at `/Users/itsjusteric/CrowCommerce/Resources/TailwindUI/tailwindplus-components.json` to find matching components before building custom UI.
 - **Headless UI** for accessible interactive elements (Dialog, Menu, Popover, etc.)
 - **clsx** for conditional class composition

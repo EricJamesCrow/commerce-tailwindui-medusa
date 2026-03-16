@@ -58,11 +58,12 @@ export async function setCartEmail(
   email: string,
 ): Promise<string | null> {
   const headers = await getAuthHeaders();
+  const normalizedEmail = email.trim().toLowerCase();
 
   try {
     await assertSessionCart(cartId);
     await sdk.store.cart
-      .update(cartId, { email }, {}, headers)
+      .update(cartId, { email: normalizedEmail }, {}, headers)
       .catch(medusaError);
   } catch (e) {
     return e instanceof Error ? e.message : "Error setting email";
