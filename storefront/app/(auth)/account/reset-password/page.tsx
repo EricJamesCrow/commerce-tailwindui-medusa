@@ -8,6 +8,8 @@ type ResetPasswordPageProps = {
   searchParams: Promise<{ token?: string; email?: string }>;
 };
 
+// No retrieveCustomer() guard — logged-in users clicking a reset link from email
+// should still be able to reset their password (unlike login/register/forgot-password).
 export default async function ResetPasswordPage({
   searchParams,
 }: ResetPasswordPageProps) {

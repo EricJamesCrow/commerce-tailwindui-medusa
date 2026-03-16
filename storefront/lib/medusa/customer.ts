@@ -19,6 +19,14 @@ import { transferWishlist } from "lib/medusa/wishlist";
 
 export type ActionResult = { error?: string; success?: boolean } | null;
 
+function isRateLimited(e: unknown): boolean {
+  return (
+    e instanceof Error &&
+    "status" in e &&
+    (e as Record<string, unknown>).status === 429
+  );
+}
+
 function revalidateCustomer(): void {
   revalidateTag(TAGS.customers, "max");
   revalidatePath("/", "layout");
@@ -70,7 +78,7 @@ export async function login(
     });
     await setAuthToken(token as string);
   } catch (e) {
-    if (e instanceof Error && "status" in e && (e as any).status === 429) {
+    if (isRateLimited(e)) {
       return "Too many login attempts. Please try again in 15 minutes.";
     }
     return e instanceof Error ? e.message : "Invalid email or password";
@@ -159,7 +167,7 @@ export async function signup(
     await setAuthToken(loginToken as string);
   } catch (e) {
     if (tokenSet) await removeAuthToken();
-    if (e instanceof Error && "status" in e && (e as any).status === 429) {
+    if (isRateLimited(e)) {
       return "Too many attempts. Please try again in 15 minutes.";
     }
     return e instanceof Error ? e.message : "Error creating account";
@@ -212,7 +220,7 @@ export async function requestPasswordReset(
       identifier: normalizedEmail,
     })
   } catch (e) {
-    if (e instanceof Error && "status" in e && (e as any).status === 429) {
+    if (isRateLimited(e)) {
       return { error: "Too many attempts. Please try again in 15 minutes." }
     }
   }
@@ -238,7 +246,7 @@ export async function completePasswordReset(
       token,
     )
   } catch (e) {
-    if (e instanceof Error && "status" in e && (e as any).status === 429) {
+    if (isRateLimited(e)) {
       return { error: "Too many attempts. Please try again in 15 minutes." }
     }
     return {
