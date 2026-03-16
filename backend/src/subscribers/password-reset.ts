@@ -14,23 +14,40 @@ export default async function passwordResetHandler({
   const logger = container.resolve("logger")
 
   try {
-    const email = data.entity_id
-    const actorType = data.actor_type as "customer" | "user"
-    const token = data.token
+    const email = data.entity_id?.trim()
+    const token = data.token?.trim()
+    const actorType = data.actor_type
+
+    if (!email || !token) {
+      logger.warn("Password reset payload missing email or token, skipping notification")
+      return
+    }
+
+    if (actorType !== "customer" && actorType !== "user") {
+      logger.warn(`Password reset payload has unsupported actor type "${String(actorType)}", skipping notification`)
+      return
+    }
 
     // Build reset URL based on actor type
     let resetUrl: string
 
     if (actorType === "customer") {
-      const storefrontUrl = (process.env.STOREFRONT_URL || "http://localhost:3000").replace(/\/$/, "")
+      const rawStorefrontUrl = process.env.STOREFRONT_URL
+      if (!rawStorefrontUrl) {
+        logger.error("STOREFRONT_URL is not configured, skipping password reset email")
+        return
+      }
+      const storefrontUrl = rawStorefrontUrl.replace(/\/$/, "")
       resetUrl = `${storefrontUrl}/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`
     } else {
       // Admin user — resolve URL from configModule (canonical source)
       const configModule = container.resolve("configModule")
       const rawBackendUrl = configModule.admin?.backendUrl
-      const backendUrl = ((rawBackendUrl && rawBackendUrl !== "/")
-        ? rawBackendUrl
-        : "http://localhost:9000").replace(/\/$/, "")
+      if (!rawBackendUrl || rawBackendUrl === "/") {
+        logger.error("admin.backendUrl is not configured, skipping password reset email")
+        return
+      }
+      const backendUrl = rawBackendUrl.replace(/\/$/, "")
       const adminPath = configModule.admin?.path || "/app"
       resetUrl = `${backendUrl}${adminPath}/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`
     }
@@ -51,10 +68,10 @@ export default async function passwordResetHandler({
       },
     })
 
-    logger.info(`Password reset email sent to ${email} (${actorType})`)
+    logger.info(`Password reset email sent (${actorType})`)
   } catch (error) {
     logger.error(
-      `Failed to send password reset email for ${data.entity_id}`,
+      `Failed to send password reset email (${data.actor_type})`,
       error
     )
   }

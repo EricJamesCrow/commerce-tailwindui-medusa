@@ -26,9 +26,11 @@ export default async function inviteCreatedHandler({
     // Build admin invite URL from configModule (canonical source for admin URL)
     const configModule = container.resolve("configModule")
     const rawBackendUrl = configModule.admin?.backendUrl
-    const backendUrl = ((rawBackendUrl && rawBackendUrl !== "/")
-      ? rawBackendUrl
-      : "http://localhost:9000").replace(/\/$/, "")
+    if (!rawBackendUrl || rawBackendUrl === "/") {
+      logger.error("admin.backendUrl is not configured, skipping invite email")
+      return
+    }
+    const backendUrl = rawBackendUrl.replace(/\/$/, "")
     const adminPath = configModule.admin?.path || "/app"
     const inviteUrl = `${backendUrl}${adminPath}/invite?token=${encodeURIComponent(invite.token)}`
 
@@ -46,7 +48,7 @@ export default async function inviteCreatedHandler({
       },
     })
 
-    logger.info(`Invite email sent to ${invite.email} (invite ${data.id})`)
+    logger.info(`Invite email sent (invite ${data.id})`)
   } catch (error) {
     logger.error(
       `Failed to send invite email for invite ${data.id}`,

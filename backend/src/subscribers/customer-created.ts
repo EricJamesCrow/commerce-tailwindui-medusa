@@ -17,12 +17,18 @@ export default async function customerCreatedHandler({
       return
     }
 
+    const rawStorefrontUrl = process.env.STOREFRONT_URL
+    if (!rawStorefrontUrl) {
+      logger.error("STOREFRONT_URL is not configured, skipping welcome email")
+      return
+    }
+    const storefrontUrl = rawStorefrontUrl.replace(/\/$/, "")
+
     // Build customer name, or null if neither first nor last name exists
     const customerName = [customer.first_name, customer.last_name]
       .filter(Boolean)
       .join(" ") || null
 
-    const storefrontUrl = (process.env.STOREFRONT_URL || "http://localhost:3000").replace(/\/$/, "")
     const storeName = defaultEmailConfig.companyName
     const notificationService = container.resolve(Modules.NOTIFICATION)
 
@@ -39,7 +45,7 @@ export default async function customerCreatedHandler({
       },
     })
 
-    logger.info(`Welcome email sent to ${customer.email} (customer ${data.id})`)
+    logger.info(`Welcome email sent (customer ${data.id})`)
   } catch (error) {
     logger.error(
       `Failed to send welcome email for customer ${data.id}`,
