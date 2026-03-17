@@ -8,7 +8,12 @@ import {
   useQueryGraphStep,
   sendNotificationsStep,
 } from "@medusajs/medusa/core-flows"
-import { type Address } from "../steps/format-order-for-email"
+import {
+  createCurrencyFormatter,
+  formatAddress,
+  formatItem,
+  formatOrderDate,
+} from "./_format-helpers"
 
 type SendAdminOrderAlertInput = {
   orderId: string
@@ -52,59 +57,21 @@ export const sendAdminOrderAlertWorkflow = createWorkflow(
           )
         }
 
-        // Format currency
-        const currencyFormatter = new Intl.NumberFormat([], {
-          style: "currency",
-          currency: (o.currency_code as string) || "USD",
-          currencyDisplay: "narrowSymbol",
-        })
-        const fmt = (amount: number) => currencyFormatter.format(amount)
+        const formatter = createCurrencyFormatter((o.currency_code as string) || "USD")
+        const fmt = (amount: number) => formatter.format(amount)
 
-        // Format items
-        const items = ((o.items || []) as Record<string, any>[]).map((item) => ({
-          name: (item.product_title || item.title) as string,
-          variant: (item.variant_title as string) || undefined,
-          quantity: item.quantity as number,
-          price: fmt((item.total as number) ?? (item.unit_price as number) * (item.quantity as number)),
-          imageUrl: (item.thumbnail as string) || undefined,
-        }))
+        const items = ((o.items || []) as Record<string, any>[]).map(
+          (item) => formatItem(item, fmt)
+        )
 
-        // Format shipping address
         const sa = o.shipping_address as Record<string, any> | undefined
-        const shippingAddress: Address = sa
-          ? {
-              name: `${sa.first_name || ""} ${sa.last_name || ""}`.trim(),
-              line1: (sa.address_1 as string) || "",
-              line2: (sa.address_2 as string) || undefined,
-              city: (sa.city as string) || "",
-              state: (sa.province as string) || undefined,
-              postalCode: (sa.postal_code as string) || "",
-              country: ((sa.country_code as string) || "").toUpperCase(),
-              phone: (sa.phone as string) || undefined,
-            }
-          : { name: "", line1: "", city: "", postalCode: "", country: "" }
-
-        // Format billing address
-        const ba = o.billing_address as Record<string, any> | undefined
-        const billingAddress: Address | undefined = ba
-          ? {
-              name: `${ba.first_name || ""} ${ba.last_name || ""}`.trim(),
-              line1: (ba.address_1 as string) || "",
-              line2: (ba.address_2 as string) || undefined,
-              city: (ba.city as string) || "",
-              state: (ba.province as string) || undefined,
-              postalCode: (ba.postal_code as string) || "",
-              country: ((ba.country_code as string) || "").toUpperCase(),
-              phone: (ba.phone as string) || undefined,
-            }
+        const shippingAddress = formatAddress(sa)
+        const billingAddress = o.billing_address
+          ? formatAddress(o.billing_address as Record<string, any>)
           : undefined
 
         const orderNumber = String(o.display_id || o.id)
-        const orderDate = new Date(o.created_at as string).toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })
+        const orderDate = formatOrderDate(o.created_at as string)
         const total = fmt((o.total as number) || 0)
 
         return inp.adminEmails.map((adminEmail) => ({

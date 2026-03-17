@@ -8,22 +8,14 @@ export default async function adminOrderAlertHandler({
 }: SubscriberArgs<{ id: string }>) {
   const logger = container.resolve("logger")
 
-  const rawEmails = process.env.ADMIN_ORDER_EMAILS
-  if (!rawEmails || !rawEmails.trim()) {
-    logger.debug(
-      "ADMIN_ORDER_EMAILS not configured, skipping admin order alert"
-    )
-    return
-  }
-
-  const adminEmails = rawEmails
+  const adminEmails = (process.env.ADMIN_ORDER_EMAILS || "")
     .split(",")
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean)
 
   if (adminEmails.length === 0) {
     logger.debug(
-      "ADMIN_ORDER_EMAILS is empty after parsing, skipping admin order alert"
+      "ADMIN_ORDER_EMAILS not configured, skipping admin order alert"
     )
     return
   }

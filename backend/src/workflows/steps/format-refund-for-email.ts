@@ -2,6 +2,10 @@ import {
   createStep,
   StepResponse,
 } from "@medusajs/framework/workflows-sdk"
+import {
+  createCurrencyFormatter,
+  formatOrderDate,
+} from "../notifications/_format-helpers"
 
 export type FormattedRefundEmailData = {
   paymentId: string
@@ -23,14 +27,10 @@ export const formatRefundForEmailStep = createStep(
   async (input: FormatRefundForEmailInput) => {
     const { payment } = input
 
-    const currencyCode = payment.currency_code || "USD"
-    const currencyFormatter = new Intl.NumberFormat([], {
-      style: "currency",
-      currency: currencyCode,
-      currencyDisplay: "narrowSymbol",
-    })
+    const currencyCode = (payment.currency_code as string) || "USD"
+    const formatter = createCurrencyFormatter(currencyCode)
 
-    const refunds = payment.refunds || []
+    const refunds = (payment.refunds || []) as Record<string, any>[]
     const latestRefund = refunds[refunds.length - 1]
 
     if (!latestRefund) {
@@ -41,23 +41,13 @@ export const formatRefundForEmailStep = createStep(
       payment.payment_collection?.order ||
       (payment as any).payment_collections?.[0]?.order
 
-    const refundDate = new Date(
-      latestRefund.created_at
-    ).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-
     const formatted: FormattedRefundEmailData = {
       paymentId: payment.id,
       orderId: order?.id || "",
       orderNumber: String(order?.display_id || order?.id || ""),
       email: order?.email || "",
-      refundAmount: currencyFormatter.format(
-        Number(latestRefund.amount) || 0
-      ),
-      refundDate,
+      refundAmount: formatter.format(Number(latestRefund.amount) || 0),
+      refundDate: formatOrderDate(latestRefund.created_at),
       refundReason: latestRefund.refund_reason?.label || undefined,
       currencyCode,
     }

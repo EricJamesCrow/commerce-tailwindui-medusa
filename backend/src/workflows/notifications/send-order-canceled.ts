@@ -9,6 +9,7 @@ import {
   sendNotificationsStep,
 } from "@medusajs/medusa/core-flows"
 import { formatOrderForEmailStep } from "../steps/format-order-for-email"
+import { createCurrencyFormatter } from "./_format-helpers"
 
 type SendOrderCanceledInput = {
   orderId: string
@@ -54,11 +55,7 @@ export const sendOrderCanceledWorkflow = createWorkflow(
         }
 
         const currencyCode = o.currency_code || "USD"
-        const currencyFormatter = new Intl.NumberFormat([], {
-          style: "currency",
-          currency: currencyCode,
-          currencyDisplay: "narrowSymbol",
-        })
+        const currencyFormatter = createCurrencyFormatter(currencyCode)
 
         let refundTotal = 0
         const paymentCollections = o.payment_collections || []

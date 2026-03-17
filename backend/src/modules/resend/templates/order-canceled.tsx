@@ -1,5 +1,5 @@
 // backend/src/modules/resend/templates/order-canceled.tsx
-import { Container, Html, Preview, Row, Section, Column } from "@react-email/components";
+import { Container, Html, Preview, Row, Section } from "@react-email/components";
 import { Body } from "./_components/body";
 import { Button } from "./_components/button";
 import { LeftAligned as Footer } from "./_components/footer";
@@ -7,6 +7,7 @@ import { Head } from "./_components/head";
 import { LeftAligned as Header } from "./_components/header";
 import { Tailwind } from "./_components/tailwind";
 import { Text } from "./_components/text";
+import { ItemTable } from "./_commerce/item-table";
 import { OrderSummary } from "./_commerce/order-summary";
 import { getEmailConfig } from "./_config/email-config";
 import type { CommerceLineItem, BaseTemplateProps } from "./types";
@@ -42,13 +43,12 @@ export const OrderCanceled = ({
 }: OrderCanceledProps) => {
   const config = getEmailConfig(brandConfig);
   const greeting = customerName ? `Hi ${customerName},` : "Hi there,";
-  const displayId = orderNumber;
 
   return (
     <Html>
       <Tailwind theme={theme}>
         <Head />
-        <Preview>Your order #{displayId} has been canceled</Preview>
+        <Preview>Your order #{orderNumber} has been canceled</Preview>
         <Body>
           <Container align="center" className="w-full max-w-160 bg-primary md:p-8">
             <Header logoUrl={config.logoUrl} logoAlt={config.logoAlt} />
@@ -79,57 +79,7 @@ export const OrderCanceled = ({
                 </Row>
               </Section>
 
-              {/* Item list */}
-              <Section className="my-6 rounded-lg border border-solid border-secondary">
-                <Row className="border-b border-solid border-secondary bg-secondary px-4 py-3">
-                  <Column className="w-[50%]">
-                    <Text className="m-0 text-xs font-medium uppercase text-tertiary">
-                      Item
-                    </Text>
-                  </Column>
-                  <Column className="w-[15%]" align="center">
-                    <Text className="m-0 text-xs font-medium uppercase text-tertiary">
-                      Qty
-                    </Text>
-                  </Column>
-                  <Column className="w-[20%]" align="right">
-                    <Text className="m-0 text-xs font-medium uppercase text-tertiary">
-                      Price
-                    </Text>
-                  </Column>
-                </Row>
-                {items.map((item, index) => (
-                  <Row
-                    key={index}
-                    className={`px-4 py-3 ${
-                      index < items.length - 1
-                        ? "border-b border-solid border-secondary"
-                        : ""
-                    }`}
-                  >
-                    <Column className="w-[50%]">
-                      <Text className="m-0 text-sm text-primary">
-                        {item.name}
-                      </Text>
-                      {item.variant && (
-                        <Text className="m-0 text-xs text-tertiary">
-                          {item.variant}
-                        </Text>
-                      )}
-                    </Column>
-                    <Column className="w-[15%]" align="center">
-                      <Text className="m-0 text-sm text-tertiary">
-                        {item.quantity || 1}
-                      </Text>
-                    </Column>
-                    <Column className="w-[20%]" align="right">
-                      <Text className="m-0 text-sm text-primary">
-                        {item.price}
-                      </Text>
-                    </Column>
-                  </Row>
-                ))}
-              </Section>
+              <ItemTable items={items} />
 
               <OrderSummary
                 subtotal={subtotal}
