@@ -54,6 +54,7 @@ Next.js 16 ecommerce storefront built on Vercel's Commerce template, enhanced wi
 | @medusajs/js-sdk | 2.13.x          | REST client for Medusa Store API             |
 | @medusajs/types  | 2.13.x          | TypeScript types for Medusa responses        |
 | clsx             | 2.1.x           | Conditional class composition                |
+| ioredis          | 5.x             | Redis client (auth rate limiting)            |
 | Geist            | 1.3.x           | Font family                                  |
 | Vitest           | 4.x             | Unit testing (installed, not configured yet) |
 | Playwright       | 1.56.x          | E2E testing (configured, 40 wishlist specs)  |
@@ -63,6 +64,12 @@ Next.js 16 ecommerce storefront built on Vercel's Commerce template, enhanced wi
 ```
 storefront/                        # Next.js 16 frontend
 ├── app/
+│   ├── (auth)/                    # Route group — auth pages (no layout file)
+│   │   └── account/
+│   │       ├── login/             # Sign-in page
+│   │       ├── register/          # Create account page
+│   │       ├── forgot-password/   # Request password reset
+│   │       └── reset-password/    # Set new password (from email link)
 │   ├── (store)/                   # Route group — shares store layout
 │   │   ├── layout.tsx             # Store-specific layout (nav + footer)
 │   │   ├── products/
@@ -90,13 +97,14 @@ storefront/                        # Next.js 16 frontend
 │   ├── medusa/
 │   │   ├── index.ts               # SDK client + all data-fetching functions
 │   │   ├── cookies.ts             # Secure cookie management + auth headers
-│   │   ├── customer.ts            # Customer auth: login, signup, signout, profile
+│   │   ├── customer.ts            # Customer auth: login, signup, signout, password reset, profile
 │   │   ├── error.ts               # Centralized Medusa SDK error formatting
 │   │   ├── transforms.ts          # Medusa → internal type transformations
 │   │   └── wishlist.ts            # Wishlist server actions + data fetching
 │   ├── constants.ts               # Cache tags, sort options, hidden product tag
 │   ├── constants/navigation.ts    # DEFAULT_NAVIGATION fallback, UTILITY_NAV
 │   ├── types.ts                   # Backend-agnostic internal types
+│   ├── validation.ts              # Shared validation (password length)
 │   └── utils.ts                   # URL helpers, env validation, Tailwind UI transforms
 ├── playwright.config.ts           # E2E test config (Chromium + Firefox)
 ├── tests/e2e/                     # E2E test suites
@@ -110,6 +118,9 @@ backend/                           # Medusa v2 backend
 ├── src/
 │   ├── modules/                   # Custom modules (data models, services)
 │   ├── api/                       # Custom REST API routes
+│   │   ├── middlewares.ts         # Route middleware config (auth, validation, rate limiting)
+│   │   └── middlewares/           # Custom middleware implementations
+│   │       └── rate-limit.ts     # Redis-backed auth rate limiting
 │   ├── workflows/                 # Custom workflows and steps
 │   ├── links/                     # Module link definitions
 │   ├── admin/                     # Admin UI extensions (React/Vite)
@@ -121,19 +132,23 @@ backend/                           # Medusa v2 backend
 
 ## Route Structure
 
-| Route                    | Purpose                  | Notes                                |
-| ------------------------ | ------------------------ | ------------------------------------ |
-| `/`                      | Home page                | Static                               |
-| `/products`              | All products grid        | Collection-filtered                  |
-| `/products/[collection]` | Products by collection   | Dynamic                              |
-| `/product/[handle]`      | Product detail           | `generateStaticParams` at build time |
-| `/search`                | Search results           | Query-based                          |
-| `/search/[collection]`   | Search within collection | Dynamic                              |
-| `/collections/*`         | Rewrite                  | Rewrites to `/products/*`            |
-| `/[page]`                | CMS pages                | Stub — Medusa has no CMS             |
-| `/account/wishlist`      | Wishlist management      | Auth-protected, multi-list UI        |
-| `/wishlist/shared/[token]` | Shared wishlist view   | Public read-only, import for authed  |
-| `/api/revalidate`        | Webhook                  | Cache invalidation endpoint          |
+| Route                      | Purpose                  | Notes                                |
+| -------------------------- | ------------------------ | ------------------------------------ |
+| `/`                        | Home page                | Static                               |
+| `/products`                | All products grid        | Collection-filtered                  |
+| `/products/[collection]`   | Products by collection   | Dynamic                              |
+| `/product/[handle]`        | Product detail           | `generateStaticParams` at build time |
+| `/search`                  | Search results           | Query-based                          |
+| `/search/[collection]`     | Search within collection | Dynamic                              |
+| `/collections/*`           | Rewrite                  | Rewrites to `/products/*`            |
+| `/[page]`                  | CMS pages                | Stub — Medusa has no CMS             |
+| `/account/login`           | Sign in                  | Redirects if logged in               |
+| `/account/register`        | Create account            | Redirects if logged in               |
+| `/account/forgot-password` | Request password reset   | Redirects if logged in               |
+| `/account/reset-password`  | Set new password         | Accepts `token` + `email` params     |
+| `/account/wishlist`        | Wishlist management      | Auth-protected, multi-list UI        |
+| `/wishlist/shared/[token]` | Shared wishlist view     | Public read-only, import for authed  |
+| `/api/revalidate`          | Webhook                  | Cache invalidation endpoint          |
 
 ## Data Layer Architecture
 
@@ -190,9 +205,13 @@ const sdk = new Medusa({
 
 **Field expansion:** Products use `PRODUCT_FIELDS` to get calculated prices, inventory, and variant images. Carts use `CART_FIELDS` to get items with product/variant/thumbnail data, plus promotions and shipping methods.
 
-**Cookie management (`lib/medusa/cookies.ts`):** All cookie access goes through dedicated functions (`getCartId`, `setCartId`, `removeCartId`, `getAuthToken`, `setAuthToken`, `removeAuthToken`). Cart cookie is `_medusa_cart_id` with `httpOnly`, `sameSite: strict`, `secure` (in prod), 30-day expiry. Auth token cookie is `_medusa_jwt` (infrastructure — not populated until customer accounts are implemented).
+**Cookie management (`lib/medusa/cookies.ts`):** All cookie access goes through dedicated functions (`getCartId`, `setCartId`, `removeCartId`, `getAuthToken`, `setAuthToken`, `removeAuthToken`). Cart cookie is `_medusa_cart_id` with `httpOnly`, `sameSite: strict`, `secure` (in prod), 30-day expiry. Auth token cookie is `_medusa_jwt` with same security flags, 7-day expiry.
 
-**Auth headers:** `getAuthHeaders()` returns `{ authorization: "Bearer ..." }` when a JWT exists, or `{}` otherwise. All cart mutations pass auth headers to the SDK. This is infrastructure for customer accounts — currently returns `{}`.
+**Auth headers:** `getAuthHeaders()` returns `{ authorization: "Bearer ..." }` when a JWT exists, or `{}` otherwise. All cart mutations and customer operations pass auth headers to the SDK.
+
+**Auth actions (`lib/medusa/customer.ts`):** `login`, `signup`, `signout`, `requestPasswordReset`, `completePasswordReset`, `retrieveCustomer`, `updateCustomer`, address CRUD. All actions normalize emails to lowercase. Password reset actions use `sdk.auth.resetPassword()` and `sdk.auth.updateProvider()`. Rate-limited responses (429) are detected via `isRateLimited()` helper and surfaced as user-friendly messages.
+
+**Password validation (`lib/validation.ts`):** `validatePassword()` enforces 8–128 character length. Used in `signup()` and `completePasswordReset()` server-side, and in register/reset forms client-side via exported `MIN_PASSWORD_LENGTH` constant.
 
 **Error handling (`lib/medusa/error.ts`):** `medusaError()` formats `FetchError` from `@medusajs/js-sdk` (shape: `{ status, statusText, message }`) into user-readable `Error` objects with server-side logging.
 

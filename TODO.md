@@ -150,9 +150,9 @@
 
 ## Auth Security (from Stack 2 audit)
 
-- [x] Password reset page — `/reset-password` storefront route accepting `token` and `email` query params (email "Reset Password" button currently links to nonexistent page)
-- [x] Rate limiting on auth endpoints — prevent brute-force attacks on login, signup, and password reset (consider `express-rate-limit` or Medusa middleware)
-- [x] Password complexity validation — enforce minimum length (8+ chars) on signup form and server action
+- [x] Password reset flow — forgot-password + reset-password pages, `requestPasswordReset` and `completePasswordReset` Server Actions, subscriber URL updated to `/account/reset-password`
+- [x] Rate limiting on auth endpoints — Redis-backed failed-attempt tracking (5 failures / 15 min per IP) on `/auth/*/emailpass*` via custom middleware with graceful degradation
+- [x] Password complexity validation — 8–128 char length enforced server-side in `signup()` and `completePasswordReset()`, client-side via `minLength` + hint text
 
 ## Known Limitations
 

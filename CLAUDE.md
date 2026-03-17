@@ -176,6 +176,8 @@ gt submit --stack                              # Push all stacked PRs
 - Follow Medusa v2 conventions: custom modules in `src/modules/`, API routes in `src/api/`, workflows in `src/workflows/`
 - Use `MedusaService` for service classes, `defineMiddlewares` for middleware, `createWorkflow`/`createStep` for workflows
 - Admin UI extensions in `src/admin/` use `@medusajs/ui` component library
+- Custom middleware implementations go in `src/api/middlewares/` (e.g., `rate-limit.ts`) and are wired via `src/api/middlewares.ts`
+- Rate limiting: Redis-backed failed-attempt tracking on `/auth/customer/emailpass*` and `/auth/user/emailpass*` — 5 failures per 15 min per IP. Gracefully degrades without Redis.
 - See `src/modules/README.md`, `src/api/README.md`, `src/workflows/README.md` for patterns
 
 ## MCP Servers
