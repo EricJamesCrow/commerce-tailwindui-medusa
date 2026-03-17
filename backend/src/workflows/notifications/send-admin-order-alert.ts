@@ -3,6 +3,7 @@ import {
   transform,
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk"
+import { MedusaError } from "@medusajs/framework/utils"
 import {
   useQueryGraphStep,
   sendNotificationsStep,
@@ -44,7 +45,12 @@ export const sendAdminOrderAlertWorkflow = createWorkflow(
       { orders, input } as { orders: Record<string, any>[]; input: SendAdminOrderAlertInput },
       ({ orders: result, input: inp }) => {
         const o = result[0] as Record<string, any>
-        if (!o) return []
+        if (!o) {
+          throw new MedusaError(
+            MedusaError.Types.NOT_FOUND,
+            "Order not found for admin alert"
+          )
+        }
 
         // Format currency
         const currencyFormatter = new Intl.NumberFormat([], {

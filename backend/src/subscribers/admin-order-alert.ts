@@ -35,7 +35,7 @@ export default async function adminOrderAlertHandler({
       input: { orderId: data.id, adminEmails, adminUrl },
     })
     logger.info(
-      `Admin order alert sent for order ${data.id} to ${adminEmails.join(", ")}`
+      `Admin order alert sent for order ${data.id} to ${adminEmails.length} recipient(s)`
     )
   } catch (error) {
     logger.error(

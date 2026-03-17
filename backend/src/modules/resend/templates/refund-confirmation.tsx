@@ -109,9 +109,9 @@ export const RefundConfirmation = ({
                 </Text>
               </Row>
 
-              {(orderUrl || config.appUrl) && (
+              {orderUrl && (
                 <Row className="mt-2 mb-6">
-                  <Button href={orderUrl || config.appUrl || config.websiteUrl}>
+                  <Button href={orderUrl}>
                     <Text className="text-md font-semibold">View your order</Text>
                   </Button>
                 </Row>
