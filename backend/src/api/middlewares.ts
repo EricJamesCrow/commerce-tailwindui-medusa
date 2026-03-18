@@ -46,6 +46,20 @@ export default defineMiddlewares({
         },
       ],
     },
+    // --- Normalize email to lowercase before auth (case-sensitive matching) ---
+    {
+      matcher: "/auth/*/emailpass*",
+      method: ["POST"],
+      middlewares: [
+        (req, _res, next) => {
+          const body = req.body as Record<string, unknown>
+          if (body?.email && typeof body.email === "string") {
+            body.email = body.email.toLowerCase()
+          }
+          next()
+        },
+      ],
+    },
     // --- Auth rate limiting ---
     {
       matcher: "/auth/customer/emailpass*",
