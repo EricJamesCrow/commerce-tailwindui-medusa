@@ -1,6 +1,5 @@
 import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework"
-import { Modules } from "@medusajs/framework/utils"
-import { resolveAdminUrl, resolveStorefrontUrl } from "./_helpers/resolve-urls"
+import { sendPasswordResetEmailWorkflow } from "../workflows/notifications/send-password-reset-email"
 
 type PasswordResetPayload = {
   entity_id: string  // This IS the email address (renamed from `email` after v2.0.7)
@@ -29,42 +28,9 @@ export default async function passwordResetHandler({
       return
     }
 
-    // Build reset URL based on actor type
-    const params = `token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`
-    let resetUrl: string
-
-    if (actorType === "customer") {
-      const storefrontUrl = resolveStorefrontUrl()
-      if (!storefrontUrl) {
-        logger.error("STOREFRONT_URL is not configured, skipping password reset email")
-        return
-      }
-      resetUrl = `${storefrontUrl}/account/reset-password?${params}`
-    } else {
-      const adminUrl = resolveAdminUrl(container)
-      if (!adminUrl) {
-        logger.error("admin.backendUrl is not configured, skipping password reset email")
-        return
-      }
-      resetUrl = `${adminUrl}/reset-password?${params}`
-    }
-
-    const notificationService = container.resolve(Modules.NOTIFICATION)
-
-    await notificationService.createNotifications({
-      to: email,
-      channel: "email",
-      template: "password-reset",
-      data: {
-        subject: actorType === "customer"
-          ? "Reset Your Password"
-          : "Reset Your Admin Password",
-        resetUrl,
-        email,
-        actorType,
-      },
+    await sendPasswordResetEmailWorkflow(container).run({
+      input: { email, token, actorType },
     })
-
     logger.info(`Password reset email sent (${actorType})`)
   } catch (error) {
     logger.error(
