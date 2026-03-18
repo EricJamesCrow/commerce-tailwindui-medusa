@@ -74,7 +74,7 @@ type EmailAttachment = {
   content?: string | Buffer
   filename?: string
   path?: string
-  content_type?: string
+  contentType?: string
 }
 
 type TemplateEntry = {
@@ -176,13 +176,19 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
       return {}
     }
 
+    // Guard: notification.data must be a non-null object
+    const rawData =
+      typeof notification.data === "object" && notification.data !== null
+        ? notification.data
+        : {}
+
     // Separate email routing metadata from template props
     const {
       subject: callerSubject,
       emailOptions: rawEmailOptions,
       attachments: rawAttachments,
       ...templateData
-    } = (notification.data || {}) as Record<string, any>
+    } = rawData as Record<string, any>
 
     if (!entry.validate(templateData)) {
       this.logger.error(
@@ -192,47 +198,67 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
       return {}
     }
 
-    const html = await render(
-      React.createElement(entry.component, templateData)
-    )
+    try {
+      const html = await render(
+        React.createElement(entry.component, templateData)
+      )
 
-    // Subject precedence: caller > centralized default > auto-generated from ID
-    const subject =
-      callerSubject ??
-      entry.defaultSubject ??
-      templateId.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+      // Subject precedence: caller > centralized default > auto-generated from ID
+      const subject =
+        (typeof callerSubject === "string" ? callerSubject : null) ??
+        entry.defaultSubject ??
+        templateId.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
 
-    const emailOptions = (rawEmailOptions as EmailOptions) ?? {}
-    const attachments = rawAttachments as EmailAttachment[] | undefined
+      const emailOptions: EmailOptions =
+        typeof rawEmailOptions === "object" && rawEmailOptions !== null
+          ? (rawEmailOptions as EmailOptions)
+          : {}
 
-    const { data, error } = await this.resendClient.emails.send({
-      from: emailOptions.from ?? this.options.from,
-      to: [notification.to],
-      subject,
-      html,
-      ...(emailOptions.replyTo && { reply_to: emailOptions.replyTo }),
-      ...(emailOptions.cc && { cc: emailOptions.cc }),
-      ...(emailOptions.bcc && { bcc: emailOptions.bcc }),
-      ...(emailOptions.tags && { tags: emailOptions.tags }),
-      ...(emailOptions.text && { text: emailOptions.text }),
-      ...(emailOptions.headers && { headers: emailOptions.headers }),
-      ...(emailOptions.scheduledAt && { scheduled_at: emailOptions.scheduledAt }),
-      ...(attachments?.length && {
-        attachments: attachments.map((a) => ({
-          ...(a.content != null && { content: a.content }),
-          ...(a.filename && { filename: a.filename }),
-          ...(a.path && { path: a.path }),
-          ...(a.content_type && { content_type: a.content_type }),
-        })),
-      }),
-    })
+      // Validate attachments: each must have content or path
+      const attachments = Array.isArray(rawAttachments)
+        ? (rawAttachments as EmailAttachment[]).filter(
+            (a) => a.content != null || a.path
+          )
+        : undefined
 
-    if (error || !data) {
-      this.logger.error("Failed to send email", error ?? "unknown error")
+      const { data, error } = await this.resendClient.emails.send({
+        from: emailOptions.from ?? this.options.from,
+        to: [notification.to],
+        subject,
+        html,
+        ...(emailOptions.replyTo && { replyTo: emailOptions.replyTo }),
+        ...(emailOptions.cc && { cc: emailOptions.cc }),
+        ...(emailOptions.bcc && { bcc: emailOptions.bcc }),
+        ...(emailOptions.tags && { tags: emailOptions.tags }),
+        ...(emailOptions.text !== undefined && { text: emailOptions.text }),
+        ...(emailOptions.headers && { headers: emailOptions.headers }),
+        ...(emailOptions.scheduledAt && { scheduledAt: emailOptions.scheduledAt }),
+        ...(attachments?.length && {
+          attachments: attachments.map((a) => ({
+            ...(a.content != null && { content: a.content }),
+            ...(a.filename && { filename: a.filename }),
+            ...(a.path && { path: a.path }),
+            ...(a.contentType && { contentType: a.contentType }),
+          })),
+        }),
+      })
+
+      if (error || !data) {
+        this.logger.error(
+          `Failed to send "${templateId}" email to ${notification.to}`,
+          error ?? "unknown error"
+        )
+        return {}
+      }
+
+      return { id: data.id }
+    } catch (err) {
+      this.logger.error(
+        `Unexpected error rendering/sending "${templateId}" email to ${notification.to}`,
+        err
+      )
       return {}
     }
-
-    return { id: data.id }
   }
 }
 
