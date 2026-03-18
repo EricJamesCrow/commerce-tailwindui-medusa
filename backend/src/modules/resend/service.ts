@@ -1,5 +1,6 @@
 import {
   AbstractNotificationProviderService,
+  MedusaError,
 } from "@medusajs/framework/utils"
 import type {
   Logger,
@@ -28,14 +29,32 @@ type InjectedDependencies = {
   logger: Logger
 }
 
+/** Caller-controlled email options passed via notification.data.emailOptions */
+type EmailOptions = {
+  from?: string
+  replyTo?: string | string[]
+  cc?: string | string[]
+  bcc?: string | string[]
+  tags?: Array<{ name: string; value: string }>
+  text?: string
+  headers?: Record<string, string>
+  scheduledAt?: string
+}
+
+/** File attachment passed via notification.data.attachments */
+type EmailAttachment = {
+  content?: string | Buffer
+  filename?: string
+  path?: string
+  content_type?: string
+}
+
 class ResendNotificationProviderService extends AbstractNotificationProviderService {
   static identifier = "notification-resend"
   private resendClient: Resend
   private options: ResendOptions
   private logger: Logger
 
-  // Template map — templates are registered here as they're built.
-  // Each key matches the `template` string passed via createNotifications().
   private templates: Record<string, React.FC<any>> = {
     "order-confirmation": OrderConfirmation,
     "password-reset": PasswordReset,
@@ -46,6 +65,19 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
     "refund-confirmation": RefundConfirmation,
     "admin-order-alert": AdminOrderAlert,
     "abandoned-cart": AbandonedCart,
+  }
+
+  /** Default subjects per template — callers can override via notification.data.subject */
+  private templateSubjects: Record<string, string> = {
+    "order-confirmation": "Order Confirmed",
+    "password-reset": "Reset Your Password",
+    "invite-user": "You've Been Invited",
+    "welcome": "Welcome!",
+    "shipping-confirmation": "Your Order Has Shipped",
+    "order-canceled": "Order Canceled",
+    "refund-confirmation": "Refund Processed",
+    "admin-order-alert": "New Order Received",
+    "abandoned-cart": "You Left Something Behind",
   }
 
   constructor(
@@ -60,10 +92,16 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
 
   static validateOptions(options: Record<string, any>) {
     if (!options.api_key) {
-      throw new Error("Resend api_key is required in provider options")
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        "Resend api_key is required in provider options"
+      )
     }
     if (!options.from) {
-      throw new Error("Resend from email is required in provider options")
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        "Resend from email is required in provider options"
+      )
     }
   }
 
@@ -81,19 +119,47 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
       return {}
     }
 
+    // Separate email routing metadata from template props
+    const {
+      subject: callerSubject,
+      emailOptions: rawEmailOptions,
+      attachments: rawAttachments,
+      ...templateData
+    } = (notification.data || {}) as Record<string, any>
+
     const html = await render(
-      React.createElement(Template, notification.data || {})
+      React.createElement(Template, templateData)
     )
 
+    // Subject precedence: caller > centralized default > auto-generated from ID
     const subject =
-      (notification.data as Record<string, any>)?.subject ??
+      callerSubject ??
+      this.templateSubjects[templateId] ??
       templateId.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
 
+    const emailOptions = (rawEmailOptions as EmailOptions) ?? {}
+    const attachments = rawAttachments as EmailAttachment[] | undefined
+
     const { data, error } = await this.resendClient.emails.send({
-      from: this.options.from,
+      from: emailOptions.from ?? this.options.from,
       to: [notification.to],
       subject,
       html,
+      ...(emailOptions.replyTo && { reply_to: emailOptions.replyTo }),
+      ...(emailOptions.cc && { cc: emailOptions.cc }),
+      ...(emailOptions.bcc && { bcc: emailOptions.bcc }),
+      ...(emailOptions.tags && { tags: emailOptions.tags }),
+      ...(emailOptions.text && { text: emailOptions.text }),
+      ...(emailOptions.headers && { headers: emailOptions.headers }),
+      ...(emailOptions.scheduledAt && { scheduled_at: emailOptions.scheduledAt }),
+      ...(attachments?.length && {
+        attachments: attachments.map((a) => ({
+          ...(a.content != null && { content: a.content }),
+          ...(a.filename && { filename: a.filename }),
+          ...(a.path && { path: a.path }),
+          ...(a.content_type && { content_type: a.content_type }),
+        })),
+      }),
     })
 
     if (error || !data) {
