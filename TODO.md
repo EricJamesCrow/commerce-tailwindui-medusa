@@ -92,7 +92,7 @@
 - [ ] Add product thumbnail images to email templates (item table rows currently show name/variant/qty/price but no images — data is available via `item.thumbnail` from `formatOrderForEmailStep`)
 - [ ] Order detail page — `/account/orders/[id]` storefront route (email "View your order" link currently 404s)
 - [ ] Integrate Payload CMS — product content management (descriptions, rich media, landing pages)
-- [ ] Abandoned cart recovery emails (Resend)
+- [x] Abandoned cart recovery emails (scheduled job every 15 min, HMAC-signed recovery links, Resend)
 - [ ] Generate and send invoices (Resend)
 - [ ] Newsletter signup and campaigns (Resend)
 
