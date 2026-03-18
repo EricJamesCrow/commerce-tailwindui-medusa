@@ -41,7 +41,7 @@ export const ItemTable = ({ items }: ItemTableProps) => {
               <tbody>
                 <tr>
                   {item.imageUrl && (
-                    <td style={{ verticalAlign: "top", paddingRight: 12, width: 64 }}>
+                    <td style={{ verticalAlign: "middle", paddingRight: 12, width: 64 }}>
                       <Img
                         src={item.imageUrl}
                         alt={item.name}
@@ -55,7 +55,7 @@ export const ItemTable = ({ items }: ItemTableProps) => {
                       />
                     </td>
                   )}
-                  <td style={{ verticalAlign: "top" }}>
+                  <td style={{ verticalAlign: "middle" }}>
                     <Text className="m-0 text-sm text-primary">
                       {item.name}
                     </Text>
