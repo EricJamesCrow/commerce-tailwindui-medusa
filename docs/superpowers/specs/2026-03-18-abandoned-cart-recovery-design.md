@@ -44,41 +44,77 @@ sendAbandonedCartEmailWorkflow:
 
 **Schedule:** `*/15 * * * *` (every 15 minutes)
 
-**Query:**
+**Container resolution:**
 
 ```typescript
+import { MedusaContainer } from "@medusajs/framework/types"
+import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
+
+export default async function abandonedCartJob(container: MedusaContainer) {
+  const query = container.resolve(ContainerRegistrationKeys.QUERY)
+  const logger = container.resolve("logger")
+  // ...
+}
+```
+
+**Pagination loop:**
+
+```typescript
+const limit = 100
+let offset = 0
+let totalCount = 0
+let totalSent = 0
+
 const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
 const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000)
 
-const { data: carts, metadata: paginationMeta } = await query.graph({
-  entity: "cart",
-  fields: [
-    "id", "email", "currency_code",
-    "items.*", "items.variant.*", "items.variant.product.*",
-    "metadata", "updated_at",
-    "customer.first_name",
-  ],
-  filters: {
-    completed_at: null,
-    updated_at: {
-      $lt: oneHourAgo,
-      $gt: fortyEightHoursAgo,
+do {
+  const { data: carts, metadata: paginationMeta } = await query.graph({
+    entity: "cart",
+    fields: [
+      "id", "email", "currency_code",
+      "items.*", "items.variant.*", "items.variant.product.*",
+      "metadata", "updated_at",
+      "customer.first_name",
+    ],
+    filters: {
+      completed_at: null,
+      updated_at: {
+        $lt: oneHourAgo,
+        $gt: fortyEightHoursAgo,
+      },
+      email: { $ne: null },
     },
-    email: { $ne: null },
-  },
-  pagination: { skip: offset, take: limit },
-})
+    pagination: { skip: offset, take: limit },
+  })
+
+  totalCount = paginationMeta?.count ?? 0
+
+  // JS filter: items check and dedup flag can't be expressed in query.graph()
+  const eligibleCarts = carts.filter(
+    (cart) => cart.items?.length > 0 && !cart.metadata?.abandoned_cart_notified
+  )
+
+  for (const cart of eligibleCarts) {
+    try {
+      await sendAbandonedCartEmailWorkflow(container).run({
+        input: { cart_id: cart.id, email: cart.email.toLowerCase() },
+      })
+      totalSent++
+    } catch (error) {
+      logger.error(`Failed to send abandoned cart email for cart ${cart.id}`, error)
+    }
+  }
+
+  offset += limit
+} while (offset < totalCount)
+
+logger.info(`Abandoned cart job complete: ${totalSent} emails sent`)
 ```
 
-**Post-query JS filter:**
+**Email normalization:** Cart emails are lowercased before passing to the workflow, consistent with the project-wide email normalization policy (CLAUDE.md).
 
-```typescript
-const eligibleCarts = carts.filter(
-  (cart) => cart.items?.length > 0 && !cart.metadata?.abandoned_cart_notified
-)
-```
-
-Items/metadata checks can't be expressed in `query.graph()` filters (no `$exists` or array-length filter), so we filter in JS after fetching. The pagination + 48-hour window keeps the result set bounded.
+**Post-query JS filter:** Items/metadata checks can't be expressed in `query.graph()` filters (no `$exists` or array-length filter), so we filter in JS after fetching. The pagination + 48-hour window keeps the result set bounded.
 
 **Error handling:** Each workflow invocation is wrapped in try/catch. One failed cart doesn't stop the rest. Errors are logged with the cart ID.
 
@@ -90,18 +126,34 @@ Items/metadata checks can't be expressed in `query.graph()` filters (no `$exists
 
 **Input:** `{ cart_id: string, email: string }`
 
-### Step 1: useQueryGraphStep
+### Step 1: useQueryGraphStep + transform (unwrap cart)
 
-Fetch full cart data by ID. Fields needed:
+Fetch full cart data by ID, then unwrap the array result using `transform()`:
 
 ```typescript
-fields: [
-  "id", "email", "currency_code",
-  "items.*", "items.variant.*", "items.variant.product.*",
-  "metadata",
-  "customer.first_name",
-  "item_subtotal",
-]
+const { data: carts } = useQueryGraphStep({
+  entity: "cart",
+  fields: [
+    "id", "email", "currency_code",
+    "items.*", "items.variant.*", "items.variant.product.*",
+    "metadata",
+    "customer.first_name",
+    "item_subtotal",
+  ],
+  filters: { id: input.cart_id },
+})
+
+// useQueryGraphStep returns an array — unwrap to single cart
+const cart = transform({ carts }, ({ carts: result }) => {
+  const c = result[0]
+  if (!c?.email) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      "Cart has no email address, cannot send abandoned cart notification"
+    )
+  }
+  return c
+})
 ```
 
 ### Step 2: generateCartRecoveryTokenStep (custom)
@@ -109,19 +161,38 @@ fields: [
 **File:** `backend/src/workflows/steps/generate-cart-recovery-token.ts`
 
 - Input: `{ cart_id: string }`
-- Compute: `HMAC-SHA256(cart_id, CART_RECOVERY_SECRET)` using Node.js built-in `crypto`
+- Implementation: `createStep` + `StepResponse` pattern. No rollback function needed (token generation is pure computation with no side effects).
+- Compute: `crypto.createHmac("sha256", CART_RECOVERY_SECRET).update(cart_id).digest("hex")` using Node.js built-in `crypto` (synchronous)
 - Output: `{ token: string, recoveryUrl: string }`
 - Recovery URL format: `${STOREFRONT_URL}/cart/recover/${cart_id}?token=${hmacHexDigest}`
 - Uses `resolveStorefrontUrl()` from `subscribers/_helpers/resolve-urls.ts` for the base URL
+
+### transform: wire recovery URL into format step input
+
+```typescript
+// Merge cart data + recovery URL for the format step
+const formatInput = transform(
+  { cart, recoveryToken },
+  ({ cart: c, recoveryToken: rt }) => ({
+    cart: c,
+    recoveryUrl: rt.recoveryUrl,
+  })
+)
+```
 
 ### Step 3: formatCartForEmailStep (custom)
 
 **File:** `backend/src/workflows/steps/format-cart-for-email.ts`
 
+- Input: `{ cart: Record<string, any>, recoveryUrl: string }`
+- Implementation: `createStep` + `StepResponse` pattern. No rollback needed.
+
 Transforms cart data into the email template's data shape. Reuses existing `_format-helpers.ts`:
 
 - `createCurrencyFormatter(cart.currency_code)` for money formatting
 - `formatItem(item, formatMoney)` for each line item
+
+**Cart item field compatibility note:** Cart line items use `item_subtotal` and `unit_price` fields. The existing `formatItem` helper uses `item.total ?? item.unit_price * item.quantity`. Verify during implementation that cart item fields match — if `item.total` is not present on cart items, the fallback (`unit_price * quantity`) produces the correct pre-tax price. Create a `formatCartItem` variant if the field names diverge.
 
 **Customer name:** Use `cart.customer.first_name` if available, otherwise omit (template falls back to "Hi there,").
 
@@ -144,30 +215,41 @@ type AbandonedCartEmailData = {
 }
 ```
 
+### transform: prepare notification + metadata update inputs
+
+All data manipulation for step inputs must happen inside `transform()` — no spread operators, `new Date()`, or data construction in the workflow body.
+
+```typescript
+// Source `to` and `resource_id` from `cart` (in workflow scope), not from formatted output
+const notifications = transform({ formatted, cart }, ({ formatted: data, cart: c }) => [{
+  to: c.email.toLowerCase(),
+  channel: "email" as const,
+  template: "abandoned-cart",
+  data,
+  trigger_type: "cart.abandoned",
+  resource_id: c.id,
+  resource_type: "cart",
+}])
+
+const cartUpdate = transform({ cart }, ({ cart: c }) => [{
+  id: c.id,
+  metadata: {
+    ...(c.metadata || {}),
+    abandoned_cart_notified: new Date().toISOString(),
+  },
+}])
+```
+
 ### Step 4: sendNotificationsStep (core)
 
 ```typescript
-sendNotificationsStep([{
-  to: email,
-  channel: "email",
-  template: "abandoned-cart",
-  data: formattedData,
-  trigger_type: "cart.abandoned",
-  resource_id: cart_id,
-  resource_type: "cart",
-}])
+sendNotificationsStep(notifications)
 ```
 
 ### Step 5: updateCartsStep (core)
 
 ```typescript
-updateCartsStep([{
-  id: cart_id,
-  metadata: {
-    ...existingMetadata,
-    abandoned_cart_notified: new Date().toISOString(),
-  },
-}])
+updateCartsStep(cartUpdate)
 ```
 
 **Rollback consideration:** If step 4 succeeds but step 5 fails, the cart could receive a duplicate email on the next job run. Acceptable for MVP — better a duplicate than losing the notification flag silently. The failure will be logged.
@@ -176,17 +258,19 @@ updateCartsStep([{
 
 **File:** `storefront/app/cart/recover/[id]/route.ts`
 
+**Note on route location:** The storefront currently has no `app/cart/` directory (the cart is a drawer, not a page). This route creates a new `app/cart/recover/` path that does not conflict with any existing routes. It is a Route Handler (returns a redirect), not a page — no `page.tsx` is created in `app/cart/`.
+
 **Type:** Route Handler (GET)
 
 **Flow:**
 
-1. Extract `cart_id` from path params, `token` from query string
-2. Verify HMAC: recompute `HMAC-SHA256(cart_id, CART_RECOVERY_SECRET)` and timing-safe compare against `token`
-3. If invalid token or missing params → 404 (don't reveal whether the cart exists)
-4. Call `sdk.store.cart.retrieve(cart_id)` to confirm the cart still exists and isn't completed
-5. If cart is missing or completed → redirect to `/`
-6. Set `_medusa_cart_id` cookie via the existing `setCartId()` helper from `lib/medusa/cookies.ts`
-7. Redirect to `/cart`
+1. Extract `id` from path params (`params.id`), `token` from query string (`searchParams.get("token")`)
+2. Verify HMAC: recompute `HMAC-SHA256(id, CART_RECOVERY_SECRET)` and timing-safe compare against `token` using `crypto.timingSafeEqual`
+3. If invalid token or missing params → return `notFound()` (don't reveal whether the cart exists)
+4. Call `sdk.store.cart.retrieve(id)` to confirm the cart still exists and isn't completed
+5. If cart is missing or completed → `redirect("/")`
+6. `await setCartId(id)` via the existing `setCartId()` helper from `lib/medusa/cookies.ts` (note: `setCartId` is async)
+7. `redirect("/cart")` — this opens the storefront with the recovered cart (the cart drawer can be triggered from there)
 
 **Security properties:**
 
@@ -239,6 +323,12 @@ React Email component following existing template patterns. Single-CTA layout:
 | Variable | Required | Used by | Purpose |
 |----------|----------|---------|---------|
 | `CART_RECOVERY_SECRET` | Yes (for this feature) | Backend + Storefront | HMAC signing/verification for recovery links |
+
+**Important:** `CART_RECOVERY_SECRET` must be set in **both** workspace env files:
+- `backend/.env` — used by the workflow step to generate tokens
+- `storefront/.env.local` — used by the recovery route handler to verify tokens
+
+This variable must **never** use a `NEXT_PUBLIC_` prefix — it is a server-side secret used only in Route Handlers, never exposed to the client bundle.
 
 No new npm dependencies. Uses Node.js built-in `crypto` module for HMAC operations.
 
