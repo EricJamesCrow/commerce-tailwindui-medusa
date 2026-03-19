@@ -111,6 +111,7 @@ export function buildInvoiceDocumentProps(
       name: (item.product_title || item.title) as string,
       variant: (item.variant_title as string) || undefined,
       sku: (item.variant_sku as string) || undefined,
+      thumbnail: (item.thumbnail as string) || undefined,
       quantity: item.quantity as number,
       unitPrice: formatMoney(item.unit_price as number),
       total: formatMoney(

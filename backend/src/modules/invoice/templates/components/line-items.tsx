@@ -1,10 +1,11 @@
-import { View, Text } from "@react-pdf/renderer"
-import { styles } from "../styles"
+import { View, Text, Image } from "@react-pdf/renderer"
+import { styles, colors } from "../styles"
 
 interface LineItem {
   name: string
   variant?: string
   sku?: string
+  thumbnail?: string
   quantity: number
   unitPrice: string
   total: string
@@ -19,7 +20,7 @@ export function LineItems({ items }: LineItemsProps) {
     <View>
       <View style={styles.tableHeader}>
         <Text style={[styles.tableHeaderText, styles.colDescription]}>
-          Description
+          Item
         </Text>
         <Text style={[styles.tableHeaderText, styles.colQty]}>Qty</Text>
         <Text style={[styles.tableHeaderText, styles.colUnitPrice]}>
@@ -34,13 +35,27 @@ export function LineItems({ items }: LineItemsProps) {
             index < items.length - 1 ? styles.tableRow : styles.tableRowLast
           }
         >
-          <View style={styles.colDescription}>
-            <Text style={styles.itemName}>{item.name}</Text>
-            {(item.variant || item.sku) && (
-              <Text style={styles.itemDetail}>
-                {[item.variant, item.sku].filter(Boolean).join(" · ")}
-              </Text>
+          <View style={[styles.colDescription, { flexDirection: "row", alignItems: "center", gap: 8 }]}>
+            {item.thumbnail && (
+              <Image
+                src={item.thumbnail}
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 3,
+                  objectFit: "cover",
+                  border: `1 solid ${colors.border}`,
+                }}
+              />
             )}
+            <View style={{ flex: 1 }}>
+              <Text style={styles.itemName}>{item.name}</Text>
+              {(item.variant || item.sku) && (
+                <Text style={styles.itemDetail}>
+                  {[item.variant, item.sku].filter(Boolean).join(" · ")}
+                </Text>
+              )}
+            </View>
           </View>
           <Text style={[styles.itemText, styles.colQty]}>{item.quantity}</Text>
           <Text style={[styles.itemText, styles.colUnitPrice]}>

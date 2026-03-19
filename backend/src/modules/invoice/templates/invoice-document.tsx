@@ -27,6 +27,7 @@ export interface InvoiceDocumentProps {
     name: string
     variant?: string
     sku?: string
+    thumbnail?: string
     quantity: number
     unitPrice: string
     total: string
