@@ -7,6 +7,14 @@ export async function GET(
 ): Promise<NextResponse> {
   const { id } = await params;
 
+  // Validate order ID format before forwarding to backend
+  if (!/^order_[a-zA-Z0-9]+$/.test(id)) {
+    return NextResponse.json(
+      { error: "Invalid order ID format" },
+      { status: 400 },
+    );
+  }
+
   const headers = await getAuthHeaders();
   if (!headers.authorization) {
     return NextResponse.json(
@@ -46,16 +54,20 @@ export async function GET(
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": contentDisposition,
+        "Cache-Control": "private, no-store",
       },
     });
   } catch (err) {
     const isTimeout =
       err instanceof DOMException && err.name === "TimeoutError";
-    const message = isTimeout
-      ? "Invoice generation timed out"
-      : err instanceof Error
-        ? err.message
-        : "Invoice generation failed";
+
+    let message = "Invoice generation failed";
+    if (isTimeout) {
+      message = "Invoice generation timed out";
+    } else if (err instanceof Error) {
+      message = err.message;
+    }
+
     return NextResponse.json(
       { error: message },
       { status: isTimeout ? 504 : 502 },

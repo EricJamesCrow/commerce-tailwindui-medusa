@@ -11,7 +11,7 @@ export const renderInvoicePdfStep = createStep(
   "render-invoice-pdf",
   async (props: InvoiceDocumentProps) => {
     const element = React.createElement(InvoiceDocument, props)
-    const buffer = await renderToBuffer(element as any)
+    const buffer = await renderToBuffer(element)
     return new StepResponse(buffer)
   }
 )

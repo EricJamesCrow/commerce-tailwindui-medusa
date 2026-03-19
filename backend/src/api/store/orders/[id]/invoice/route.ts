@@ -34,7 +34,8 @@ export const GET = async (
     throw new MedusaError(MedusaError.Types.NOT_FOUND, "Order not found")
   }
   if (order.customer_id !== customerId) {
-    throw new MedusaError(MedusaError.Types.NOT_ALLOWED, "Access denied")
+    // Return NOT_FOUND to avoid leaking order existence to non-owners
+    throw new MedusaError(MedusaError.Types.NOT_FOUND, "Order not found")
   }
   if (!order.items || order.items.length === 0) {
     throw new MedusaError(

@@ -47,7 +47,7 @@ const InvoiceConfigPage = () => {
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const { data, isLoading } = useQuery<InvoiceConfigResponse>({
+  const { data, isLoading, isError, error } = useQuery<InvoiceConfigResponse>({
     queryKey: ["invoice-config"],
     queryFn: () => sdk.client.fetch("/admin/invoice-config"),
   })
@@ -111,6 +111,10 @@ const InvoiceConfigPage = () => {
       toast.error("Company email is required")
       return
     }
+    if (!companyAddress.trim()) {
+      toast.error("Company address is required")
+      return
+    }
 
     saveConfig({
       company_name: companyName.trim(),
@@ -132,6 +136,22 @@ const InvoiceConfigPage = () => {
     )
   }
 
+  if (isError) {
+    return (
+      <Container className="flex flex-col items-center gap-4 p-6">
+        <Text className="text-ui-fg-error">
+          Failed to load configuration: {error instanceof Error ? error.message : "Unknown error"}
+        </Text>
+        <Button
+          variant="secondary"
+          onClick={() => queryClient.invalidateQueries({ queryKey: ["invoice-config"] })}
+        >
+          Retry
+        </Button>
+      </Container>
+    )
+  }
+
   return (
     <form onSubmit={handleSubmit}>
       <Container className="divide-y p-0">
@@ -147,7 +167,6 @@ const InvoiceConfigPage = () => {
             Configure the company details that appear on generated invoices.
           </Text>
 
-          {/* Company Name */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="company_name" className="font-medium">
               Company Name <span className="text-ui-fg-error">*</span>
@@ -161,10 +180,9 @@ const InvoiceConfigPage = () => {
             />
           </div>
 
-          {/* Company Address */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="company_address" className="font-medium">
-              Company Address
+              Company Address <span className="text-ui-fg-error">*</span>
             </Label>
             <Textarea
               id="company_address"
@@ -175,7 +193,6 @@ const InvoiceConfigPage = () => {
             />
           </div>
 
-          {/* Company Phone */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="company_phone" className="font-medium">
               Company Phone
@@ -188,7 +205,6 @@ const InvoiceConfigPage = () => {
             />
           </div>
 
-          {/* Company Email */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="company_email" className="font-medium">
               Company Email <span className="text-ui-fg-error">*</span>
@@ -203,7 +219,6 @@ const InvoiceConfigPage = () => {
             />
           </div>
 
-          {/* Company Logo */}
           <div className="flex flex-col gap-2">
             <Label className="font-medium">Company Logo</Label>
             <div className="flex items-center gap-4">
@@ -243,7 +258,6 @@ const InvoiceConfigPage = () => {
             </div>
           </div>
 
-          {/* Tax ID */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="tax_id" className="font-medium">
               Tax ID
@@ -256,7 +270,6 @@ const InvoiceConfigPage = () => {
             />
           </div>
 
-          {/* Default Notes */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="notes" className="font-medium">
               Default Notes
@@ -270,7 +283,6 @@ const InvoiceConfigPage = () => {
             />
           </div>
 
-          {/* Attach to Email */}
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="flex flex-col gap-1">
               <Label htmlFor="attach_to_email" className="font-medium">

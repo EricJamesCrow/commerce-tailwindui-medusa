@@ -48,6 +48,7 @@ export function InvoiceDocument(props: InvoiceDocumentProps) {
           invoiceNumber={props.invoiceNumber}
           issuedDate={props.issuedDate}
           orderDisplayId={props.orderDisplayId}
+          logo={props.company.logo}
         />
         <Parties
           from={{

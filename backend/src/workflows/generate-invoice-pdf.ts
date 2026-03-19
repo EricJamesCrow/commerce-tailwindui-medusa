@@ -6,9 +6,11 @@ import {
 import { MedusaError } from "@medusajs/framework/utils"
 import { useQueryGraphStep } from "@medusajs/medusa/core-flows"
 import { getOrCreateInvoiceStep } from "./steps/get-or-create-invoice"
-import { formatInvoiceDataStep } from "./steps/format-invoice-data"
+import {
+  formatInvoiceDataStep,
+  type FormatInvoiceDataInput,
+} from "./steps/format-invoice-data"
 import { renderInvoicePdfStep } from "./steps/render-invoice-pdf"
-import type { FormatInvoiceDataInput } from "./steps/format-invoice-data"
 
 type GenerateInvoicePdfInput = {
   order_id: string
@@ -83,6 +85,7 @@ export const generateInvoicePdfWorkflow = createWorkflow(
       order_id: input.order_id,
     })
 
+    // Cast: Medusa TS2590 — WorkflowData union too complex to resolve nested step result types
     const invoice = transform(
       { invoiceResult },
       (data) => (data as any).invoiceResult.invoice

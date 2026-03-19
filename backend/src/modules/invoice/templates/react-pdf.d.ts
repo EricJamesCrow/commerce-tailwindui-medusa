@@ -112,15 +112,17 @@ declare module "@react-pdf/renderer" {
   export class Link extends React.Component<LinkProps> {}
 
   // ---- Rendering (server-side) ----
+  // Widened from ReactElement<DocumentProps> to ReactElement to avoid
+  // needing `as any` casts when passing createElement() results
   export const renderToBuffer: (
-    document: React.ReactElement<DocumentProps>,
+    document: React.ReactElement,
   ) => Promise<Buffer>
 
   export const renderToStream: (
-    document: React.ReactElement<DocumentProps>,
+    document: React.ReactElement,
   ) => Promise<NodeJS.ReadableStream>
 
-  export const pdf: (initialValue?: React.ReactElement<DocumentProps>) => {
+  export const pdf: (initialValue?: React.ReactElement) => {
     container: unknown
     isDirty: () => boolean
     toString: () => string

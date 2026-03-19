@@ -5,6 +5,12 @@ import clsx from "clsx";
 
 type DownloadState = "idle" | "loading" | "error";
 
+function parseFilenameFromHeader(header: string | null): string {
+  if (!header) return "invoice.pdf";
+  const match = header.match(/filename="?([^";\s]+)"?/);
+  return match?.[1] ?? "invoice.pdf";
+}
+
 export function DownloadInvoiceButton({ orderId }: { orderId: string }) {
   const [state, setState] = useState<DownloadState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -14,7 +20,9 @@ export function DownloadInvoiceButton({ orderId }: { orderId: string }) {
     setErrorMessage(null);
 
     try {
-      const res = await fetch(`/api/orders/${orderId}/invoice`);
+      const res = await fetch(`/api/orders/${orderId}/invoice`, {
+        signal: AbortSignal.timeout(30_000),
+      });
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -25,19 +33,12 @@ export function DownloadInvoiceButton({ orderId }: { orderId: string }) {
       }
 
       const blob = await res.blob();
-      const contentDisposition = res.headers.get("content-disposition");
-      let filename = "invoice.pdf";
-      if (contentDisposition) {
-        const match = contentDisposition.match(/filename="?([^";\s]+)"?/);
-        if (match?.[1]) {
-          filename = match[1];
-        }
-      }
-
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = filename;
+      link.download = parseFilenameFromHeader(
+        res.headers.get("content-disposition"),
+      );
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -45,8 +46,16 @@ export function DownloadInvoiceButton({ orderId }: { orderId: string }) {
 
       setState("idle");
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to download invoice";
+      const isTimeout =
+        err instanceof DOMException && err.name === "TimeoutError";
+
+      let message = "Failed to download invoice";
+      if (isTimeout) {
+        message = "Invoice generation timed out — please try again";
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+
       setErrorMessage(message);
       setState("error");
     }

@@ -13,15 +13,18 @@ function formatDate(dateString: string): string {
   });
 }
 
+type OrderWithStatus = HttpTypes.StoreOrder & {
+  status?: string;
+  fulfillment_status?: string;
+};
+
 /**
  * Returns true if the order is eligible for invoice download.
  * Invoices are available for orders that have been fulfilled or completed,
  * but not for pending, canceled, or refunded orders.
  */
-function isInvoiceEligible(order: HttpTypes.StoreOrder): boolean {
-  const status = (order as { status?: string }).status;
-  const fulfillmentStatus = (order as { fulfillment_status?: string })
-    .fulfillment_status;
+function isInvoiceEligible(order: OrderWithStatus): boolean {
+  const { status, fulfillment_status: fulfillmentStatus } = order;
 
   // Exclude canceled orders
   if (status === "canceled") return false;
@@ -30,21 +33,15 @@ function isInvoiceEligible(order: HttpTypes.StoreOrder): boolean {
   if (status === "completed") return true;
 
   // Show for fulfilled/shipped/delivered orders
-  const eligibleFulfillmentStatuses = [
+  const eligibleFulfillmentStatuses = new Set([
     "fulfilled",
     "shipped",
     "partially_shipped",
     "delivered",
     "partially_delivered",
-  ];
-  if (
-    fulfillmentStatus &&
-    eligibleFulfillmentStatuses.includes(fulfillmentStatus)
-  ) {
-    return true;
-  }
+  ]);
 
-  return false;
+  return !!fulfillmentStatus && eligibleFulfillmentStatuses.has(fulfillmentStatus);
 }
 
 export function OrderCard({ order }: { order: HttpTypes.StoreOrder }) {
