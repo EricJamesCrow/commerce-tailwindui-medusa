@@ -1,6 +1,6 @@
 # TODO
 
-> For feature status and project overview, see [docs/README.md](docs/README.md).
+> For feature status and project overview, see [README.md](README.md).
 > For in-progress feature details, see [docs/features/](docs/features/).
 
 ## Code Review Follow-ups

@@ -28,11 +28,11 @@ docs/                 # Project status, feature tracking, architecture, archive
 2. Fetch latest: `git fetch origin`
 3. Review recent commits: `git log --oneline -10`
 4. Read **AGENTS.md** for architecture context
-5. Read **docs/README.md** for project status
+5. Read **README.md** for project status
 
 ## Task Tracking
 
-- Project status and feature overview: **[docs/README.md](docs/README.md)**
+- Project status and feature overview: **[README.md](README.md)**
 - In-progress feature details: **[docs/features/](docs/features/)**
 - Code-level tasks, testing, infra, known limitations: **[TODO.md](TODO.md)**
 - Use `- [ ]` for pending, `- [x]` for completed
@@ -205,7 +205,8 @@ gt submit --stack                              # Push all stacked PRs
 | File                                   | Purpose                                                   |
 | -------------------------------------- | --------------------------------------------------------- |
 | [AGENTS.md](./AGENTS.md)               | Architecture, data layer, caching, components, pitfalls   |
-| [docs/README.md](docs/README.md)       | Project status dashboard and feature overview              |
+| [README.md](README.md)                 | Project status dashboard and feature overview              |
+| [SETUP.md](SETUP.md)                   | Setup guide for local dev and production deployment        |
 | [TODO.md](./TODO.md)                   | Code review follow-ups, testing, infra, known limitations |
 | [CHANGELOG.md](./CHANGELOG.md)         | Release history                                            |
 | [RETHEME.md](./RETHEME.md)             | Theming guide for Tailwind UI commerce template            |
