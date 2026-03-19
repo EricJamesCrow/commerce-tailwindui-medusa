@@ -37,17 +37,17 @@ export const defaultEmailConfig: EmailBrandConfig = {
   companyName: "CrowCommerce",
   logoUrl: "",
   logoAlt: "CrowCommerce",
-  supportEmail: "support@crowcommerce.com",
-  websiteUrl: "https://crowcommerce.com",
-  appUrl: "https://crowcommerce.com/account",
+  supportEmail: "support@crowcommerce.org",
+  websiteUrl: "https://crowcommerce.org",
+  appUrl: "https://crowcommerce.org/account",
   address: "",
   copyrightYear: new Date().getFullYear(),
   socialLinks: {
     twitter: "https://x.com/crowcommerce",
   },
   legalLinks: {
-    terms: "https://crowcommerce.com/terms",
-    privacy: "https://crowcommerce.com/privacy",
+    terms: "https://crowcommerce.org/terms",
+    privacy: "https://crowcommerce.org/privacy",
   },
 };
 
