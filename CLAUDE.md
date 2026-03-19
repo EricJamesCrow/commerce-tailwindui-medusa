@@ -20,7 +20,7 @@ Turborepo monorepo with bun workspaces. Single `bun install` at root, `turbo` fo
 storefront/           # @repo/storefront — Next.js 16 frontend
 backend/              # @repo/backend — Medusa v2 backend
 tooling/typescript/   # @repo/typescript — shared tsconfig
-docs/plans/           # Design docs and implementation plans
+docs/                 # Project status, feature tracking, architecture, archive
 ```
 ## Session Startup
 
@@ -28,14 +28,25 @@ docs/plans/           # Design docs and implementation plans
 2. Fetch latest: `git fetch origin`
 3. Review recent commits: `git log --oneline -10`
 4. Read **AGENTS.md** for architecture context
-5. Read **TODO.md** for pending work
+5. Read **docs/README.md** for project status
 
 ## Task Tracking
 
-- Track deferred work and known issues in **TODO.md**
+- Project status and feature overview: **[docs/README.md](docs/README.md)**
+- In-progress feature details: **[docs/features/](docs/features/)**
+- Code-level tasks, testing, infra, known limitations: **[TODO.md](TODO.md)**
 - Use `- [ ]` for pending, `- [x]` for completed
 - Add new items discovered during implementation
-- Never delete completed items — they serve as history
+
+## Superpowers Archival
+
+After an Obra Superpowers session's work is **merged into `main`**, archive the session's spec and plan files:
+
+1. Move specs: `git mv docs/superpowers/specs/<filename> docs/archive/superpowers/specs/`
+2. Move plans: `git mv docs/superpowers/plans/<filename> docs/archive/superpowers/plans/`
+3. Commit: `git commit -m "docs: archive superpowers spec/plan for <feature>"`
+
+The Obra plugin recreates `docs/superpowers/specs/` and `docs/superpowers/plans/` on each new session. Only archive files for work that has been merged — in-progress superpowers outputs stay in `docs/superpowers/` until their PRs land.
 
 ## Quick Reference
 
@@ -191,11 +202,13 @@ gt submit --stack                              # Push all stacked PRs
 
 ## See Also
 
-| File                       | Purpose                                                 |
-| -------------------------- | ------------------------------------------------------- |
-| [AGENTS.md](./AGENTS.md)   | Architecture, data layer, caching, components, pitfalls |
-| [TODO.md](./TODO.md)       | Deferred features, testing tasks, known limitations     |
-| [RETHEME.md](./RETHEME.md) | Theming guide for Tailwind UI commerce template         |
+| File                                   | Purpose                                                   |
+| -------------------------------------- | --------------------------------------------------------- |
+| [AGENTS.md](./AGENTS.md)               | Architecture, data layer, caching, components, pitfalls   |
+| [docs/README.md](docs/README.md)       | Project status dashboard and feature overview              |
+| [TODO.md](./TODO.md)                   | Code review follow-ups, testing, infra, known limitations |
+| [CHANGELOG.md](./CHANGELOG.md)         | Release history                                            |
+| [RETHEME.md](./RETHEME.md)             | Theming guide for Tailwind UI commerce template            |
 
 ## TailwindPlus Component Catalog
 
