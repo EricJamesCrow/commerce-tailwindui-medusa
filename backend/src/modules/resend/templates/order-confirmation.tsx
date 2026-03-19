@@ -29,6 +29,8 @@ export interface OrderConfirmationProps extends BaseTemplateProps {
   shippingAddress: Address;
   billingAddress?: Address;
   orderStatusUrl?: string;
+  invoiceMode?: "link" | "attachment";
+  invoiceDownloadUrl?: string;
 }
 
 export function isValidOrderConfirmationData(data: unknown): data is OrderConfirmationProps {
@@ -63,6 +65,8 @@ export const OrderConfirmation = ({
   orderStatusUrl,
   discount,
   brandConfig,
+  invoiceMode,
+  invoiceDownloadUrl,
 }: OrderConfirmationProps) => {
   const config = getEmailConfig(brandConfig);
   const greeting = customerName ? `Hi ${customerName},` : "Hi there,";
@@ -146,6 +150,22 @@ export const OrderConfirmation = ({
                 </Row>
               )}
 
+              {invoiceMode === "link" && invoiceDownloadUrl && (
+                <Row className="mb-6">
+                  <Button color="secondary" href={invoiceDownloadUrl}>
+                    <Text className="text-md font-semibold">Download Invoice</Text>
+                  </Button>
+                </Row>
+              )}
+
+              {invoiceMode === "attachment" && (
+                <Row className="mb-6">
+                  <Text className="text-tertiary">
+                    Your invoice is attached to this email.
+                  </Text>
+                </Row>
+              )}
+
               <Row>
                 <Text className="text-md text-tertiary">
                   If you have any questions, contact us at{" "}
@@ -201,6 +221,8 @@ OrderConfirmation.PreviewProps = {
     country: "US",
   },
   orderStatusUrl: "http://localhost:3000/account/orders/order_01ABC",
+  invoiceMode: "link",
+  invoiceDownloadUrl: "http://localhost:3000/api/orders/order_01ABC/invoice",
 } satisfies OrderConfirmationProps;
 
 export default OrderConfirmation;

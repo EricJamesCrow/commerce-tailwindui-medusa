@@ -11,9 +11,10 @@ Last updated: 2026-03-18
 | Stripe checkout | ✅ Shipped | 5-step flow, saved cards, guest checkout | — |
 | Product quick view | ✅ Shipped | Hover overlay modal on grid | — |
 | Production deployment | ✅ Shipped | Vercel + Railway | — |
-| [Email infrastructure](features/email-infrastructure.md) | 🟡 Partial | Stacks 1-4 (8 templates) | Stacks 5-7 (invoices, premium, quotes) |
+| [Email infrastructure](features/email-infrastructure.md) | 🟡 Partial | Stacks 1-5 (8 templates + invoices) | Stacks 6-7 (premium, quotes) |
 | [Product reviews](features/product-reviews.md) | 🟡 Partial | Phases 1-2 (core + images) | Phase 3 (verified purchase, search) |
 | [Wishlist](features/wishlist.md) | ✅ Shipped | Full feature + E2E tests | Code review follow-ups only |
+| Invoice generation | ✅ Shipped | On-demand PDF, admin config, email toggle, customer + admin download | Code review follow-ups only |
 
 ## Infrastructure & Tooling
 

@@ -1,0 +1,159 @@
+<h2>Invoice PDF Layout</h2>
+<p class="subtitle">Which layout structure feels right for CrowCommerce invoices?</p>
+
+<div class="cards">
+  <!-- Option A: Classic Two-Column Header -->
+  <div class="card" data-choice="classic" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#1a1a2e;border-radius:8px;padding:24px;font-family:system-ui;color:#e0e0e0;font-size:12px;min-height:420px;">
+        <!-- Header -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #4f46e5;">
+          <div>
+            <div style="font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.5px;">CROWCOMMERCE</div>
+            <div style="color:#9ca3af;font-size:10px;margin-top:4px;">123 Commerce St, Portland OR 97201</div>
+            <div style="color:#9ca3af;font-size:10px;">support@crowcommerce.com</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:22px;font-weight:700;color:#4f46e5;letter-spacing:1px;">INVOICE</div>
+            <div style="color:#9ca3af;font-size:10px;margin-top:4px;">INV-2026-0001</div>
+            <div style="color:#9ca3af;font-size:10px;">March 18, 2026</div>
+          </div>
+        </div>
+        <!-- Bill To -->
+        <div style="margin-bottom:20px;">
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:6px;">Bill To</div>
+          <div style="color:#fff;font-size:11px;">John Doe</div>
+          <div style="color:#9ca3af;font-size:10px;">456 Customer Ave, Seattle WA 98101</div>
+          <div style="color:#9ca3af;font-size:10px;">john@example.com</div>
+        </div>
+        <!-- Items Table -->
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;padding:8px 0;border-bottom:1px solid #374151;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#6b7280;">
+            <div style="flex:3;">Item</div>
+            <div style="flex:1;text-align:center;">Qty</div>
+            <div style="flex:1;text-align:right;">Price</div>
+            <div style="flex:1;text-align:right;">Total</div>
+          </div>
+          <div style="display:flex;padding:10px 0;border-bottom:1px solid #1f2937;font-size:11px;">
+            <div style="flex:3;color:#e0e0e0;">Premium Kratom Capsules<br><span style="color:#6b7280;font-size:9px;">SKU: KRT-CAP-001 · 60ct</span></div>
+            <div style="flex:1;text-align:center;color:#9ca3af;">2</div>
+            <div style="flex:1;text-align:right;color:#9ca3af;">$34.99</div>
+            <div style="flex:1;text-align:right;color:#fff;">$69.98</div>
+          </div>
+          <div style="display:flex;padding:10px 0;border-bottom:1px solid #1f2937;font-size:11px;">
+            <div style="flex:3;color:#e0e0e0;">Organic Hemp Extract Oil<br><span style="color:#6b7280;font-size:9px;">SKU: HMP-OIL-030 · 30ml</span></div>
+            <div style="flex:1;text-align:center;color:#9ca3af;">1</div>
+            <div style="flex:1;text-align:right;color:#9ca3af;">$49.99</div>
+            <div style="flex:1;text-align:right;color:#fff;">$49.99</div>
+          </div>
+        </div>
+        <!-- Totals -->
+        <div style="display:flex;justify-content:flex-end;">
+          <div style="width:200px;">
+            <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:11px;color:#9ca3af;">
+              <span>Subtotal</span><span>$119.97</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:11px;color:#9ca3af;">
+              <span>Shipping</span><span>$8.99</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:11px;color:#9ca3af;">
+              <span>Tax</span><span>$10.32</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;margin-top:4px;border-top:2px solid #4f46e5;font-size:13px;font-weight:700;color:#fff;">
+              <span>Total</span><span>$139.28</span>
+            </div>
+          </div>
+        </div>
+        <!-- Footer -->
+        <div style="margin-top:20px;padding-top:12px;border-top:1px solid #1f2937;text-align:center;color:#6b7280;font-size:9px;">
+          Thank you for your business · Terms: Due on receipt
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A · Classic Two-Column</h3>
+      <p>Company info left, invoice details right. Traditional business invoice layout. Clean table with subtle row dividers. Indigo accent on header rule and total divider.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Modern Minimal -->
+  <div class="card" data-choice="modern" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#fafafa;border-radius:8px;padding:24px;font-family:system-ui;color:#1a1a1a;font-size:12px;min-height:420px;">
+        <!-- Header -->
+        <div style="margin-bottom:28px;">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#4f46e5;font-weight:600;margin-bottom:4px;">Invoice</div>
+          <div style="font-size:28px;font-weight:300;color:#111;letter-spacing:-1px;">INV-2026-0001</div>
+          <div style="font-size:10px;color:#9ca3af;margin-top:2px;">Issued March 18, 2026 · Order #1042</div>
+        </div>
+        <!-- Two Column Info -->
+        <div style="display:flex;gap:40px;margin-bottom:24px;">
+          <div style="flex:1;">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin-bottom:6px;">From</div>
+            <div style="font-size:11px;font-weight:600;color:#111;">CrowCommerce</div>
+            <div style="color:#6b7280;font-size:10px;">123 Commerce St</div>
+            <div style="color:#6b7280;font-size:10px;">Portland, OR 97201</div>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin-bottom:6px;">Bill To</div>
+            <div style="font-size:11px;font-weight:600;color:#111;">John Doe</div>
+            <div style="color:#6b7280;font-size:10px;">456 Customer Ave</div>
+            <div style="color:#6b7280;font-size:10px;">Seattle, WA 98101</div>
+          </div>
+        </div>
+        <!-- Items -->
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;padding:10px 12px;background:#f3f4f6;border-radius:6px;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin-bottom:2px;">
+            <div style="flex:3;">Description</div>
+            <div style="flex:1;text-align:center;">Qty</div>
+            <div style="flex:1;text-align:right;">Unit Price</div>
+            <div style="flex:1;text-align:right;">Amount</div>
+          </div>
+          <div style="display:flex;padding:12px;font-size:11px;border-bottom:1px solid #f3f4f6;">
+            <div style="flex:3;"><span style="font-weight:500;">Premium Kratom Capsules</span><br><span style="color:#9ca3af;font-size:9px;">60ct · KRT-CAP-001</span></div>
+            <div style="flex:1;text-align:center;color:#6b7280;">2</div>
+            <div style="flex:1;text-align:right;color:#6b7280;">$34.99</div>
+            <div style="flex:1;text-align:right;font-weight:500;">$69.98</div>
+          </div>
+          <div style="display:flex;padding:12px;font-size:11px;">
+            <div style="flex:3;"><span style="font-weight:500;">Organic Hemp Extract Oil</span><br><span style="color:#9ca3af;font-size:9px;">30ml · HMP-OIL-030</span></div>
+            <div style="flex:1;text-align:center;color:#6b7280;">1</div>
+            <div style="flex:1;text-align:right;color:#6b7280;">$49.99</div>
+            <div style="flex:1;text-align:right;font-weight:500;">$49.99</div>
+          </div>
+        </div>
+        <!-- Totals -->
+        <div style="display:flex;justify-content:flex-end;">
+          <div style="width:200px;background:#f9fafb;border-radius:8px;padding:12px;">
+            <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px;color:#6b7280;">
+              <span>Subtotal</span><span>$119.97</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px;color:#6b7280;">
+              <span>Shipping</span><span>$8.99</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px;color:#6b7280;">
+              <span>Tax</span><span>$10.32</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0;margin-top:4px;border-top:1.5px solid #e5e7eb;font-size:14px;font-weight:600;color:#111;">
+              <span>Total</span><span>$139.28</span>
+            </div>
+          </div>
+        </div>
+        <!-- Footer -->
+        <div style="margin-top:24px;padding-top:12px;border-top:1px solid #f3f4f6;color:#9ca3af;font-size:9px;">
+          <div>Thank you for your purchase.</div>
+          <div style="margin-top:2px;">Questions? Contact support@crowcommerce.com</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B · Modern Minimal</h3>
+      <p>Large invoice number as hero element. Light background, rounded table header, totals in a soft card. Spacious and contemporary. From/Bill To side by side.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px;">
+  <h3>Notes</h3>
+  <p>Both layouts include the same data: company info, bill-to address, line items with SKU/variant, subtotal/shipping/tax/total breakdown, and a footer with notes. The difference is visual tone — <strong>A</strong> is dark and corporate, <strong>B</strong> is light and modern. Your email templates currently use a dark theme by default with indigo accents, so <strong>A</strong> is more visually consistent with your brand, but PDFs are typically printed — <strong>B</strong> may be more practical for that reason.</p>
+</div>

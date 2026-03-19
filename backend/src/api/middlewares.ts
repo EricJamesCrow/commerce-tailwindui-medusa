@@ -20,6 +20,7 @@ import {
   PostGuestCreateWishlistItemSchema,
   PostImportWishlistSchema,
 } from "./store/wishlists/validators"
+import { PostAdminInvoiceConfigSchema } from "./admin/invoice-config/route"
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -197,6 +198,27 @@ export default defineMiddlewares({
       middlewares: [
         authenticate("customer", ["session", "bearer"]),
         validateAndTransformBody(PostImportWishlistSchema),
+      ],
+    },
+    // --- Store invoice routes ---
+    {
+      method: ["GET"],
+      matcher: "/store/orders/:id/invoice",
+      middlewares: [
+        authenticate("customer", ["session", "bearer"]),
+      ],
+    },
+    // --- Admin invoice routes ---
+    {
+      method: ["GET"],
+      matcher: "/admin/orders/:id/invoice",
+      middlewares: [], // Admin auth is automatic
+    },
+    {
+      method: ["POST"],
+      matcher: "/admin/invoice-config",
+      middlewares: [
+        validateAndTransformBody(PostAdminInvoiceConfigSchema),
       ],
     },
   ],

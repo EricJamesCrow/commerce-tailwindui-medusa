@@ -473,7 +473,11 @@ export async function getOrders(): Promise<HttpTypes.StoreOrder[]> {
     }>("/store/orders", {
       method: "GET",
       headers,
-      query: { limit: 50, order: "-created_at" },
+      query: {
+        limit: 50,
+        order: "-created_at",
+        fields: "+status,+fulfillment_status",
+      },
     });
     return orders;
   } catch (error) {

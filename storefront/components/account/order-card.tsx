@@ -3,6 +3,7 @@ import { DEFAULT_LOCALE } from "lib/constants";
 import { formatMoney } from "lib/medusa/format";
 import Image from "next/image";
 import Link from "next/link";
+import { DownloadInvoiceButton } from "./download-invoice-button";
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString(DEFAULT_LOCALE, {
@@ -12,8 +13,40 @@ function formatDate(dateString: string): string {
   });
 }
 
+type OrderWithStatus = HttpTypes.StoreOrder & {
+  status?: string;
+  fulfillment_status?: string;
+};
+
+/**
+ * Returns true if the order is eligible for invoice download.
+ * Invoices are available for orders that have been fulfilled or completed,
+ * but not for pending, canceled, or refunded orders.
+ */
+function isInvoiceEligible(order: OrderWithStatus): boolean {
+  const { status, fulfillment_status: fulfillmentStatus } = order;
+
+  // Exclude canceled orders
+  if (status === "canceled") return false;
+
+  // Show for completed orders
+  if (status === "completed") return true;
+
+  // Show for fulfilled/shipped/delivered orders
+  const eligibleFulfillmentStatuses = new Set([
+    "fulfilled",
+    "shipped",
+    "partially_shipped",
+    "delivered",
+    "partially_delivered",
+  ]);
+
+  return !!fulfillmentStatus && eligibleFulfillmentStatuses.has(fulfillmentStatus);
+}
+
 export function OrderCard({ order }: { order: HttpTypes.StoreOrder }) {
   const currencyCode = order.currency_code || "usd";
+  const showInvoice = isInvoiceEligible(order);
 
   return (
     <div className="border-t border-b border-gray-200 bg-white shadow-sm sm:rounded-lg sm:border">
@@ -38,6 +71,11 @@ export function OrderCard({ order }: { order: HttpTypes.StoreOrder }) {
             </dd>
           </div>
         </dl>
+        {showInvoice && (
+          <div className="hidden lg:col-span-2 lg:flex lg:items-center lg:justify-end lg:space-x-4">
+            <DownloadInvoiceButton orderId={order.id} />
+          </div>
+        )}
       </div>
 
       <h4 className="sr-only">Items</h4>
@@ -86,6 +124,12 @@ export function OrderCard({ order }: { order: HttpTypes.StoreOrder }) {
           </li>
         ))}
       </ul>
+
+      {showInvoice && (
+        <div className="border-t border-gray-200 p-4 sm:p-6 lg:hidden">
+          <DownloadInvoiceButton orderId={order.id} />
+        </div>
+      )}
     </div>
   );
 }

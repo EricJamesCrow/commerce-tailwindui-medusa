@@ -6,7 +6,7 @@ updated: 2026-03-18
 
 # Email Infrastructure
 
-> **Stacks 1-4 shipped (8 templates live). Stacks 5-7 deferred until production email deliverability is validated.**
+> **Stacks 1-5 shipped (8 templates + invoice PDF). Stacks 6-7 deferred until production email deliverability is validated.**
 
 ## What it does
 
@@ -43,12 +43,14 @@ Complete email notification system for the CrowCommerce storefront — transacti
 - [x] Abandoned cart email template
 - [x] Storefront recovery route handler
 
-### Stack 5: Invoice Generator ⏳
-- [ ] Invoice data model (custom Medusa v2 module)
-- [ ] PDF generation with react-pdf
-- [ ] Invoice download API route
-- [ ] Invoice email integration (attachment or separate email)
-- **Deferred:** Resume after validating core email deliverability in production.
+### Stack 5: Invoice Generator ✅
+- [x] Invoice data model (custom Medusa v2 module with Invoice + InvoiceConfig)
+- [x] PDF generation with @react-pdf/renderer (Modern Minimal layout)
+- [x] Invoice download API routes (store + admin)
+- [x] Invoice email integration (download link default, admin toggle for PDF attachment)
+- [x] Admin settings page for invoice configuration
+- [x] Order detail widget in admin dashboard
+- [x] Storefront download button on order history
 
 ### Stack 6: Premium Notifications ⏳
 - [ ] Return flow emails (return requested, return approved/declined)

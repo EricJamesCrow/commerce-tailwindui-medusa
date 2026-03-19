@@ -59,6 +59,9 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/wishlist",
     },
+    {
+      resolve: "./src/modules/invoice",
+    },
     // Resend email notification provider (conditional on RESEND_API_KEY)
     ...(process.env.RESEND_API_KEY
       ? [
