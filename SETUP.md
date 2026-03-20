@@ -76,6 +76,7 @@ Edit `storefront/.env.local` — at minimum, set `NEXT_PUBLIC_MEDUSA_PUBLISHABLE
 | `SITE_NAME` | No | — | Browser tab title, OG images |
 | `COMPANY_NAME` | No | — | Footer copyright |
 | `REVALIDATE_SECRET` | No | — | On-demand cache revalidation token |
+| `S3_IMAGE_HOSTNAME` | No | — | R2 public hostname for `next/image` (e.g. `pub-abc123.r2.dev`) |
 | `CART_RECOVERY_SECRET` | If cart recovery | — | Same secret as backend (HMAC verification) |
 
 ## Local Development
