@@ -231,6 +231,8 @@ export default function GlobalError({
 }
 ```
 
+> **TODO:** Replace the minimal fallback UI with a styled version matching the TailwindUI design language after the integration is verified working. This is the error page template buyers will see (and likely forget to customize).
+
 > **Scope caveat:** `global-error.tsx` only catches errors in layouts and pages, not in server actions or route handlers. Server action errors are captured by `onRequestError` in `instrumentation.ts` and by Sentry's server-side instrumentation — no gap in coverage.
 
 ### Files Modified
@@ -264,7 +266,7 @@ export default withSentryConfig({
 
 **Runtime (both local and production):**
 ```
-NEXT_PUBLIC_SENTRY_DSN=  # Storefront Sentry project DSN (public, embedded in client bundle)
+NEXT_PUBLIC_SENTRY_DSN=  # Storefront Sentry project DSN — safe to expose client-side (DSNs are public by design, rate limiting is server-side)
 ```
 
 **Build-time only (`storefront/.env.sentry-build-plugin`, gitignored):**
