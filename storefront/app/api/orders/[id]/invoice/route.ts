@@ -1,4 +1,5 @@
 import { getAuthHeaders } from "lib/medusa/cookies";
+import { trackServer } from "lib/analytics-server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
@@ -48,6 +49,8 @@ export async function GET(
     const contentDisposition =
       res.headers.get("content-disposition") ||
       `attachment; filename="invoice.pdf"`;
+
+    try { await trackServer("invoice_downloaded", { order_id: id }) } catch {}
 
     return new NextResponse(pdfBuffer, {
       status: 200,

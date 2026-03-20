@@ -10,6 +10,7 @@ import {
   DialogPanel,
 } from "@headlessui/react";
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { trackClient } from "lib/analytics";
 import { useRouter } from "next/navigation";
 import {
   Fragment,
@@ -50,8 +51,14 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     <SearchContext.Provider
       value={{
         isOpen,
-        openSearch: () => setIsOpen(true),
-        closeSearch: () => setIsOpen(false),
+        openSearch: () => {
+          setIsOpen(true);
+          trackClient("search_command_opened", {});
+        },
+        closeSearch: () => {
+          setIsOpen(false);
+          trackClient("search_command_closed", {});
+        },
         toggleSearch: () => setIsOpen((prev) => !prev),
       }}
     >

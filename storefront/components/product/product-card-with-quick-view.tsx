@@ -3,6 +3,7 @@
 import ProductGridPrice from "components/price/product-grid-price";
 import { ProductQuickView } from "components/product/product-quick-view";
 import { WishlistButton } from "components/wishlist/wishlist-button";
+import { trackClient } from "lib/analytics";
 import type { Product } from "lib/types";
 import Image from "next/image";
 import Link from "next/link";
@@ -47,7 +48,10 @@ export function ProductCardWithQuickView({
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <button
             type="button"
-            onClick={() => setQuickViewOpen(true)}
+            onClick={() => {
+              setQuickViewOpen(true);
+              trackClient("product_quick_view_opened", { product_id: product.id });
+            }}
             className="pointer-events-auto cursor-pointer rounded-md bg-white/90 px-4 py-2 text-sm font-medium text-gray-900 opacity-100 shadow-sm backdrop-blur-sm transition-opacity duration-200 hover:bg-white sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
           >
             Quick View
@@ -59,6 +63,7 @@ export function ProductCardWithQuickView({
           <div className="absolute right-2 top-2 z-10">
             <WishlistButton
               variantId={variantId}
+              productId={product.id}
               isInWishlist={wishlistState?.isInWishlist}
               wishlistId={wishlistState?.wishlistId}
               wishlistItemId={wishlistState?.wishlistItemId}

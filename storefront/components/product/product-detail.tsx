@@ -19,6 +19,7 @@ import { useProduct, useUpdateURL } from "components/product/product-context";
 import { WishlistButton } from "components/wishlist/wishlist-button";
 import { WishlistCount } from "components/wishlist/wishlist-count";
 import clsx from "clsx";
+import { trackClient } from "lib/analytics";
 import { sanitizeHtml } from "lib/sanitize";
 import type { Product, ProductOption, ProductVariant } from "lib/types";
 import type { TailwindProductDetail } from "lib/utils";
@@ -150,7 +151,15 @@ export function ProductDetail({
         {/* Product */}
         <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
           {/* Image gallery */}
-          <TabGroup className="flex flex-col-reverse">
+          <TabGroup
+            className="flex flex-col-reverse"
+            onChange={(index) =>
+              trackClient("product_image_viewed", {
+                product_id: sourceProduct.id,
+                image_index: index,
+              })
+            }
+          >
             {/* Image selector */}
             <div className="mx-auto mt-6 hidden w-full max-w-2xl sm:block lg:max-w-none">
               <TabList className="grid grid-cols-4 gap-6">
@@ -273,6 +282,11 @@ export function ProductDetail({
                             checked={Boolean(isActive)}
                             onChange={() => {
                               pushParam("color", value);
+                              trackClient("product_variant_selected", {
+                                product_id: sourceProduct.id,
+                                option_name: "color",
+                                option_value: value,
+                              });
                             }}
                             name="color"
                             type="radio"
@@ -328,6 +342,11 @@ export function ProductDetail({
                             disabled={!isOptionAvailable}
                             onChange={() => {
                               pushParam("size", value);
+                              trackClient("product_variant_selected", {
+                                product_id: sourceProduct.id,
+                                option_name: "size",
+                                option_value: value,
+                              });
                             }}
                             className="absolute inset-0 appearance-none focus:outline-none disabled:cursor-not-allowed"
                           />
@@ -350,6 +369,7 @@ export function ProductDetail({
               />
               <WishlistButton
                 variantId={selectedVariantId}
+                productId={sourceProduct.id}
                 size="md"
                 className="ml-4"
               />
@@ -364,7 +384,15 @@ export function ProductDetail({
                 {product.details.map((detail) => (
                   <Disclosure key={detail.name} as="div">
                     <h3>
-                      <DisclosureButton className="group relative flex w-full items-center justify-between py-6 text-left">
+                      <DisclosureButton
+                        className="group relative flex w-full items-center justify-between py-6 text-left"
+                        onClick={() =>
+                          trackClient("product_details_expanded", {
+                            product_id: sourceProduct.id,
+                            section_name: detail.name,
+                          })
+                        }
+                      >
                         <span className="group-data-open:text-primary-600 text-sm font-medium text-gray-900">
                           {detail.name}
                         </span>

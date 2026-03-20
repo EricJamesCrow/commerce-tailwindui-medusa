@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCheckoutCart } from "lib/medusa/checkout";
 import { retrieveCustomer } from "lib/medusa/customer";
+import { trackServer } from "lib/analytics-server";
 import { CheckoutForm } from "components/checkout/checkout-form";
 import { OrderSummary } from "components/checkout/order-summary";
 
@@ -14,6 +15,14 @@ export default async function CheckoutPage() {
   if (!cart || !cart.items?.length) {
     redirect("/");
   }
+
+  try {
+    await trackServer("checkout_started", {
+      cart_id: cart.id,
+      item_count: cart.items?.length ?? 0,
+      cart_total: cart.total ?? 0,
+    })
+  } catch {}
 
   const customer = await retrieveCustomer();
 

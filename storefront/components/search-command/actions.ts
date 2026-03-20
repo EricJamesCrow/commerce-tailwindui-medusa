@@ -2,6 +2,7 @@
 
 import { getProducts } from "lib/medusa";
 import { Product } from "lib/types";
+import { trackServer } from "lib/analytics-server";
 
 export async function searchProducts(
   query: string,
@@ -13,6 +14,7 @@ export async function searchProducts(
       reverse: false,
       limit: 8,
     });
+    try { await trackServer("search_performed", { query, result_count: products.length }) } catch {}
     return {
       results: products,
       totalCount: products.length,

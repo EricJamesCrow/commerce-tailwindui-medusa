@@ -14,6 +14,7 @@ import clsx from "clsx";
 
 type WishlistButtonProps = {
   variantId: string;
+  productId?: string;
   isInWishlist?: boolean;
   wishlistId?: string;
   wishlistItemId?: string;
@@ -23,6 +24,7 @@ type WishlistButtonProps = {
 
 export function WishlistButton({
   variantId,
+  productId,
   isInWishlist: initialIsInWishlist,
   wishlistId: initialWishlistId,
   wishlistItemId: initialWishlistItemId,
@@ -60,6 +62,8 @@ export function WishlistButton({
         const formData = new FormData();
         formData.set("wishlist_id", wishlistId);
         formData.set("item_id", wishlistItemId);
+        if (productId) formData.set("product_id", productId);
+        formData.set("variant_id", variantId);
         const result = await removeFromWishlist(null, formData);
         if (result?.error) {
           showNotification("error", "Could not remove from wishlist", result.error);
@@ -72,6 +76,7 @@ export function WishlistButton({
       } else {
         const formData = new FormData();
         formData.set("variant_id", variantId);
+        if (productId) formData.set("product_id", productId);
         if (wishlistId) formData.set("wishlist_id", wishlistId);
         const result = await addToWishlist(null, formData);
         if (result?.error) {

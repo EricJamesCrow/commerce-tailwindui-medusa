@@ -8,6 +8,7 @@ import {
   removeFromCart,
   updateCart,
 } from "lib/medusa";
+import { trackServer } from "lib/analytics-server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -28,6 +29,7 @@ export async function addItem(
 
   try {
     await addToCart([{ merchandiseId: selectedVariantId, quantity: 1 }]);
+    try { await trackServer("product_added_to_cart", { product_id: "", variant_id: selectedVariantId, quantity: 1, price: 0 }) } catch {}
     return null;
   } catch (e) {
     return e instanceof Error ? e.message : "Error adding item to cart";
@@ -46,6 +48,7 @@ export async function removeItem(
 
   try {
     await removeFromCart([lineItemId]);
+    try { await trackServer("cart_item_removed", { product_id: "", variant_id: "" }) } catch {}
     return null;
   } catch (e) {
     return e instanceof Error ? e.message : "Error removing item from cart";
@@ -90,6 +93,8 @@ export async function updateItemQuantity(
     } else if (quantity > 0) {
       await addToCart([{ merchandiseId, quantity }]);
     }
+
+    try { await trackServer("cart_item_updated", { product_id: "", variant_id: merchandiseId, new_quantity: quantity }) } catch {}
 
     return null;
   } catch (e) {

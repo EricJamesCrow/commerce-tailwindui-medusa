@@ -31,6 +31,11 @@
 - [ ] Strip `payment_sessions` from checkout cart serialization — only pass `client_secret` to client via dedicated server action (Finding #1: broad payment-session exposure)
 - [ ] Add Zod schema validation to checkout server actions for `email`, address payloads, `providerId`, and `data` params (Finding #2: no input validation at action boundaries)
 
+### From PR #29 (PostHog Integration)
+
+- [ ] Redact PII from `search_performed` event query field — normalize, truncate to 80 chars, and redact strings matching email/phone patterns before sending to PostHog
+- [ ] Enrich `product_added_to_cart` event with `product_id` and `price` — currently empty/zero because `addItem()` only receives `selectedVariantId`. Either pass product context from the calling component or accept a second fetch.
+
 ## Testing
 
 - [ ] Testing discounts (apply promo codes, verify discount display in checkout + order confirmation)
@@ -54,6 +59,10 @@
 - [ ] Configure Medusa webhooks for cache revalidation
 - [ ] Update `DEFAULT_NAVIGATION` with real store categories
 - [ ] Upgrade Turborepo: `bunx @turbo/codemod@latest update`
+
+## Deferred Features
+
+- [ ] Express checkout (Apple Pay / Google Pay) — composite flow that chains email → address → shipping → payment → order completion in one step. Requires Stripe `PaymentRequestButton` or `ExpressCheckoutElement`. `express-checkout.tsx` component exists but needs implementation. Track with: `express_checkout_started`, `express_checkout_completed`, `express_checkout_failed` events.
 
 ## Known Limitations
 

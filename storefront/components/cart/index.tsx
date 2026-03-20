@@ -9,6 +9,7 @@ import {
 import { ShoppingBagIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { redirectToCheckout } from "components/cart/actions";
 import { useCart } from "components/cart/cart-context";
+import { trackClient } from "lib/analytics";
 import { EditItemQuantityButton } from "components/cart/edit-item-quantity-button";
 import CartPrice from "components/price/cart-price";
 import { DEFAULT_OPTION } from "lib/constants";
@@ -29,7 +30,10 @@ export function Cart() {
   const { cart, updateCartItem } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const quantityRef = useRef(cart?.totalQuantity);
-  const openCart = () => setIsOpen(true);
+  const openCart = () => {
+    setIsOpen(true);
+    trackClient("cart_drawer_opened", {});
+  };
   const closeCart = () => setIsOpen(false);
 
   useEffect(() => {
@@ -47,7 +51,7 @@ export function Cart() {
       cart.totalQuantity !== quantityRef.current &&
       cart.totalQuantity > 0
     ) {
-      setIsOpen(true);
+      openCart();
       quantityRef.current = cart.totalQuantity;
     }
   }, [isOpen, cart?.totalQuantity]);

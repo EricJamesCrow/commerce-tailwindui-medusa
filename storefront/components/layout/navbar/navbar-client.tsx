@@ -18,6 +18,7 @@ import {
 import { AccountDropdown } from "components/account/account-dropdown";
 import { Cart } from "components/cart";
 import { SearchButton } from "components/search-command";
+import { trackClient } from "lib/analytics";
 import { signout } from "lib/medusa/customer";
 import { Navigation } from "lib/types";
 import Image from "next/image";
@@ -332,7 +333,10 @@ export function NavbarClient({
                 <button
                   ref={hamburgerButtonRef}
                   type="button"
-                  onClick={() => setOpen(true)}
+                  onClick={() => {
+                    setOpen(true);
+                    trackClient("mobile_menu_opened", {});
+                  }}
                   className="focus-visible:outline-primary-600 relative z-10 -ml-2 min-h-[44px] min-w-[44px] cursor-pointer touch-manipulation rounded-md bg-white p-2 text-gray-400 hover:text-gray-500 focus-visible:outline-2 focus-visible:outline-offset-2 active:bg-gray-100"
                   aria-expanded={open}
                   aria-controls="mobile-menu"

@@ -5,6 +5,7 @@ import type { Stripe, StripeElements } from "@stripe/stripe-js";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { trackClient } from "lib/analytics";
 import { completeCart } from "lib/medusa/checkout";
 import { formatMoney } from "lib/medusa/format";
 import type { CheckoutStep } from "lib/types";
@@ -112,13 +113,20 @@ export function CheckoutReview({
     return status === "requires_capture" || status === "succeeded";
   }
 
-  async function handleOrderComplete(paymentConfirmed = false) {
+  async function handleOrderComplete(
+    paymentConfirmed = false,
+    paymentIntentId?: string,
+  ) {
     const result = await completeCart(cart.id);
     if (result.type === "order") {
       router.push(`/order/confirmed/${result.order.id}`);
     } else if (paymentConfirmed) {
       // Payment succeeded at Stripe but order completion failed in Medusa.
       // The customer has been charged — warn them not to retry.
+      trackClient("checkout_payment_success_order_failed", {
+        had_cart: true,
+        had_payment_intent: Boolean(paymentIntentId),
+      });
       setError(
         "Your payment was processed but we couldn't confirm your order. " +
         "Please contact support with your payment reference. " +
@@ -149,9 +157,13 @@ export function CheckoutReview({
 
         if (confirmError) {
           if (isPaymentCapturable(confirmError.payment_intent?.status)) {
-            await handleOrderComplete(true);
+            await handleOrderComplete(true, confirmError.payment_intent?.id);
             return;
           }
+          trackClient("checkout_payment_failed", {
+            error_code: confirmError.code ?? "unknown",
+            error_message: confirmError.message ?? "",
+          });
           setError(
             confirmError.message || "Payment failed. Please try again.",
           );
@@ -159,7 +171,7 @@ export function CheckoutReview({
         }
 
         if (isPaymentCapturable(paymentIntent?.status)) {
-          await handleOrderComplete(true);
+          await handleOrderComplete(true, paymentIntent?.id);
         } else if (paymentIntent) {
           setError(`Unexpected payment status: ${paymentIntent.status}. Please try again.`);
         }
@@ -195,9 +207,13 @@ export function CheckoutReview({
 
         if (confirmError) {
           if (isPaymentCapturable(confirmError.payment_intent?.status)) {
-            await handleOrderComplete(true);
+            await handleOrderComplete(true, confirmError.payment_intent?.id);
             return;
           }
+          trackClient("checkout_payment_failed", {
+            error_code: confirmError.code ?? "unknown",
+            error_message: confirmError.message ?? "",
+          });
           setError(
             confirmError.message || "Payment failed. Please try again.",
           );
@@ -205,7 +221,7 @@ export function CheckoutReview({
         }
 
         if (isPaymentCapturable(paymentIntent?.status)) {
-          await handleOrderComplete(true);
+          await handleOrderComplete(true, paymentIntent?.id);
         } else if (paymentIntent) {
           setError(`Unexpected payment status: ${paymentIntent.status}. Please try again.`);
         }
@@ -232,7 +248,10 @@ export function CheckoutReview({
           <dd className="truncate text-gray-700">{cart.email}</dd>
           <button
             type="button"
-            onClick={() => onEditStep("email")}
+            onClick={() => {
+              onEditStep("email");
+              trackClient("checkout_step_edited", { step_name: "email" });
+            }}
             className="text-primary-600 hover:text-primary-500"
           >
             Edit
@@ -247,7 +266,10 @@ export function CheckoutReview({
           </dd>
           <button
             type="button"
-            onClick={() => onEditStep("address")}
+            onClick={() => {
+              onEditStep("address");
+              trackClient("checkout_step_edited", { step_name: "address" });
+            }}
             className="text-primary-600 hover:text-primary-500"
           >
             Edit
@@ -264,7 +286,10 @@ export function CheckoutReview({
           </dd>
           <button
             type="button"
-            onClick={() => onEditStep("address")}
+            onClick={() => {
+              onEditStep("address");
+              trackClient("checkout_step_edited", { step_name: "address" });
+            }}
             className="text-primary-600 hover:text-primary-500"
           >
             Edit
@@ -277,7 +302,10 @@ export function CheckoutReview({
           <dd className="text-gray-700">{formatShippingMethod(cart)}</dd>
           <button
             type="button"
-            onClick={() => onEditStep("shipping")}
+            onClick={() => {
+              onEditStep("shipping");
+              trackClient("checkout_step_edited", { step_name: "shipping" });
+            }}
             className="text-primary-600 hover:text-primary-500"
           >
             Edit
@@ -290,7 +318,10 @@ export function CheckoutReview({
           <dd className="text-gray-700">{formatPaymentMethod(cart)}</dd>
           <button
             type="button"
-            onClick={() => onEditStep("payment")}
+            onClick={() => {
+              onEditStep("payment");
+              trackClient("checkout_step_edited", { step_name: "payment" });
+            }}
             className="text-primary-600 hover:text-primary-500"
           >
             Edit

@@ -8,7 +8,7 @@ Sentry.init({
     process.env.NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE || "0.2"
   ),
   profilesSampleRate: 0.1,
-  replaysSessionSampleRate: 0.1,
+  replaysSessionSampleRate: 0,
   replaysOnErrorSampleRate: 1.0,
   integrations: [
     Sentry.replayIntegration({

@@ -3,6 +3,7 @@
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import { FunnelIcon } from "@heroicons/react/20/solid";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { trackClient } from "lib/analytics";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -20,7 +21,10 @@ export default function MobileFilters({
       {/* Mobile filter button */}
       <button
         type="button"
-        onClick={() => setMobileFiltersOpen(true)}
+        onClick={() => {
+          setMobileFiltersOpen(true);
+          trackClient("mobile_filters_opened", {});
+        }}
         className="-m-2 ml-4 p-2 text-gray-400 hover:text-gray-500 sm:ml-6 lg:hidden"
       >
         <span className="sr-only">Filters</span>

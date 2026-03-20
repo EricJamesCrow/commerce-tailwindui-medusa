@@ -6,6 +6,7 @@ import type { ProductReviews, Review } from "lib/types";
 import { cacheLife, cacheTag, revalidatePath, revalidateTag } from "next/cache";
 import { getAuthHeaders } from "lib/medusa/cookies";
 import { retrieveCustomer } from "lib/medusa/customer";
+import { trackServer } from "lib/analytics-server";
 
 export type ReviewActionResult = { error?: string; success?: boolean } | null;
 
@@ -122,6 +123,7 @@ export async function addProductReview(
         ...(images.length > 0 && { images }),
       },
     });
+    try { await trackServer("review_submitted", { product_id: productId, rating, has_images: images.length > 0 }) } catch {}
   } catch (e) {
     return {
       error: e instanceof Error ? e.message : "Error submitting review",

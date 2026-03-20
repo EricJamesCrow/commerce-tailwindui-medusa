@@ -5,6 +5,7 @@ import { STRIPE_PROVIDER_ID, TAGS } from "lib/constants";
 import { sdk } from "lib/medusa";
 import { getAuthHeaders, getCartId, removeCartId } from "lib/medusa/cookies";
 import { medusaError } from "lib/medusa/error";
+import { trackServer } from "lib/analytics-server";
 import type {
   AddressPayload,
   CartCompletionResult,
@@ -65,6 +66,7 @@ export async function setCartEmail(
     await sdk.store.cart
       .update(cartId, { email: normalizedEmail }, {}, headers)
       .catch(medusaError);
+    try { await trackServer("checkout_step_completed", { step_name: "email", step_number: 1 }) } catch {}
   } catch (e) {
     return e instanceof Error ? e.message : "Error setting email";
   } finally {
@@ -97,6 +99,7 @@ export async function setCartAddresses(
         headers,
       )
       .catch(medusaError);
+    try { await trackServer("checkout_step_completed", { step_name: "address", step_number: 2 }) } catch {}
   } catch (e) {
     return e instanceof Error ? e.message : "Error setting addresses";
   } finally {
@@ -152,6 +155,7 @@ export async function setShippingMethod(
     await sdk.store.cart
       .addShippingMethod(cartId, { option_id: optionId }, {}, headers)
       .catch(medusaError);
+    try { await trackServer("checkout_step_completed", { step_name: "shipping", step_number: 3 }) } catch {}
   } catch (e) {
     return e instanceof Error ? e.message : "Error setting shipping method";
   } finally {
@@ -183,6 +187,7 @@ export async function initializePaymentSession(
     await sdk.store.payment
       .initiatePaymentSession(cart, { provider_id: providerId, data }, {}, headers)
       .catch(medusaError);
+    try { await trackServer("checkout_step_completed", { step_name: "payment", step_number: 4 }) } catch {}
   } catch (e) {
     return e instanceof Error ? e.message : "Error initializing payment";
   } finally {
@@ -228,6 +233,15 @@ export async function completeCart(
 
     if (result.type === "order") {
       await removeCartId();
+      try {
+        await trackServer("checkout_step_completed", { step_name: "review", step_number: 5 })
+        await trackServer("order_completed", {
+          order_id: result.order.id,
+          order_total: result.order.total || 0,
+          item_count: result.order.items?.length || 0,
+          currency_code: result.order.currency_code || "usd",
+        })
+      } catch {}
       return { type: "order", order: result.order };
     }
 

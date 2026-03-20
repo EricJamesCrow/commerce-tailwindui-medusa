@@ -3,6 +3,7 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
+import { trackClient } from "lib/analytics";
 import { sorting } from "lib/constants";
 import { createUrl } from "lib/utils";
 import Link from "next/link";
@@ -28,6 +29,7 @@ export function SortFilterMenu() {
 
     return {
       name: item.title,
+      slug: item.slug || "default",
       href,
       current: currentSort === item.slug || (!currentSort && !item.slug),
     };
@@ -52,6 +54,9 @@ export function SortFilterMenu() {
             <MenuItem key={option.name}>
               <Link
                 href={option.href}
+                onClick={() =>
+                  trackClient("sort_option_selected", { sort_key: option.slug })
+                }
                 className={clsx(
                   option.current
                     ? "font-medium text-gray-900"

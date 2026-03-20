@@ -11,6 +11,7 @@ import {
   setWishlistId,
   removeWishlistId,
 } from "lib/medusa/cookies";
+import { trackServer } from "lib/analytics-server";
 
 export type WishlistActionResult = { error?: string; success?: boolean } | null;
 
@@ -204,14 +205,19 @@ export async function createWishlist(
   const name = formData.get("name") as string | null;
   const headers = await getAuthHeaders();
 
-  return wishlistMutation(
+  let createdWishlist: Wishlist | undefined;
+  const result = await wishlistMutation(
     () =>
       sdk.client.fetch<WishlistResponse>(
         "/store/customers/me/wishlists",
         { method: "POST", headers, body: { name: name || undefined } },
-      ).then(() => undefined),
+      ).then((res) => { createdWishlist = res.wishlist; }),
     "Error creating wishlist",
   );
+  if (result?.success && createdWishlist) {
+    try { await trackServer("wishlist_created", { wishlist_id: createdWishlist.id, has_name: Boolean(createdWishlist.name || name), name_length: (createdWishlist.name || name || "").length }) } catch {}
+  }
+  return result;
 }
 
 export async function addToWishlist(
@@ -219,6 +225,7 @@ export async function addToWishlist(
   formData: FormData,
 ): Promise<WishlistActionResult> {
   const variantId = formData.get("variant_id") as string;
+  const productId = formData.get("product_id") as string | null;
   let wishlistId = formData.get("wishlist_id") as string | null;
 
   if (!variantId) return { error: "Variant ID is required" };
@@ -247,7 +254,7 @@ export async function addToWishlist(
       }
     }
 
-    return wishlistMutation(
+    const authResult = await wishlistMutation(
       () =>
         sdk.client.fetch<WishlistResponse>(
           `/store/customers/me/wishlists/${wishlistId}/items`,
@@ -255,6 +262,10 @@ export async function addToWishlist(
         ).then(() => undefined),
       "Error adding to wishlist",
     );
+    if (authResult?.success && productId) {
+      try { await trackServer("wishlist_item_added", { product_id: productId, variant_id: variantId, wishlist_id: wishlistId }) } catch {}
+    }
+    return authResult;
   }
 
   // Guest flow: lazy-create guest wishlist
@@ -273,7 +284,7 @@ export async function addToWishlist(
     }
   }
 
-  return wishlistMutation(
+  const guestResult = await wishlistMutation(
     () =>
       sdk.client.fetch<WishlistResponse>(
         `/store/wishlists/${guestWishlistId}/items`,
@@ -281,6 +292,10 @@ export async function addToWishlist(
       ).then(() => undefined),
     "Error adding to wishlist",
   );
+  if (guestResult?.success && productId) {
+    try { await trackServer("wishlist_item_added", { product_id: productId, variant_id: variantId, wishlist_id: guestWishlistId }) } catch {}
+  }
+  return guestResult;
 }
 
 export async function removeFromWishlist(
@@ -289,6 +304,8 @@ export async function removeFromWishlist(
 ): Promise<WishlistActionResult> {
   const wishlistId = formData.get("wishlist_id") as string;
   const itemId = formData.get("item_id") as string;
+  const productId = formData.get("product_id") as string | null;
+  const variantId = formData.get("variant_id") as string | null;
 
   if (!wishlistId || !itemId) return { error: "Missing wishlist or item ID" };
 
@@ -299,10 +316,16 @@ export async function removeFromWishlist(
     ? `/store/customers/me/wishlists/${wishlistId}/items/${itemId}`
     : `/store/wishlists/${wishlistId}/items/${itemId}`;
 
-  return wishlistMutation(
+  const removeResult = await wishlistMutation(
     () => sdk.client.fetch(basePath, { method: "DELETE", headers }).then(() => undefined),
     "Error removing item",
   );
+  if (removeResult?.success) {
+    if (productId && variantId) {
+      try { await trackServer("wishlist_item_removed", { product_id: productId, variant_id: variantId, wishlist_id: wishlistId }) } catch {}
+    }
+  }
+  return removeResult;
 }
 
 export async function deleteWishlist(
@@ -314,7 +337,7 @@ export async function deleteWishlist(
 
   const headers = await getAuthHeaders();
 
-  return wishlistMutation(
+  const deleteResult = await wishlistMutation(
     () =>
       sdk.client.fetch(
         `/store/customers/me/wishlists/${wishlistId}`,
@@ -322,6 +345,10 @@ export async function deleteWishlist(
       ).then(() => undefined),
     "Error deleting wishlist",
   );
+  if (deleteResult?.success) {
+    try { await trackServer("wishlist_deleted", { wishlist_id: wishlistId }) } catch {}
+  }
+  return deleteResult;
 }
 
 export async function renameWishlist(
@@ -335,7 +362,7 @@ export async function renameWishlist(
 
   const headers = await getAuthHeaders();
 
-  return wishlistMutation(
+  const renameResult = await wishlistMutation(
     () =>
       sdk.client.fetch(
         `/store/customers/me/wishlists/${wishlistId}`,
@@ -343,6 +370,10 @@ export async function renameWishlist(
       ).then(() => undefined),
     "Error renaming wishlist",
   );
+  if (renameResult?.success) {
+    try { await trackServer("wishlist_renamed", { wishlist_id: wishlistId }) } catch {}
+  }
+  return renameResult;
 }
 
 export async function transferWishlist(): Promise<void> {
@@ -372,6 +403,8 @@ export async function shareWishlist(wishlistId: string): Promise<string | null> 
       `/store/customers/me/wishlists/${wishlistId}/share`,
       { method: "POST", headers },
     );
+    const wishlist = await getWishlist(wishlistId);
+    try { await trackServer("wishlist_shared", { wishlist_id: wishlistId, item_count: wishlist?.items?.length ?? 0 }) } catch {}
     return result.token;
   } catch {
     return null;
@@ -383,12 +416,17 @@ export async function importWishlist(
 ): Promise<WishlistActionResult> {
   const headers = await getAuthHeaders();
 
-  return wishlistMutation(
+  let importedWishlist: Wishlist | undefined;
+  const importResult = await wishlistMutation(
     () =>
       sdk.client.fetch<WishlistResponse>(
         "/store/wishlists/import",
         { method: "POST", headers, body: { share_token: shareToken } },
-      ).then(() => undefined),
+      ).then((res) => { importedWishlist = res.wishlist; }),
     "Error importing wishlist",
   );
+  if (importResult?.success && importedWishlist) {
+    try { await trackServer("wishlist_imported", { wishlist_id: importedWishlist.id, item_count: importedWishlist.items?.length ?? 0 }) } catch {}
+  }
+  return importResult;
 }

@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { ReviewSummary } from "components/reviews/ReviewSummary";
 import { ReviewList } from "components/reviews/ReviewList";
 import { ReviewForm } from "components/reviews/ReviewForm";
+import { trackClient } from "lib/analytics";
 import type { ProductReviews as ProductReviewsType, Review } from "lib/types";
 import {
   addProductReview,
@@ -94,7 +95,10 @@ export function ProductReviews({
         <ReviewSummary
           reviews={summaryData}
           canReview={canReview}
-          onWriteReview={() => setFormOpen(true)}
+          onWriteReview={() => {
+            setFormOpen(true);
+            trackClient("review_form_opened", { product_id: productId });
+          }}
         />
       </div>
 

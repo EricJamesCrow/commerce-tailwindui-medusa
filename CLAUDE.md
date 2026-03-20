@@ -196,6 +196,31 @@ gt submit --stack                              # Push all stacked PRs
 - Rate limiting: Redis-backed failed-attempt tracking on `/auth/customer/emailpass*` and `/auth/user/emailpass*` — 5 failures per 15 min per IP. Gracefully degrades without Redis.
 - See `src/modules/README.md`, `src/api/README.md`, `src/workflows/README.md` for patterns
 
+## Analytics Events
+
+When implementing any new feature, add PostHog tracking as part of the feature PR — not as a follow-up.
+
+**Patterns:**
+
+- Server-side: `trackServer(event, props)` from `lib/analytics-server` — use in server actions, API routes, subscribers
+- Client-side: `trackClient(event, props)` from `lib/analytics.ts` — use in client components for interactions that only exist on the client (drawer opens, toggles, UI state changes)
+- All events must be added to the `AnalyticsEvents` type map with typed properties before use (enforced by TypeScript)
+- Naming: `snake_case`, `noun_verbed` (e.g., `product_added_to_cart`, `wishlist_created`, `checkout_payment_failed`)
+- Include entity IDs and context as properties (`product_id`, `order_id`, etc.) but **never PII** (email, name, address)
+
+**What to track for new features:**
+
+| Category | Example |
+| --- | --- |
+| Happy path completions | `review_submitted`, `address_added` |
+| Error/failure states | `checkout_payment_failed`, `auth_rate_limited` |
+| Intent signals | `review_form_opened` (started but may not finish) |
+| Navigation/discovery | `collection_filter_changed`, `sort_option_selected` |
+
+**When NOT to add events:** pure admin operations, events already covered by PostHog pageviews, high-frequency events without analytical value (e.g., every keystroke — track the submission instead).
+
+**PR convention:** include new event names and their properties in the PR description so reviewers can verify naming consistency. Reference the `AnalyticsEvents` type map as the source of truth.
+
 ## MCP Servers
 
 | Server         | Use                                   |

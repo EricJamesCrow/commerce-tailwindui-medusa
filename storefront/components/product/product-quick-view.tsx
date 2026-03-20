@@ -7,6 +7,7 @@ import { addItem } from "components/cart/actions";
 import { useCart } from "components/cart/cart-context";
 import ProductGridPrice from "components/price/product-grid-price";
 import { WishlistButton } from "components/wishlist/wishlist-button";
+import { trackClient } from "lib/analytics";
 import type { Product } from "lib/types";
 import { getColorHex } from "lib/utils";
 import Image from "next/image";
@@ -210,9 +211,14 @@ export function ProductQuickView({
                                     <input
                                       value={colorName}
                                       checked={isSelected}
-                                      onChange={() =>
-                                        setSelectedColor(colorName)
-                                      }
+                                      onChange={() => {
+                                        setSelectedColor(colorName);
+                                        trackClient("product_variant_selected", {
+                                          product_id: product.id,
+                                          option_name: "color",
+                                          option_value: colorName,
+                                        });
+                                      }}
                                       disabled={!isAvailable}
                                       name="color"
                                       type="radio"
@@ -264,7 +270,14 @@ export function ProductQuickView({
                                     <input
                                       value={size}
                                       checked={isSelected}
-                                      onChange={() => setSelectedSize(size)}
+                                      onChange={() => {
+                                        setSelectedSize(size);
+                                        trackClient("product_variant_selected", {
+                                          product_id: product.id,
+                                          option_name: "size",
+                                          option_value: size,
+                                        });
+                                      }}
                                       disabled={!isAvailable}
                                       name="size"
                                       type="radio"
@@ -311,6 +324,7 @@ export function ProductQuickView({
                           <WishlistButton
                             key={selectedVariantId}
                             variantId={selectedVariantId}
+                            productId={product.id}
                             isInWishlist={
                               selectedVariantId === product.variants?.[0]?.id
                                 ? wishlistState?.isInWishlist

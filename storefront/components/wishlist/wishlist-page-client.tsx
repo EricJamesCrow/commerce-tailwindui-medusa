@@ -143,6 +143,8 @@ function WishlistItemCard({
       const formData = new FormData();
       formData.set("wishlist_id", wishlistId);
       formData.set("item_id", item.id);
+      if (product?.id) formData.set("product_id", product.id);
+      if (item.product_variant_id) formData.set("variant_id", item.product_variant_id);
       const result = await removeFromWishlist(null, formData);
       if (result?.error) {
         showNotification("error", "Could not remove item", result.error);
