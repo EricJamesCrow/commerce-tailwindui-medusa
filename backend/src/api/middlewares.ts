@@ -21,6 +21,7 @@ import {
   PostImportWishlistSchema,
 } from "./store/wishlists/validators"
 import { PostAdminInvoiceConfigSchema } from "./admin/invoice-config/route"
+import * as Sentry from "@sentry/node"
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -36,6 +37,10 @@ const upload = multer({
 })
 
 export default defineMiddlewares({
+  errorHandler: (error, req, res, next) => {
+    Sentry.captureException(error)
+    next(error)
+  },
   routes: [
     // --- Trust proxy for correct IP detection behind reverse proxy ---
     {
