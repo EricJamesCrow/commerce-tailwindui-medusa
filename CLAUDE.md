@@ -142,7 +142,9 @@ gt submit --stack                              # Push all stacked PRs
 | Keep stacks under 5 PRs                     | Create mega-stacks                |
 | One concern per stack level                 | Mix features in one PR            |
 
-**Always mark PRs as ready for review** after `gt submit --stack`. Graphite's `--no-interactive` mode creates PRs in draft — immediately follow up with `gh pr ready <number>` so PRs are visible for review.
+**Mark PRs as ready for review** after `gt submit --stack` unless explicitly asked to keep them as draft. Graphite's `--no-interactive` mode creates PRs in draft — immediately follow up with `gh pr ready <number>` so PRs are visible for review.
+
+**CodeRabbit reviews:** When asked to fix CodeRabbit comments on a PR, read the review comments via `gh api`, assess each finding against the actual code, apply valid fixes, reject suggestions that conflict with project conventions (with a reply explaining why), commit the changes, push via `gt submit --stack`, and resolve each addressed comment thread using `gh api`. Always resolve comment threads after addressing them — don't leave them open.
 
 ## Never Do
 

@@ -121,6 +121,8 @@ async function uploadTestImage(
 }
 
 test.describe("S3 File Storage (Cloudflare R2)", () => {
+  test.skip(!PUBLISHABLE_KEY, "Skipping — NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY not set");
+
   let authToken: string;
 
   test.beforeAll(async () => {

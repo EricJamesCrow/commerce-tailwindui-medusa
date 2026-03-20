@@ -37,6 +37,13 @@ if (process.env.STRIPE_API_KEY && !process.env.STRIPE_WEBHOOK_SECRET) {
   )
 }
 
+if (process.env.S3_BUCKET && (!process.env.S3_ACCESS_KEY_ID || !process.env.S3_SECRET_ACCESS_KEY)) {
+  console.warn(
+    "[medusa-config] S3_BUCKET is set but S3_ACCESS_KEY_ID or S3_SECRET_ACCESS_KEY is missing — " +
+    "file uploads will fail"
+  )
+}
+
 module.exports = defineConfig({
   admin: {
     backendUrl: process.env.MEDUSA_BACKEND_URL,
