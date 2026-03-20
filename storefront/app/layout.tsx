@@ -13,6 +13,7 @@ import {
 } from "components/notifications";
 import { PostHogProvider } from "components/providers/posthog-provider";
 import { SearchDialog, SearchProvider } from "components/search-command";
+import { WebVitals } from "./web-vitals";
 import { getCart } from "lib/medusa";
 import { retrieveCustomer } from "lib/medusa/customer";
 import { getPostHogAnonId } from "lib/posthog-cookies";
@@ -40,6 +41,7 @@ async function AppProviders({ children }: { children: ReactNode }) {
   return (
     <CartProvider cartPromise={cartPromise}>
       <PostHogProvider bootstrapDistinctId={distinctId}>
+        <WebVitals />
         <NotificationProvider>
           <SearchProvider>
             <NotificationContainer />
