@@ -1,1 +1,2 @@
 .vercel
+.env.sentry-build-plugin
