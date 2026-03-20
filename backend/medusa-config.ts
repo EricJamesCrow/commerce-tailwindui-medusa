@@ -37,6 +37,13 @@ if (process.env.STRIPE_API_KEY && !process.env.STRIPE_WEBHOOK_SECRET) {
   )
 }
 
+if (process.env.S3_BUCKET && (!process.env.S3_ACCESS_KEY_ID || !process.env.S3_SECRET_ACCESS_KEY)) {
+  console.warn(
+    "[medusa-config] S3_BUCKET is set but S3_ACCESS_KEY_ID or S3_SECRET_ACCESS_KEY is missing — " +
+    "file uploads will fail"
+  )
+}
+
 module.exports = defineConfig({
   admin: {
     backendUrl: process.env.MEDUSA_BACKEND_URL,
@@ -62,6 +69,33 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/invoice",
     },
+    // S3 file provider for persistent storage (conditional on S3_BUCKET)
+    ...(process.env.S3_BUCKET
+      ? [
+          {
+            resolve: "@medusajs/medusa/file",
+            options: {
+              providers: [
+                {
+                  resolve: "@medusajs/medusa/file-s3",
+                  id: "s3",
+                  options: {
+                    file_url: process.env.S3_FILE_URL,
+                    access_key_id: process.env.S3_ACCESS_KEY_ID,
+                    secret_access_key: process.env.S3_SECRET_ACCESS_KEY,
+                    region: process.env.S3_REGION,
+                    bucket: process.env.S3_BUCKET,
+                    endpoint: process.env.S3_ENDPOINT,
+                    additional_client_config: {
+                      forcePathStyle: true,
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        ]
+      : []),
     // Resend email notification provider (conditional on RESEND_API_KEY)
     ...(process.env.RESEND_API_KEY
       ? [

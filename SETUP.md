@@ -52,6 +52,12 @@ All other variables have working defaults for local development. See `backend/.e
 | `MEDUSA_BACKEND_URL` | Prod only | — | Public backend URL (admin UI build) |
 | `ADMIN_ORDER_EMAILS` | No | — | Comma-separated emails for order alerts |
 | `CART_RECOVERY_SECRET` | If cart recovery | — | HMAC secret for abandoned cart tokens |
+| `S3_FILE_URL` | No | — | R2 public base URL (e.g. `https://pub-abc123.r2.dev`) |
+| `S3_ACCESS_KEY_ID` | No | — | Cloudflare R2 API token ID |
+| `S3_SECRET_ACCESS_KEY` | No | — | Cloudflare R2 API token secret |
+| `S3_BUCKET` | No | — | R2 bucket name (e.g. `crowcommerce-assets`) |
+| `S3_REGION` | No | `auto` | Always `auto` for Cloudflare R2 |
+| `S3_ENDPOINT` | No | — | `https://<account-id>.r2.cloudflarestorage.com` |
 
 ### Storefront
 
@@ -70,6 +76,7 @@ Edit `storefront/.env.local` — at minimum, set `NEXT_PUBLIC_MEDUSA_PUBLISHABLE
 | `SITE_NAME` | No | — | Browser tab title, OG images |
 | `COMPANY_NAME` | No | — | Footer copyright |
 | `REVALIDATE_SECRET` | No | — | On-demand cache revalidation token |
+| `S3_IMAGE_HOSTNAME` | No | — | R2 public hostname for `next/image` (e.g. `pub-abc123.r2.dev`) |
 | `CART_RECOVERY_SECRET` | If cart recovery | — | Same secret as backend (HMAC verification) |
 
 ## Local Development
@@ -168,6 +175,12 @@ STRIPE_WEBHOOK_SECRET=whsec_...
    ADMIN_CORS=            # Your backend domain, e.g. https://api.example.com
    AUTH_CORS=              # Same as ADMIN_CORS
    MEDUSA_BACKEND_URL=    # Your backend domain, e.g. https://api.example.com
+   S3_FILE_URL=            # R2 public URL (e.g. https://pub-abc123.r2.dev)
+   S3_ACCESS_KEY_ID=       # R2 API token ID
+   S3_SECRET_ACCESS_KEY=   # R2 API token secret
+   S3_BUCKET=              # Bucket name (e.g. crowcommerce-assets)
+   S3_REGION=auto          # Always "auto" for Cloudflare R2
+   S3_ENDPOINT=            # https://<account-id>.r2.cloudflarestorage.com
    ```
 
 4. **Deploy** — Railway detects the `Dockerfile` and `railway.toml` automatically. The container runs migrations on startup (`bunx medusa db:migrate && bun run start`).

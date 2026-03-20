@@ -1,8 +1,10 @@
 export default {
   cacheComponents: true,
   reactCompiler: true,
-  serverActions: {
-    bodySizeLimit: "15mb",
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "15mb",
+    },
   },
   images: {
     formats: ["image/avif", "image/webp"],
@@ -32,6 +34,9 @@ export default {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      ...(process.env.S3_IMAGE_HOSTNAME
+        ? [{ protocol: "https" as const, hostname: process.env.S3_IMAGE_HOSTNAME }]
+        : []),
       ...(process.env.NODE_ENV !== "production"
         ? [{ protocol: "https" as const, hostname: "placehold.co" }]
         : []),
