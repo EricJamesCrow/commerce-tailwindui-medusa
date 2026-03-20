@@ -30,13 +30,21 @@ Alternatives considered:
 
 ### Architecture
 
-Sentry initializes before Medusa's `registerOtel()` and passes its span processor and propagator. The error handler middleware wraps Medusa's default handler to capture all HTTP-layer exceptions.
+Sentry v9 has native OpenTelemetry support built in. When `Sentry.init()` is called before the OTel SDK starts, it registers its own `SentrySpanProcessor` and `SentryPropagator` with the OpenTelemetry global API automatically. The key is initialization order: Sentry first, then `registerOtel()`.
+
+Medusa's `registerOtel()` accepts `Partial<NodeSDKConfiguration>` with rest-spread, so extra OTel SDK options can be passed through. However, `registerOtel()` internally creates its own `SimpleSpanProcessor(exporter)` which may conflict with Sentry's auto-registered processor. The implementation must verify one of two approaches:
+
+1. **Auto-integration (preferred):** Call `Sentry.init()` before `registerOtel()`. Sentry v9 auto-registers with the OTel global API, and `registerOtel()` picks up the global propagator/processor. If this works, no manual wiring is needed.
+2. **Manual wiring (fallback):** Import `SentrySpanProcessor` and `SentryPropagator` from `@sentry/opentelemetry` (a peer dependency of `@sentry/node` v9) and pass them explicitly via `registerOtel()`'s rest-spread. This requires verifying that the extra `spanProcessors` parameter doesn't conflict with `registerOtel()`'s hardcoded `spanProcessor`.
+3. **Bypass `registerOtel()` (last resort):** Configure `@opentelemetry/sdk-node` `NodeSDK` directly with full control over processors and propagators. This loses Medusa's convenience helpers but guarantees no conflicts.
+
+The error handler middleware captures all HTTP-layer exceptions via `Sentry.captureException()`.
 
 ### Files Changed
 
 #### `backend/instrumentation.ts` (replace commented-out stub)
 
-Initialize Sentry, then call `registerOtel()` with Sentry's span processor and propagator. Enable tracing for HTTP, workflows, queries, and DB operations. Add `nodeProfilingIntegration()`.
+Initialize Sentry before `registerOtel()`. Sentry v9 auto-registers with the OTel global API. Enable tracing for HTTP, workflows, queries, and DB operations.
 
 ```ts
 import * as Sentry from "@sentry/node"
@@ -45,16 +53,15 @@ import { registerOtel } from "@medusajs/medusa"
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
-  tracesSampleRate: 1.0,
+  tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || "0.2"),
   profilesSampleRate: 0.1,
   integrations: [nodeProfilingIntegration()],
+  environment: process.env.NODE_ENV || "development",
 })
 
 export function register() {
   registerOtel({
     serviceName: "crowcommerce-backend",
-    spanProcessors: [Sentry.getSpanProcessor()],
-    propagator: Sentry.getPropagator(),
     instrument: {
       http: true,
       workflows: true,
@@ -65,27 +72,20 @@ export function register() {
 }
 ```
 
-> **Note:** The exact Sentry v9 API for retrieving the span processor and propagator (`getSpanProcessor()`, `getPropagator()`) must be verified against current `@sentry/node` docs at implementation time. The v9 API may use different method names or a different pattern for OTel integration.
+> **Implementation note:** The auto-integration approach (Sentry init before registerOtel) must be verified at implementation time. If Sentry's auto-registered span processor conflicts with registerOtel's internal SimpleSpanProcessor, fall back to manual wiring via `@sentry/opentelemetry` imports or bypass registerOtel entirely. See the Architecture section above for the three approaches. Consult `@sentry/node` v9 docs and Medusa's `registerOtel` source for the exact API.
 
 #### `backend/src/api/middlewares.ts` (add error handler)
 
-Add a top-level `errorHandler` property to the existing `defineMiddlewares()` call. This is separate from the `routes` array — it wraps Medusa's entire error handling layer and catches errors from all routes.
+Add a top-level `errorHandler` property to the existing `defineMiddlewares()` call. This is separate from the `routes` array — it wraps Medusa's entire error handling layer and catches errors from all routes. The custom handler captures the error to Sentry, then calls `next(error)` to let Medusa's built-in error handler produce the HTTP response.
 
 ```ts
 import * as Sentry from "@sentry/node"
 // ... existing imports ...
 
-const originalErrorHandler = errorHandler()
-
 export default defineMiddlewares({
-  errorHandler: (
-    error: MedusaError | any,
-    req: MedusaRequest,
-    res: MedusaResponse,
-    next: MedusaNextFunction
-  ) => {
+  errorHandler: (error, req, res, next) => {
     Sentry.captureException(error)
-    return originalErrorHandler(error, req, res, next)
+    next(error)
   },
   routes: [
     // ... all existing routes unchanged ...
@@ -93,7 +93,7 @@ export default defineMiddlewares({
 })
 ```
 
-> **Import note:** `errorHandler`, `MedusaNextFunction`, `MedusaRequest`, and `MedusaResponse` must be imported from `@medusajs/framework/http`. The existing file already imports `defineMiddlewares` from there — add the others to the same import.
+> **Why `next(error)` instead of manually invoking `errorHandler()`:** Medusa's framework applies its own default error handler after the custom one. Calling `next(error)` delegates to that built-in handler, which formats the error response correctly. Do not import and invoke `errorHandler()` manually — it creates a duplicate handler chain.
 
 #### `backend/package.json` (add dependencies)
 
@@ -134,7 +134,7 @@ import { browserProfilingIntegration } from "@sentry/nextjs"
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  tracesSampleRate: 1.0,
+  tracesSampleRate: parseFloat(process.env.NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE || "0.2"),
   profilesSampleRate: 0.1,
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
@@ -158,9 +158,10 @@ import { nodeProfilingIntegration } from "@sentry/profiling-node"
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  tracesSampleRate: 1.0,
+  tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || "0.2"),
   profilesSampleRate: 0.1,
   integrations: [nodeProfilingIntegration()],
+  environment: process.env.NODE_ENV || "development",
 })
 ```
 
@@ -173,15 +174,17 @@ import * as Sentry from "@sentry/nextjs"
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  tracesSampleRate: 1.0,
+  tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || "0.2"),
 })
 ```
 
 #### `storefront/instrumentation.ts` (new — Next.js instrumentation hook)
 
-Dispatches to the correct Sentry config based on runtime.
+Dispatches to the correct Sentry config based on runtime. Also exports `onRequestError` to capture server component, route handler, and server action errors.
 
 ```ts
+import * as Sentry from "@sentry/nextjs"
+
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     await import("./sentry.server.config")
@@ -190,13 +193,45 @@ export async function register() {
     await import("./sentry.edge.config")
   }
 }
+
+export const onRequestError = Sentry.captureRequestError
 ```
+
+> **`onRequestError`:** Next.js 15+ calls this hook for server-side errors (server components, route handlers, server actions). Without it, these errors might not be captured unless `@sentry/nextjs` patches them automatically. Verify against current `@sentry/nextjs` v9 docs — the SDK may handle this via `withSentryConfig()` instead.
 
 #### `storefront/app/global-error.tsx` (new — error boundary)
 
-Catches unhandled errors in App Router layouts and pages, reports to Sentry, shows fallback UI.
+Catches unhandled errors in App Router layouts and pages, reports to Sentry, shows fallback UI. Must be a Client Component and must render its own `<html>` and `<body>` tags.
 
-> **Scope caveat:** `global-error.tsx` only catches errors in layouts and pages, not in server actions or route handlers. Server action errors are captured automatically by the Sentry server-side instrumentation — no gap in coverage.
+```tsx
+"use client"
+
+import * as Sentry from "@sentry/nextjs"
+import { useEffect } from "react"
+
+export default function GlobalError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string }
+  reset: () => void
+}) {
+  useEffect(() => {
+    Sentry.captureException(error)
+  }, [error])
+
+  return (
+    <html>
+      <body>
+        <h2>Something went wrong</h2>
+        <button onClick={() => reset()}>Try again</button>
+      </body>
+    </html>
+  )
+}
+```
+
+> **Scope caveat:** `global-error.tsx` only catches errors in layouts and pages, not in server actions or route handlers. Server action errors are captured by `onRequestError` in `instrumentation.ts` and by Sentry's server-side instrumentation — no gap in coverage.
 
 ### Files Modified
 
@@ -251,26 +286,40 @@ Both SDKs propagate W3C `traceparent` and `baggage` headers automatically. When 
 
 **Requirement:** Both Sentry projects must be in the same Sentry organization.
 
+**Verification note:** `@sentry/nextjs` auto-instruments browser `fetch()` calls, but server-side calls in Server Actions use Node's `fetch`. Verify during implementation that Sentry's server-side instrumentation patches Node `fetch` to propagate trace headers. If not, the Medusa JS SDK calls from server actions won't produce linked traces. The browser-to-backend path (client component fetch) should work without issues.
+
 ## Sample Rates
 
-| Rate | Storefront | Backend |
-|------|-----------|---------|
-| `tracesSampleRate` | 1.0 (100%) | 1.0 (100%) |
-| `profilesSampleRate` | 0.1 (10%) | 0.1 (10%) |
-| `replaysSessionSampleRate` | 0.1 (10%) | N/A |
-| `replaysOnErrorSampleRate` | 1.0 (100%) | N/A |
+| Rate | Storefront | Backend | Configurable via |
+|------|-----------|---------|-----------------|
+| `tracesSampleRate` | 0.2 (20%) | 0.2 (20%) | `SENTRY_TRACES_SAMPLE_RATE` / `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` |
+| `profilesSampleRate` | 0.1 (10%) | 0.1 (10%) | Hardcoded (low overhead) |
+| `replaysSessionSampleRate` | 0.1 (10%) | N/A | Hardcoded |
+| `replaysOnErrorSampleRate` | 1.0 (100%) | N/A | Hardcoded |
 
-These are starting values. Adjust downward as traffic increases to manage Sentry quota.
+Trace sample rate defaults to 20% and is configurable via environment variable so it can be tuned without code changes. Set to `1.0` during development for full visibility.
+
+## Behavior Without DSN
+
+When `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` is not set (local dev without Sentry, CI, preview deployments), `Sentry.init()` enters a no-op mode — no errors are captured, no performance data is sent, no SDK overhead. This is acceptable and requires no conditional guards.
+
+## Out of Scope
+
+- **Sentry tunnel route** — a proxy route (`/api/sentry`) that forwards Sentry events to avoid ad blockers. Can be added later if client-side error capture rates are low.
+- **Sentry Alerts** — notification rules (email, Slack) for critical issues. Configure in the Sentry dashboard after integration is verified.
+- **User feedback widget** — Sentry's in-app feedback collection. Not needed at launch.
 
 ## Documentation Updates
 
 - Add `SENTRY_DSN` to both backend and storefront sections of `SETUP.md` env var tables (local dev and production)
 - Add `SENTRY_AUTH_TOKEN` to storefront production section of `SETUP.md`
-- Add `.env.sentry-build-plugin` to storefront `.gitignore`
+- Add `.env.sentry-build-plugin` to storefront `.gitignore` (and root `.gitignore` as a safeguard)
 - Update `README.md` infrastructure table with Sentry status
+- Add `SENTRY_TRACES_SAMPLE_RATE` / `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` to env var docs as optional tuning knobs
 
 ## Verification
 
 1. **Backend:** Start dev server, hit a route that throws an error, confirm it appears in the backend Sentry project within 30 seconds. Check traces page for HTTP/workflow/DB spans.
 2. **Storefront:** Start dev server, trigger a client-side error (e.g., throw in a component), confirm it appears in the storefront Sentry project. Check for Session Replay recording. Trigger a server action error and confirm server-side capture.
-3. **Distributed tracing:** Add item to cart from the storefront, find the trace in the storefront Sentry project, confirm it links to the corresponding backend trace.
+3. **Distributed tracing (browser path):** Add item to cart from the storefront, find the trace in the storefront Sentry project, confirm it links to the corresponding backend trace.
+4. **Distributed tracing (server action path):** Trigger a server action that calls the Medusa backend (e.g., update customer profile), verify the server-side trace propagates `traceparent` headers and links to the backend trace.
