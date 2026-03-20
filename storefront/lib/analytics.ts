@@ -1,0 +1,140 @@
+import type posthog from "posthog-js"
+
+// ---------------------------------------------------------------------------
+// Event catalog
+// ---------------------------------------------------------------------------
+
+export type AnalyticsEvents = {
+  // --- Cart ---
+  product_added_to_cart: {
+    product_id: string
+    variant_id: string
+    quantity: number
+    price: number
+  }
+  cart_item_removed: { product_id: string; variant_id: string }
+  cart_item_updated: {
+    product_id: string
+    variant_id: string
+    new_quantity: number
+  }
+
+  // --- Checkout ---
+  checkout_started: {
+    cart_id: string
+    item_count: number
+    cart_total: number
+  }
+  checkout_step_completed: {
+    step_name: "email" | "address" | "shipping" | "payment" | "review"
+    step_number: number
+  }
+  order_completed: {
+    order_id: string
+    order_total: number
+    item_count: number
+    currency_code: string
+  }
+
+  // --- Auth ---
+  customer_signed_up: { method: string }
+  customer_logged_in: { method: string }
+  customer_logged_out: Record<string, never>
+  password_reset_requested: { email: string }
+  password_reset_completed: Record<string, never>
+
+  // --- Account ---
+  profile_updated: { fields_changed: string[] }
+  address_added: { country_code: string }
+  address_updated: { country_code: string }
+  address_deleted: Record<string, never>
+
+  // --- Rate limiting ---
+  auth_rate_limited: { action: "login" | "signup" | "password-reset" }
+
+  // --- Wishlist ---
+  wishlist_item_added: {
+    product_id: string
+    variant_id: string
+    wishlist_id: string
+  }
+  wishlist_item_removed: {
+    product_id: string
+    variant_id: string
+    wishlist_id: string
+  }
+  wishlist_shared: { wishlist_id: string; item_count: number }
+  wishlist_created: { wishlist_id: string; name: string }
+  wishlist_renamed: { wishlist_id: string }
+  wishlist_deleted: { wishlist_id: string }
+  wishlist_imported: { source_wishlist_id: string; item_count: number }
+
+  // --- Reviews ---
+  review_submitted: {
+    product_id: string
+    rating: number
+    has_images: boolean
+  }
+
+  // --- Search ---
+  search_performed: { query: string; result_count: number }
+
+  // --- Product ---
+  product_viewed: {
+    product_id: string
+    product_name: string
+    price: number
+    category: string
+    variant_count: number
+    has_reviews: boolean
+    avg_rating: number
+  }
+
+  // --- Orders ---
+  invoice_downloaded: { order_id: string }
+  abandoned_cart_recovered: { cart_id: string; item_count: number }
+
+  // --- Client-side UI ---
+  cart_drawer_opened: Record<string, never>
+  product_quick_view_opened: { product_id: string }
+  search_command_opened: Record<string, never>
+  search_command_closed: Record<string, never>
+  collection_filter_changed: { filter_type: string; filter_value: string }
+  sort_option_selected: { sort_key: string }
+  mobile_menu_opened: Record<string, never>
+  mobile_filters_opened: Record<string, never>
+  product_variant_selected: {
+    product_id: string
+    option_name: string
+    option_value: string
+  }
+  product_image_viewed: { product_id: string; image_index: number }
+  product_details_expanded: { product_id: string; section_name: string }
+  review_form_opened: { product_id: string }
+  wishlist_tab_switched: { wishlist_id: string }
+  checkout_step_edited: { step_name: string }
+  checkout_payment_failed: { error_code: string; error_message: string }
+  checkout_payment_success_order_failed: {
+    cart_id: string
+    payment_intent_id: string
+  }
+  checkout_shipping_no_options: { country_code: string; postal_code: string }
+}
+
+// ---------------------------------------------------------------------------
+// Client-side tracking (safe to import from client components)
+// ---------------------------------------------------------------------------
+
+let posthogInstance: typeof posthog | null = null
+
+export function setPostHogClient(instance: typeof posthog): void {
+  posthogInstance = instance
+}
+
+export function trackClient<E extends keyof AnalyticsEvents>(
+  event: E,
+  properties: AnalyticsEvents[E],
+): void {
+  if (!posthogInstance) return
+  posthogInstance.capture(event, properties as Record<string, unknown>)
+}
