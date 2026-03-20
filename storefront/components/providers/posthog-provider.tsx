@@ -2,10 +2,6 @@
 
 import { useEffect, useRef } from "react"
 import posthog from "posthog-js"
-import {
-  SessionReplayExtensions,
-  AnalyticsExtensions,
-} from "posthog-js/lib/src/extensions/extension-bundles"
 import { PostHogProvider as PHProvider } from "posthog-js/react"
 import { setPostHogClient } from "lib/analytics"
 
@@ -42,12 +38,6 @@ export function PostHogProvider({
       bootstrap: {
         distinctID: bootstrapDistinctId || undefined,
         featureFlags: bootstrapFlags || undefined,
-      },
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore — slim bundle and extension-bundles have separate internal type declarations
-      __extensionClasses: {
-        ...SessionReplayExtensions,
-        ...AnalyticsExtensions,
       },
     })
 
