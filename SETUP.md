@@ -58,6 +58,8 @@ All other variables have working defaults for local development. See `backend/.e
 | `S3_BUCKET` | No | — | R2 bucket name (e.g. `crowcommerce-assets`) |
 | `S3_REGION` | No | `auto` | Always `auto` for Cloudflare R2 |
 | `S3_ENDPOINT` | No | — | `https://<account-id>.r2.cloudflarestorage.com` |
+| `SENTRY_DSN` | No | — | Sentry project DSN for error monitoring |
+| `SENTRY_TRACES_SAMPLE_RATE` | No | `0.2` | Trace sample rate (0.0-1.0) |
 
 ### Storefront
 
@@ -78,6 +80,9 @@ Edit `storefront/.env.local` — at minimum, set `NEXT_PUBLIC_MEDUSA_PUBLISHABLE
 | `REVALIDATE_SECRET` | No | — | On-demand cache revalidation token |
 | `S3_IMAGE_HOSTNAME` | No | — | R2 public hostname for `next/image` (e.g. `pub-abc123.r2.dev`) |
 | `CART_RECOVERY_SECRET` | If cart recovery | — | Same secret as backend (HMAC verification) |
+| `NEXT_PUBLIC_SENTRY_DSN` | No | — | Sentry DSN (safe to expose client-side) |
+| `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` | No | `0.2` | Client-side trace sample rate |
+| `SENTRY_TRACES_SAMPLE_RATE` | No | `0.2` | Server-side trace sample rate |
 
 ## Local Development
 
@@ -181,6 +186,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
    S3_BUCKET=              # Bucket name (e.g. crowcommerce-assets)
    S3_REGION=auto          # Always "auto" for Cloudflare R2
    S3_ENDPOINT=            # https://<account-id>.r2.cloudflarestorage.com
+   SENTRY_DSN=              # Sentry project DSN
    ```
 
 4. **Deploy** — Railway detects the `Dockerfile` and `railway.toml` automatically. The container runs migrations on startup (`bunx medusa db:migrate && bun run start`).
@@ -206,6 +212,10 @@ STRIPE_WEBHOOK_SECRET=whsec_...
    SITE_NAME=                               # Your store name
    COMPANY_NAME=                            # Footer copyright
    REVALIDATE_SECRET=                       # Generate: openssl rand -hex 32
+   NEXT_PUBLIC_SENTRY_DSN=                  # Sentry project DSN
+   SENTRY_AUTH_TOKEN=                       # Source map uploads (sentry.io/settings/auth-tokens/)
+   SENTRY_ORG=                              # Sentry organization slug
+   SENTRY_PROJECT=                          # Sentry project slug
    ```
 
 3. **Deploy** — Vercel detects `vercel.json` (`installCommand: "bun install"`, framework: `nextjs`) and builds automatically.
