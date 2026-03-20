@@ -90,11 +90,11 @@ export async function updateItemQuantity(
       } else {
         await updateCart([{ id: lineItem.id, merchandiseId, quantity }]);
       }
-      try { await trackServer("cart_item_updated", { product_id: "", variant_id: merchandiseId, new_quantity: quantity }) } catch {}
     } else if (quantity > 0) {
       await addToCart([{ merchandiseId, quantity }]);
-      try { await trackServer("cart_item_updated", { product_id: "", variant_id: merchandiseId, new_quantity: quantity }) } catch {}
     }
+
+    try { await trackServer("cart_item_updated", { product_id: "", variant_id: merchandiseId, new_quantity: quantity }) } catch {}
 
     return null;
   } catch (e) {
