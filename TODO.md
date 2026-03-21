@@ -59,6 +59,7 @@
 - [ ] Configure Medusa webhooks for cache revalidation
 - [ ] Update `DEFAULT_NAVIGATION` with real store categories
 - [ ] Upgrade Turborepo: `bunx @turbo/codemod@latest update`
+- [x] Set up PostHog reverse proxy — Next.js rewrites proxy `/api/ph/:path*` to `us.i.posthog.com` (avoids ad blockers that target `/ingest`). See [PostHog Next.js proxy docs](https://posthog.com/docs/advanced/proxy/nextjs).
 
 ## Deferred Features
 

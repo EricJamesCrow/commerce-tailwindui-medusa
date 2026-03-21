@@ -4,6 +4,19 @@ export default withSentryConfig(
   {
     cacheComponents: true,
     reactCompiler: true,
+    skipTrailingSlashRedirect: true,
+    async rewrites() {
+      return [
+        {
+          source: "/api/ph/static/:path*",
+          destination: "https://us-assets.i.posthog.com/static/:path*",
+        },
+        {
+          source: "/api/ph/:path*",
+          destination: "https://us.i.posthog.com/:path*",
+        },
+      ]
+    },
     experimental: {
       serverActions: {
         bodySizeLimit: "15mb",
