@@ -27,12 +27,12 @@ export const trackOrderPlacedWorkflow = createWorkflow(
       filters: { id: input.order_id },
     })
 
-    // Fetch cart to check abandoned_cart_notified metadata
-    const cartQueryInput = transform({ orders }, (d) => ({
-      entity: "cart" as const,
-      fields: ["id", "metadata"],
-      filters: { id: (d.orders[0] as Record<string, any>)?.cart_id },
-    }))
+    // Fetch cart to check abandoned_cart_notified metadata (only if cart_id exists)
+    const cartQueryInput = transform({ orders }, (d) => {
+      const cartId = (d.orders[0] as Record<string, any>)?.cart_id
+      if (!cartId) return { entity: "cart" as const, fields: ["id", "metadata"], filters: { id: "nonexistent" } }
+      return { entity: "cart" as const, fields: ["id", "metadata"], filters: { id: cartId } }
+    })
 
     const { data: carts } = useQueryGraphStep(cartQueryInput)
       .config({ name: "fetch-cart-for-recovery-check" })
@@ -44,8 +44,8 @@ export const trackOrderPlacedWorkflow = createWorkflow(
         if (!order) return null
 
         const cart = cartResult[0] as Record<string, any> | undefined
-        const isRecoveredCart =
-          cart?.metadata?.abandoned_cart_notified === true
+        // abandoned_cart_notified stores an ISO date string, not a boolean
+        const isRecoveredCart = Boolean(cart?.metadata?.abandoned_cart_notified)
 
         return {
           event: "order_placed",

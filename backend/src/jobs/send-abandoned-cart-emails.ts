@@ -71,7 +71,7 @@ export default async function abandonedCartJob(
             )
             await analytics.track({
               event: "abandoned_cart_email_sent",
-              actor_id: cart.customer_id || cart.email,
+              actor_id: cart.customer_id ?? `cart_${cart.id}`,
               properties: {
                 cart_id: cart.id,
                 hours_abandoned: hoursAbandoned,
