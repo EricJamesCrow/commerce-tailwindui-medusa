@@ -45,7 +45,7 @@ export const GET = async (
   }
 
   const { result } = await generateInvoicePdfWorkflow(req.scope).run({
-    input: { order_id: orderId },
+    input: { order_id: orderId, delivery_method: "link" },
   })
 
   const invoiceService: InvoiceModuleService =

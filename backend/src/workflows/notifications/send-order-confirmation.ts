@@ -79,6 +79,7 @@ export const sendOrderConfirmationWorkflow = createWorkflow(
       return tryGenerateInvoicePdfStep({
         order_id: input.id,
         order,
+        delivery_method: "attachment",
       })
     })
 

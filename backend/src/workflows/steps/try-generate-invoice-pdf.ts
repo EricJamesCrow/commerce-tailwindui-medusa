@@ -2,6 +2,7 @@ import {
   createStep,
   StepResponse,
 } from "@medusajs/framework/workflows-sdk"
+import { Modules } from "@medusajs/framework/utils"
 import { INVOICE_MODULE } from "../../modules/invoice"
 import type InvoiceModuleService from "../../modules/invoice/service"
 import { getOrCreateInvoiceRecord, buildInvoiceDocumentProps } from "./_invoice-helpers"
@@ -9,6 +10,7 @@ import { getOrCreateInvoiceRecord, buildInvoiceDocumentProps } from "./_invoice-
 type TryGenerateInvoicePdfInput = {
   order_id: string
   order: Record<string, any>
+  delivery_method?: "attachment" | "link"
 }
 
 type TryGenerateInvoicePdfOutput = {
@@ -68,6 +70,22 @@ export const tryGenerateInvoicePdfStep = createStep(
 
       const element = React.createElement(InvoiceDocument, props)
       const buffer = await renderToBuffer(element)
+
+      // Track invoice_generated (fire-and-forget, inside try block)
+      try {
+        const analytics = container.resolve(Modules.ANALYTICS)
+        await analytics.track({
+          event: "invoice_generated",
+          actor_id: (input.order as any).customer_id || (input.order as any).email,
+          properties: {
+            order_id: input.order_id,
+            invoice_number: props.invoiceNumber,
+            delivery_method: input.delivery_method ?? "attachment",
+          },
+        })
+      } catch {
+        // Analytics module not registered or tracking failed — ignore
+      }
 
       return new StepResponse({
         buffer: Buffer.from(buffer),

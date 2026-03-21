@@ -11,9 +11,11 @@ import {
   type FormatInvoiceDataInput,
 } from "./steps/format-invoice-data"
 import { renderInvoicePdfStep } from "./steps/render-invoice-pdf"
+import { trackAnalyticsEventStep } from "./steps/track-analytics-event"
 
 type GenerateInvoicePdfInput = {
   order_id: string
+  delivery_method?: "attachment" | "link"
 }
 
 export const generateInvoicePdfWorkflow = createWorkflow(
@@ -25,6 +27,7 @@ export const generateInvoicePdfWorkflow = createWorkflow(
       fields: [
         "id",
         "display_id",
+        "customer_id",
         "email",
         "created_at",
         "currency_code",
@@ -117,6 +120,24 @@ export const generateInvoicePdfWorkflow = createWorkflow(
 
     // Step 5: Render PDF buffer
     const buffer = renderInvoicePdfStep(invoiceProps)
+
+    // Step 6: Track invoice_generated analytics event
+    // Cast to `any` to avoid TS2590 "union type too complex" from WorkflowData intersection
+    const trackingInput = transform(
+      { order, invoice, input } as any,
+      (data: any) => ({
+        event: "invoice_generated",
+        actor_id: data.order.customer_id ?? null,
+        actor_fallback: data.order.email ?? null,
+        properties: {
+          order_id: data.input.order_id,
+          invoice_number: `${data.invoice.year}-${data.invoice.display_id}`,
+          delivery_method: data.input.delivery_method ?? "unknown",
+        },
+      })
+    )
+
+    trackAnalyticsEventStep(trackingInput)
 
     return new WorkflowResponse({ buffer, invoice })
   }
