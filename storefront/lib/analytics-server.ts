@@ -32,3 +32,17 @@ export async function trackServer<E extends keyof AnalyticsEvents>(
     properties: properties as Record<string, unknown>,
   })
 }
+
+export async function trackGoal<E extends keyof AnalyticsEvents>(
+  event: E,
+  properties: AnalyticsEvents[E],
+  experiment: { flagKey: string; variant: string },
+): Promise<void> {
+  // Cast: the spread adds a `$feature/<key>` property that isn't part of
+  // AnalyticsEvents[E]. PostHog expects it but our strict type map can't
+  // model dynamic keys. The cast is intentional — don't remove it.
+  await trackServer(event, {
+    ...properties,
+    [`$feature/${experiment.flagKey}`]: experiment.variant,
+  } as AnalyticsEvents[E])
+}
