@@ -20,6 +20,23 @@ Alternatives considered and rejected:
 - **Direct `posthog-node` SDK:** Bypasses Medusa's module system, one-off pattern that doesn't match the codebase.
 - **Pipe to storefront PostHog:** Misses events with no storefront equivalent (admin-triggered cancellations, refunds, fulfillments).
 
+## Actor ID Strategy
+
+The PostHog analytics provider requires `actor_id` on every `.track()` call. Each event must define its actor:
+
+| Event | `actor_id` | Fallback for guests/system |
+|-------|-----------|---------------------------|
+| `order_placed` | `order.customer_id` | `order.email` (guest orders have no customer ID but always have email) |
+| `order_canceled` | `order.customer_id` | `order.email` |
+| `customer_created` | `customer.id` | Always present |
+| `payment_refunded` | `order.customer_id` (via payment → order) | `order.email` |
+| `shipment_created` | `order.customer_id` (via fulfillment → order) | `order.email` |
+| `review_created` | `review.customer_id` | Always present (reviews require auth) |
+| `invoice_generated` | `order.customer_id` | `order.email` |
+| `abandoned_cart_email_sent` | `cart.customer_id` | `cart.email` (abandoned cart emails require an email) |
+
+The shared tracking step must handle this: if `actor_id` is falsy, it falls back to the provided `actor_fallback` (email), and if both are empty, it logs a warning and skips the event rather than throwing.
+
 ## Event Catalog
 
 ### 1. `order_placed`
@@ -27,14 +44,16 @@ Alternatives considered and rejected:
 | Field | Details |
 |-------|---------|
 | **Source** | `order.placed` subscriber |
+| **actor_id** | `order.customer_id` or `order.email` |
 | **Properties** | `order_id`, `total`, `item_count`, `currency_code`, `customer_id`, `is_recovered_cart` |
-| **Notes** | `is_recovered_cart` is derived from `order.metadata?.abandoned_cart_notified` — a metadata flag already set by the abandoned cart job. No extra query needed; just check the field on the order record fetched by `useQueryGraphStep`. |
+| **Notes** | `is_recovered_cart`: The abandoned cart job sets `abandoned_cart_notified` on **cart** metadata, not order metadata. Medusa v2 does not copy cart metadata to the order on completion. The tracking workflow must query the cart via `order.cart_id` to check `cart.metadata?.abandoned_cart_notified`. This is one additional query but only runs for orders — acceptable overhead. |
 
 ### 2. `order_canceled`
 
 | Field | Details |
 |-------|---------|
 | **Source** | `order.canceled` subscriber |
+| **actor_id** | `order.customer_id` or `order.email` |
 | **Properties** | `order_id`, `total`, `currency_code`, `customer_id` |
 | **Notes** | Admin-triggered. No storefront equivalent. |
 
@@ -43,48 +62,54 @@ Alternatives considered and rejected:
 | Field | Details |
 |-------|---------|
 | **Source** | `customer.created` subscriber |
-| **Properties** | `customer_id`, `registration_source` |
-| **Notes** | `registration_source` distinguishes explicit signup (`"registration"`) vs guest checkout conversion (`"guest_checkout"`). Determined by checking whether the customer has `has_account: true` at creation time. |
+| **actor_id** | `customer.id` |
+| **Properties** | `customer_id`, `has_account` |
+| **Notes** | Tracks `has_account` boolean from the customer record. In Medusa v2, explicit signups create customers with `has_account: true`, while guest checkout creates customers with `has_account: false` initially. This is a simpler and more reliable signal than trying to infer `registration_source`. Downstream analysis can correlate `has_account: false` → later `has_account: true` transitions via separate events if needed. |
 
 ### 4. `payment_refunded`
 
 | Field | Details |
 |-------|---------|
 | **Source** | `payment.refunded` subscriber |
+| **actor_id** | `order.customer_id` or `order.email` (via payment → order lookup) |
 | **Properties** | `payment_id`, `order_id`, `amount`, `currency_code` |
-| **Notes** | Admin-triggered. Requires fetching the payment's associated order to get `order_id` and `currency_code`. |
+| **Notes** | Admin-triggered. The tracking workflow fetches the payment collection → order to get `order_id`, `currency_code`, and the actor. |
 
 ### 5. `shipment_created`
 
 | Field | Details |
 |-------|---------|
 | **Source** | `shipment.created` subscriber |
+| **actor_id** | `order.customer_id` or `order.email` (via fulfillment → order lookup) |
 | **Properties** | `order_id`, `fulfillment_id`, `item_count` |
-| **Notes** | Respects existing `no_notification` check — if `no_notification` is true, still track (analytics is separate from customer notifications). |
+| **Notes** | The analytics call must be placed **before** the existing `no_notification` early return in the subscriber. Analytics tracking is independent of customer notification preferences — a shipment is a shipment regardless of notification settings. The subscriber restructuring: analytics first, then `no_notification` check, then email workflow. |
 
 ### 6. `review_created`
 
 | Field | Details |
 |-------|---------|
 | **Source** | `product_review.created` subscriber |
+| **actor_id** | `review.customer_id` |
 | **Properties** | `product_id`, `rating`, `has_images` |
-| **Notes** | The event payload only includes `id` and `product_id`. The tracking workflow fetches the review record to get `rating` and image count. One lightweight query. |
+| **Notes** | The event payload only includes `id` and `product_id`. The tracking workflow resolves the `productReviewModuleService` from the container (not `useQueryGraphStep` — `product_review` is a custom module that may not be in the query graph). Calls `service.retrieveProductReview(id, { relations: ["images"] })` to get `rating` and image count. |
 
 ### 7. `invoice_generated`
 
 | Field | Details |
 |-------|---------|
 | **Source** | `generate-invoice-pdf` workflow (called from order confirmation workflow and storefront download route) |
+| **actor_id** | `order.customer_id` or `order.email` |
 | **Properties** | `order_id`, `invoice_number`, `delivery_method` |
-| **Notes** | `delivery_method` is `"attachment"` when the invoice is attached to the order confirmation email (`attach_to_email` config), or `"link"` when downloaded via the storefront. The tracking step is added to the `generateInvoicePdfWorkflow` directly since invoices are generated by a workflow, not an event. |
+| **Notes** | `delivery_method` cannot be determined inside `generateInvoicePdfWorkflow` since it doesn't know its calling context. Instead, extend the workflow's input type to accept an optional `delivery_method: "attachment" \| "link"` field. The order confirmation workflow passes `"attachment"`, the storefront download route passes `"link"`. Defaults to `"unknown"` if not provided. |
 
 ### 8. `abandoned_cart_email_sent`
 
 | Field | Details |
 |-------|---------|
 | **Source** | `send-abandoned-cart-emails` scheduled job |
+| **actor_id** | `cart.customer_id` or `cart.email` |
 | **Properties** | `cart_id`, `hours_abandoned`, `item_count` |
-| **Notes** | Tracked inline in the scheduled job after each successful email send. Completes the abandoned cart funnel: email sent → cart recovered (storefront) → order placed with `is_recovered_cart: true` (event #1). |
+| **Notes** | Tracked in the scheduled job after each successful `sendAbandonedCartEmailWorkflow` run. The job already has `cart` in scope from its query (which fetches `items.*`), so `item_count` is `cart.items.length`. `hours_abandoned` is computed from `cart.updated_at` vs current time. The tracking call resolves the analytics service directly from the container (not a workflow) since we're already inside the job loop. |
 
 ## Architecture
 
@@ -100,14 +125,33 @@ backend/src/workflows/steps/track-analytics-event.ts
 // Pseudocode — not final implementation
 const trackAnalyticsEventStep = createStep(
   "track-analytics-event",
-  async ({ event, actor_id, properties }, { container }) => {
-    const analytics = container.resolve(Modules.ANALYTICS)
-    await analytics.track({ event, actor_id, properties })
+  async ({ event, actor_id, actor_fallback, properties }, { container }) => {
+    // Graceful no-op when analytics module is not registered
+    let analytics
+    try {
+      analytics = container.resolve(Modules.ANALYTICS)
+    } catch {
+      // Module not registered (POSTHOG_EVENTS_API_KEY not set) — skip silently
+      return
+    }
+
+    const resolvedActorId = actor_id || actor_fallback
+    if (!resolvedActorId) {
+      container.resolve("logger").warn(
+        `[analytics] Skipping ${event}: no actor_id or fallback`
+      )
+      return
+    }
+
+    await analytics.track({ event, actor_id: resolvedActorId, properties })
   }
 )
 ```
 
-This step is fire-and-forget by design. A PostHog API failure must never block order processing, email delivery, or any other business logic.
+This step is fire-and-forget by design. It handles three failure modes:
+1. **Module not registered** (no API key) — silent no-op via container resolution catch
+2. **No actor ID** — logs warning and skips (PostHog provider throws without `actor_id`)
+3. **PostHog API error** — caught by the subscriber's outer try/catch, logged, and ignored
 
 ### Per-Event Workflows
 
@@ -190,6 +234,16 @@ if (!process.env.POSTHOG_EVENTS_API_KEY) {
 }
 ```
 
+## Package Dependencies
+
+Add to `backend/package.json`:
+
+```json
+"@medusajs/analytics-posthog": "^2.13.1"
+```
+
+This package depends on `posthog-node` transitively. No need to install `posthog-node` directly.
+
 ## Environment Variables
 
 | Variable | Required | Default | Purpose |
@@ -214,13 +268,22 @@ No event duplication. The storefront tracks user-initiated actions (add to cart,
 
 ## Testing
 
-After implementation:
-1. Start backend with `POSTHOG_EVENTS_API_KEY` set
-2. Place an order → verify `order_placed` appears in PostHog
-3. Cancel an order from admin → verify `order_canceled`
-4. Check PostHog Live Events view for all 8 event types
-5. Verify backend starts cleanly without `POSTHOG_EVENTS_API_KEY` (graceful degradation)
-6. Run `bun run build` in backend to verify no type errors
+### Build verification
+1. Run `cd backend && bun run build` — must pass with no type errors
+
+### Graceful degradation
+2. Start backend **without** `POSTHOG_EVENTS_API_KEY` — verify startup warning is logged and no crashes
+3. Place an order without the key set — verify the tracking step silently no-ops (check logs for absence of errors)
+
+### Event verification (with key set)
+4. Start backend with `POSTHOG_EVENTS_API_KEY` set
+5. Place an order → verify `order_placed` in PostHog Live Events
+6. Cancel an order from admin → verify `order_canceled`
+7. Create a customer account → verify `customer_created` with `has_account: true`
+8. Create a shipment from admin → verify `shipment_created`
+9. Submit a product review → verify `review_created`
+10. Download an invoice → verify `invoice_generated` with `delivery_method: "link"`
+11. Check all events have valid `actor_id` values in PostHog (no empty distinct IDs)
 
 ## Out of Scope
 
