@@ -1,10 +1,11 @@
 import { MedusaContainer } from "@medusajs/framework/types"
-import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
+import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { sendAbandonedCartEmailWorkflow } from "../workflows/notifications/send-abandoned-cart-email"
 
 type AbandonedCartRow = {
   id: string
   email: string
+  customer_id: string | null
   items: unknown[]
   metadata: Record<string, unknown> | null
   updated_at: string
@@ -34,6 +35,7 @@ export default async function abandonedCartJob(
         fields: [
           "id",
           "email",
+          "customer_id",
           "items.*",
           "metadata",
           "updated_at",
@@ -61,6 +63,24 @@ export default async function abandonedCartJob(
             input: { cart_id: cart.id },
           })
           totalSent++
+          // Track analytics (fire-and-forget)
+          try {
+            const analytics = container.resolve(Modules.ANALYTICS)
+            const hoursAbandoned = Math.round(
+              (Date.now() - new Date(cart.updated_at).getTime()) / (1000 * 60 * 60)
+            )
+            await analytics.track({
+              event: "abandoned_cart_email_sent",
+              actor_id: cart.customer_id || cart.email,
+              properties: {
+                cart_id: cart.id,
+                hours_abandoned: hoursAbandoned,
+                item_count: cart.items?.length ?? 0,
+              },
+            })
+          } catch {
+            // Analytics module not registered or tracking failed — ignore
+          }
           logger.info(`Sent abandoned cart email for cart ${cart.id}`)
         } catch (error: any) {
           totalErrors++
