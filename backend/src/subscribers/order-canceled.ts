@@ -1,5 +1,6 @@
 import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework"
 import { sendOrderCanceledWorkflow } from "../workflows/notifications/send-order-canceled"
+import { trackOrderCanceledWorkflow } from "../workflows/analytics/track-order-canceled"
 
 export default async function orderCanceledHandler({
   event: { data },
@@ -17,6 +18,14 @@ export default async function orderCanceledHandler({
       `Failed to send order canceled email for order ${data.id}`,
       error
     )
+  }
+
+  try {
+    await trackOrderCanceledWorkflow(container).run({
+      input: { order_id: data.id },
+    })
+  } catch (error) {
+    logger.warn(`[analytics] Failed to track order_canceled for ${data.id}: ${error}`)
   }
 }
 
