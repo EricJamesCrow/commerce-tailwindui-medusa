@@ -44,6 +44,10 @@ if (process.env.S3_BUCKET && (!process.env.S3_ACCESS_KEY_ID || !process.env.S3_S
   )
 }
 
+if (!process.env.POSTHOG_EVENTS_API_KEY) {
+  console.warn("[medusa-config] POSTHOG_EVENTS_API_KEY is not set — backend analytics will be disabled")
+}
+
 module.exports = defineConfig({
   admin: {
     backendUrl: process.env.MEDUSA_BACKEND_URL,
@@ -181,6 +185,26 @@ module.exports = defineConfig({
                   is_default: true,
                   options: {
                     redisUrl,
+                  },
+                },
+              ],
+            },
+          },
+        ]
+      : []),
+    // PostHog analytics (conditional on POSTHOG_EVENTS_API_KEY)
+    ...(process.env.POSTHOG_EVENTS_API_KEY
+      ? [
+          {
+            resolve: "@medusajs/medusa/analytics",
+            options: {
+              providers: [
+                {
+                  resolve: "@medusajs/analytics-posthog",
+                  id: "posthog",
+                  options: {
+                    posthogEventsKey: process.env.POSTHOG_EVENTS_API_KEY,
+                    posthogHost: process.env.POSTHOG_HOST,
                   },
                 },
               ],

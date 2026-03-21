@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@medusajs/admin-sdk": "2.13.1",
+    "@medusajs/analytics-posthog": "^2.13.1",
     "@medusajs/caching-redis": "^2.13.1",
     "@medusajs/cli": "2.13.1",
     "@medusajs/framework": "2.13.1",
