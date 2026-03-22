@@ -69,7 +69,6 @@ export function useSearch(query: string, enabled: boolean) {
           const index = meilisearchClient.index(MEILISEARCH_INDEX_NAME)
           const searchResult = await index.search(query, {
             limit: 8,
-            filter: "status = published",
           })
           const products = searchResult.hits.map(hitToProduct)
           setResults(products)
