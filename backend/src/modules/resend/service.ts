@@ -46,6 +46,10 @@ import {
   AbandonedCart,
   isValidAbandonedCartData,
 } from "./templates/abandoned-cart"
+import {
+  NewsletterWelcome,
+  isValidNewsletterWelcomeData,
+} from "./templates/newsletter-welcome"
 import { EmailTemplates } from "./templates/template-registry"
 
 type ResendOptions = {
@@ -134,6 +138,11 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
       component: AbandonedCart,
       validate: isValidAbandonedCartData,
       defaultSubject: "You Left Something Behind",
+    },
+    [EmailTemplates.NEWSLETTER_WELCOME]: {
+      component: NewsletterWelcome,
+      validate: isValidNewsletterWelcomeData,
+      defaultSubject: "Welcome to Our Newsletter",
     },
   }
 

@@ -16,6 +16,7 @@ export const EmailTemplates = {
   REFUND_CONFIRMATION: "refund-confirmation",
   ADMIN_ORDER_ALERT: "admin-order-alert",
   ABANDONED_CART: "abandoned-cart",
+  NEWSLETTER_WELCOME: "newsletter-welcome",
 } as const
 
 export type EmailTemplateId =
