@@ -4,7 +4,7 @@ import { getProducts } from "lib/medusa"
 import { MEILISEARCH_ENABLED } from "lib/meilisearch"
 import { Metadata } from "next"
 import { redirect } from "next/navigation"
-import MeilisearchResults from "./meilisearch-results"
+import { MeilisearchResults } from "./meilisearch-results"
 
 export const metadata: Metadata = {
   title: "Search",
@@ -16,11 +16,9 @@ export default async function SearchPage(props: {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const searchParams = await props.searchParams
-  const {
-    sort,
-    q: searchValue,
-    collection,
-  } = searchParams as { [key: string]: string }
+  const sort = typeof searchParams?.sort === "string" ? searchParams.sort : undefined
+  const searchValue = typeof searchParams?.q === "string" ? searchParams.q : undefined
+  const collection = typeof searchParams?.collection === "string" ? searchParams.collection : undefined
 
   if (!searchValue) {
     redirect("/products")

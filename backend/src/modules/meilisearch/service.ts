@@ -66,12 +66,16 @@ export default class MeilisearchModuleService {
     if (ids.length === 0) return []
     const index = this.client_.index(this.options_.productIndexName)
     try {
+      // Sanitize IDs to prevent filter injection
+      const sanitized = ids.map((id) => `"${id.replace(/"/g, "")}"`)
       const results = await index.getDocuments({
-        filter: `id IN [${ids.map((id) => `"${id}"`).join(", ")}]`,
+        filter: `id IN [${sanitized.join(", ")}]`,
         limit: ids.length,
       })
       return results.results as Record<string, unknown>[]
-    } catch {
+    } catch (error) {
+      // Log rather than silently swallow
+      console.warn("[Meilisearch] Failed to retrieve from index:", error)
       return []
     }
   }
@@ -89,7 +93,7 @@ export default class MeilisearchModuleService {
         offset,
       })
       for (const doc of results.results) {
-        ids.push(doc.id as string)
+        if (typeof doc.id === "string") ids.push(doc.id)
       }
       if (results.results.length < limit) break
       offset += limit

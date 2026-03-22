@@ -17,7 +17,7 @@ import {
 } from "lib/meilisearch"
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   Configure,
   Hits,
@@ -43,10 +43,10 @@ function PriceRangeSlider() {
   const [localMax, setLocalMax] = useState(currentMax)
 
   // Sync local state when InstantSearch state changes
-  if (localMin !== currentMin || localMax !== currentMax) {
+  useEffect(() => {
     setLocalMin(currentMin)
     setLocalMax(currentMax)
-  }
+  }, [currentMin, currentMax])
 
   return (
     <div className="pt-6">
@@ -205,7 +205,7 @@ function FilterSections() {
 }
 
 // --- Main Component ---
-export default function MeilisearchResults({
+export function MeilisearchResults({
   initialQuery,
   initialCollection,
 }: {

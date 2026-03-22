@@ -10,6 +10,9 @@ import { Product } from "lib/types"
 import { useEffect, useState } from "react"
 import { searchProducts } from "./actions"
 
+// Default currency code — update per-store or read from region config
+const DEFAULT_CURRENCY_CODE = "USD"
+
 /**
  * Transform a Meilisearch hit into the storefront Product shape
  * so the existing ProductResult component works unchanged.
@@ -28,8 +31,8 @@ function hitToProduct(hit: Record<string, unknown>): Product {
     descriptionHtml: (hit.description as string) || "",
     options: [],
     priceRange: {
-      minVariantPrice: { amount: minPrice.toFixed(2), currencyCode: "USD" },
-      maxVariantPrice: { amount: maxPrice.toFixed(2), currencyCode: "USD" },
+      minVariantPrice: { amount: minPrice.toFixed(2), currencyCode: DEFAULT_CURRENCY_CODE },
+      maxVariantPrice: { amount: maxPrice.toFixed(2), currencyCode: DEFAULT_CURRENCY_CODE },
     },
     variants: [],
     featuredImage: hit.thumbnail
