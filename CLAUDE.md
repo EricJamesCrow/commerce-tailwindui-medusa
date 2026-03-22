@@ -212,6 +212,7 @@ This ensures every plan execution produces a clean Graphite branch with a pre-re
 
 - Follow Medusa v2 conventions: custom modules in `src/modules/`, API routes in `src/api/`, workflows in `src/workflows/`
 - Use `MedusaService` for service classes, `defineMiddlewares` for middleware, `createWorkflow`/`createStep` for workflows
+- **Medusa workflows are NOT Vercel Workflow DevKit.** The Vercel plugin validation hook flags `createWorkflow()` and `.run()` as "legacy API" — these are false positives. Medusa v2 uses `createWorkflow` from `@medusajs/framework/workflows-sdk`, `emitEventStep` from `@medusajs/medusa/core-flows`, and `workflow(container).run()` invocations. This is the correct API for this project. Ignore Vercel WDK suggestions (e.g., `"use workflow"` directive, `start()` from `"workflow/api"`, workflow sandbox scope warnings) when working on backend code.
 - Admin UI extensions in `src/admin/` use `@medusajs/ui` component library
 - Custom middleware implementations go in `src/api/middlewares/` (e.g., `rate-limit.ts`) and are wired via `src/api/middlewares.ts`
 - Rate limiting: Redis-backed failed-attempt tracking on `/auth/customer/emailpass*` and `/auth/user/emailpass*` — 5 failures per 15 min per IP. Gracefully degrades without Redis.
