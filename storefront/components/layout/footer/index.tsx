@@ -2,6 +2,8 @@ import Image from "next/image";
 import { Suspense } from "react";
 import FooterCopyright from "./footer-copyright";
 import FooterNavigation from "./footer-navigation";
+import { FooterNewsletter } from "./footer-newsletter";
+import { retrieveCustomer } from "lib/medusa/customer";
 
 const { COMPANY_NAME } = process.env;
 
@@ -46,6 +48,11 @@ const NavigationSkeleton = () => (
   </div>
 );
 
+async function NewsletterWithCustomer() {
+  const customer = await retrieveCustomer().catch(() => null)
+  return <FooterNewsletter customerEmail={customer?.email} />
+}
+
 export default function Footer() {
   return (
     <footer aria-labelledby="footer-heading" className="bg-white">
@@ -72,7 +79,9 @@ export default function Footer() {
             </Suspense>
 
             {/* Newsletter section */}
-            {/* <FooterNewsletter /> */}
+            <Suspense fallback={<FooterNewsletter />}>
+              <NewsletterWithCustomer />
+            </Suspense>
           </div>
         </div>
 
