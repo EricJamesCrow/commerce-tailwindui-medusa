@@ -23,8 +23,5 @@ export async function POST(
     },
   })
 
-  res.status(result.isNewSubscriber ? 201 : 200).json({
-    subscriber: result.subscriber,
-    isNewSubscriber: result.isNewSubscriber,
-  })
+  res.status(200).json({ success: true })
 }

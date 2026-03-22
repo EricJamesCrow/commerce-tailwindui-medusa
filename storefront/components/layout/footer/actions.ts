@@ -6,7 +6,6 @@ import { trackServer } from "lib/analytics-server"
 
 export type NewsletterResult = {
   success?: boolean
-  isNewSubscriber?: boolean
   error?: string
 } | null
 
@@ -16,10 +15,7 @@ export async function subscribeToNewsletter(
   const headers = await getAuthHeaders()
 
   try {
-    const { subscriber, isNewSubscriber } = await sdk.client.fetch<{
-      subscriber: { id: string; email: string }
-      isNewSubscriber: boolean
-    }>("/store/newsletter/subscribe", {
+    await sdk.client.fetch<{ success: true }>("/store/newsletter/subscribe", {
       method: "POST",
       headers,
       body: {
@@ -30,10 +26,9 @@ export async function subscribeToNewsletter(
 
     await trackServer("newsletter_subscribed", {
       source: "footer",
-      is_new_subscriber: isNewSubscriber,
     }).catch(() => {})
 
-    return { success: true, isNewSubscriber }
+    return { success: true }
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : "Subscription failed"
 

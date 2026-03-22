@@ -3,7 +3,6 @@ import { removeNewsletterFromResendWorkflow } from "../workflows/newsletter/remo
 
 type NewsletterUnsubscribedData = {
   id: string
-  email: string
 }
 
 export default async function newsletterUnsubscribedHandler({
@@ -14,7 +13,7 @@ export default async function newsletterUnsubscribedHandler({
 
   try {
     await removeNewsletterFromResendWorkflow(container).run({
-      input: { email: data.email, subscriber_id: data.id },
+      input: { subscriber_id: data.id },
     })
     logger.info(
       `[newsletter] Removed subscriber ${data.id} from Resend Audience`

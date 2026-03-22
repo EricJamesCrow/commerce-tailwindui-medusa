@@ -236,10 +236,6 @@ export default defineMiddlewares({
       matcher: "/store/newsletter/subscribe",
       method: ["POST"],
       middlewares: [
-        (req, _res, next) => {
-          req.app.set("trust proxy", true)
-          next()
-        },
         newsletterRateLimit(),
         authenticate("customer", ["session", "bearer"], {
           allowUnauthenticated: true,
@@ -258,10 +254,6 @@ export default defineMiddlewares({
       matcher: "/store/newsletter/unsubscribe",
       method: ["POST"],
       middlewares: [
-        (req, _res, next) => {
-          req.app.set("trust proxy", true)
-          next()
-        },
         newsletterRateLimit(),
         validateAndTransformBody(UnsubscribeSchema),
       ],

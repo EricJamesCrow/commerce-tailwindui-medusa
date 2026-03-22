@@ -7,6 +7,10 @@ const WINDOW_SECONDS = 60 // 1 minute
 let redis: Redis | null = null
 let warned = false
 
+// In-process fallback when Redis is unavailable
+const inProcessStore = new Map<string, { count: number; resetAt: number }>()
+let warnedFallback = false
+
 function getRedis(): Redis | null {
   if (redis) return redis
   const url = process.env.REDIS_URL
@@ -30,17 +34,51 @@ function getRedis(): Redis | null {
 
 export function newsletterRateLimit(): RequestHandler {
   return async (req, res, next) => {
-    const client = getRedis()
-    if (!client) return next()
-
     const ip = req.ip || req.socket.remoteAddress
     if (!ip) return next()
 
     const key = `newsletter_sub:${ip}`
+    const client = getRedis()
+
+    if (!client) {
+      // In-process fallback
+      if (!warnedFallback) {
+        console.warn("[newsletter-rate-limit] Redis unavailable — using in-process rate limiting (degraded mode, not shared across instances)")
+        warnedFallback = true
+      }
+
+      const now = Date.now()
+      const entry = inProcessStore.get(key)
+
+      if (entry && entry.resetAt > now) {
+        entry.count += 1
+        if (entry.count > MAX_REQUESTS) {
+          const ttl = Math.ceil((entry.resetAt - now) / 1000)
+          res.set("Retry-After", String(ttl))
+          res.status(429).json({
+            message: "Too many requests. Please try again later.",
+            type: "too_many_requests",
+          })
+          return
+        }
+      } else {
+        // Expired or missing — create fresh entry
+        inProcessStore.set(key, {
+          count: 1,
+          resetAt: now + WINDOW_SECONDS * 1000,
+        })
+      }
+
+      return next()
+    }
 
     try {
-      const count = await client.get(key)
-      if (count && parseInt(count, 10) >= MAX_REQUESTS) {
+      // Atomic INCR-first pattern — avoids GET-then-INCR race condition
+      const count = await client.incr(key)
+      if (count === 1) {
+        await client.expire(key, WINDOW_SECONDS)
+      }
+      if (count > MAX_REQUESTS) {
         const ttl = await client.ttl(key)
         res.set("Retry-After", String(ttl > 0 ? ttl : WINDOW_SECONDS))
         res.status(429).json({
@@ -49,9 +87,6 @@ export function newsletterRateLimit(): RequestHandler {
         })
         return
       }
-
-      // Increment counter and set expiry on every request
-      await client.multi().incr(key).expire(key, WINDOW_SECONDS).exec()
     } catch {
       // Redis error — pass through
       return next()

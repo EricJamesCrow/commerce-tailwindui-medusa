@@ -95,7 +95,7 @@ export type AnalyticsEvents = {
   abandoned_cart_recovered: { cart_id: string; item_count: number }
 
   // --- Newsletter ---
-  newsletter_subscribed: { source: "footer"; is_new_subscriber: boolean }
+  newsletter_subscribed: { source: "footer" }
   newsletter_subscribe_failed: { source: "footer"; error: string }
 
   // --- Client-side UI ---

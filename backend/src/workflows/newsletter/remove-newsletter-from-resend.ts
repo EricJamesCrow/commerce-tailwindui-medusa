@@ -9,7 +9,6 @@ import { NEWSLETTER_MODULE } from "../../modules/newsletter"
 import NewsletterModuleService from "../../modules/newsletter/service"
 
 type RemoveInput = {
-  email: string
   subscriber_id: string
 }
 
@@ -47,7 +46,9 @@ const removeFromResendStep = createStep(
       logger.warn(
         `[newsletter] Failed to remove subscriber ${input.subscriber_id} from Resend Audience: ${error.message}`
       )
-      return new StepResponse({ skipped: false, error: error.message })
+      throw new Error(
+        `Failed to remove subscriber ${input.subscriber_id} from Resend: ${error.message}`
+      )
     }
 
     await newsletterService.updateSubscribers({

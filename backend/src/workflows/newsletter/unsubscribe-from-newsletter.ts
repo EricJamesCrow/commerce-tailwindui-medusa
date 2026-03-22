@@ -70,11 +70,10 @@ export const unsubscribeFromNewsletterWorkflow = createWorkflow(
     const result = unsubscribeStep({ email: input.email })
 
     when(result, (data) => data.wasChanged).then(() => {
-      const eventData = transform({ result, input }, (data) => ({
+      const eventData = transform({ result }, (data) => ({
         eventName: "newsletter.unsubscribed" as const,
         data: {
           id: data.result.subscriber.id,
-          email: data.input.email,
         },
       }))
 
