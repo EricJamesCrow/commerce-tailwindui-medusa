@@ -1,30 +1,46 @@
-import ProductGrid from "components/layout/product-grid";
-import { defaultSort, sorting } from "lib/constants";
-import { getProducts } from "lib/medusa";
-import { Metadata } from "next";
-import { redirect } from "next/navigation";
+import ProductGrid from "components/layout/product-grid"
+import { defaultSort, sorting } from "lib/constants"
+import { getProducts } from "lib/medusa"
+import { MEILISEARCH_ENABLED } from "lib/meilisearch"
+import { Metadata } from "next"
+import { redirect } from "next/navigation"
+import MeilisearchResults from "./meilisearch-results"
 
 export const metadata: Metadata = {
   title: "Search",
   description: "Search for products in the store.",
   robots: { index: false },
-};
+}
 
 export default async function SearchPage(props: {
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const searchParams = await props.searchParams;
-  const { sort, q: searchValue } = searchParams as { [key: string]: string };
+  const searchParams = await props.searchParams
+  const {
+    sort,
+    q: searchValue,
+    collection,
+  } = searchParams as { [key: string]: string }
 
   if (!searchValue) {
-    redirect("/products");
+    redirect("/products")
   }
 
-  const { sortKey, reverse } =
-    sorting.find((item) => item.slug === sort) || defaultSort;
+  if (MEILISEARCH_ENABLED) {
+    return (
+      <MeilisearchResults
+        initialQuery={searchValue}
+        initialCollection={collection}
+      />
+    )
+  }
 
-  const products = await getProducts({ sortKey, reverse, query: searchValue });
-  const resultsText = products.length > 1 ? "results" : "result";
+  // Medusa fallback (unchanged)
+  const { sortKey, reverse } =
+    sorting.find((item) => item.slug === sort) || defaultSort
+
+  const products = await getProducts({ sortKey, reverse, query: searchValue })
+  const resultsText = products.length > 1 ? "results" : "result"
 
   return (
     <div>
@@ -36,5 +52,5 @@ export default async function SearchPage(props: {
       </p>
       {products.length > 0 ? <ProductGrid products={products} /> : null}
     </div>
-  );
+  )
 }
