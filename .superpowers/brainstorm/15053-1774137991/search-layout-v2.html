@@ -1,0 +1,185 @@
+<h2>Search Results Page — TailwindUI Filter Layout</h2>
+<p class="subtitle">Left sidebar filters (Headless UI Disclosure) + Sort menu + Product grid. Mobile: slide-out filter drawer.</p>
+
+<div class="mockup">
+  <div class="mockup-header">Desktop — Search Results for "green powder"</div>
+  <div class="mockup-body" style="padding: 0; background: #fff; color: #111;">
+    <!-- Header bar -->
+    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e5e7eb; padding: 16px 24px;">
+      <div>
+        <span style="font-size: 14px; color: #6b7280;">Showing 24 results for </span>
+        <span style="font-size: 14px; font-weight: 600; color: #111;">"green powder"</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="border: 1px solid #d1d5db; border-radius: 6px; padding: 6px 12px; font-size: 13px; color: #374151; cursor: pointer;">
+          Sort: Relevance <span style="color: #9ca3af;">▾</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <div style="display: flex; min-height: 500px;">
+      <!-- Left sidebar filters -->
+      <div style="width: 240px; border-right: 1px solid #e5e7eb; padding: 20px; flex-shrink: 0;">
+
+        <!-- Collections -->
+        <div style="margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer;">
+            <span style="font-size: 14px; font-weight: 500; color: #111;">Collections</span>
+            <span style="color: #9ca3af; font-size: 18px;">−</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px; padding-left: 2px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4b5563; cursor: pointer;">
+              <span style="width: 16px; height: 16px; border: 1.5px solid #d1d5db; border-radius: 3px; display: inline-block; background: #fff;"></span>
+              Powders <span style="color: #9ca3af; margin-left: auto;">(12)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4b5563; cursor: pointer;">
+              <span style="width: 16px; height: 16px; border: 1.5px solid #6366f1; border-radius: 3px; display: inline-block; background: #6366f1; position: relative;">
+                <span style="position: absolute; top: 1px; left: 2px; color: white; font-size: 10px; font-weight: bold;">✓</span>
+              </span>
+              Capsules <span style="color: #9ca3af; margin-left: auto;">(8)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4b5563; cursor: pointer;">
+              <span style="width: 16px; height: 16px; border: 1.5px solid #d1d5db; border-radius: 3px; display: inline-block; background: #fff;"></span>
+              Extracts <span style="color: #9ca3af; margin-left: auto;">(4)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4b5563; cursor: pointer;">
+              <span style="width: 16px; height: 16px; border: 1.5px solid #d1d5db; border-radius: 3px; display: inline-block; background: #fff;"></span>
+              Gummies <span style="color: #9ca3af; margin-left: auto;">(3)</span>
+            </label>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid #e5e7eb;"></div>
+
+        <!-- Price Range -->
+        <div style="margin-top: 20px; margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer;">
+            <span style="font-size: 14px; font-weight: 500; color: #111;">Price Range</span>
+            <span style="color: #9ca3af; font-size: 18px;">−</span>
+          </div>
+          <div style="padding: 0 2px;">
+            <!-- Slider track -->
+            <div style="position: relative; height: 4px; background: #e5e7eb; border-radius: 2px; margin: 16px 0;">
+              <div style="position: absolute; left: 10%; right: 30%; height: 4px; background: #6366f1; border-radius: 2px;"></div>
+              <div style="position: absolute; left: 10%; top: -5px; width: 14px; height: 14px; background: #fff; border: 2px solid #6366f1; border-radius: 50%;"></div>
+              <div style="position: absolute; right: 30%; top: -5px; width: 14px; height: 14px; background: #fff; border: 2px solid #6366f1; border-radius: 50%;"></div>
+            </div>
+            <!-- Min/Max labels -->
+            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #6b7280; margin-top: 8px;">
+              <span>$10</span>
+              <span>$70</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid #e5e7eb;"></div>
+
+        <!-- Availability -->
+        <div style="margin-top: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer;">
+            <span style="font-size: 14px; font-weight: 500; color: #111;">Availability</span>
+            <span style="color: #9ca3af; font-size: 18px;">−</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px; padding-left: 2px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4b5563; cursor: pointer;">
+              <span style="width: 16px; height: 16px; border: 1.5px solid #6366f1; border-radius: 3px; display: inline-block; background: #6366f1; position: relative;">
+                <span style="position: absolute; top: 1px; left: 2px; color: white; font-size: 10px; font-weight: bold;">✓</span>
+              </span>
+              In Stock <span style="color: #9ca3af; margin-left: auto;">(22)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4b5563; cursor: pointer;">
+              <span style="width: 16px; height: 16px; border: 1.5px solid #d1d5db; border-radius: 3px; display: inline-block; background: #fff;"></span>
+              Out of Stock <span style="color: #9ca3af; margin-left: auto;">(2)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product grid -->
+      <div style="flex: 1; padding: 20px 24px;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+          <div>
+            <div style="background: #f3f4f6; border-radius: 8px; height: 180px; margin-bottom: 10px;"></div>
+            <div style="font-size: 14px; font-weight: 500; color: #111;">Green Maeng Da Powder</div>
+            <div style="font-size: 13px; color: #6b7280; margin-top: 2px;">$24.99</div>
+          </div>
+          <div>
+            <div style="background: #f3f4f6; border-radius: 8px; height: 180px; margin-bottom: 10px;"></div>
+            <div style="font-size: 14px; font-weight: 500; color: #111;">Green Bali Capsules</div>
+            <div style="font-size: 13px; color: #6b7280; margin-top: 2px;">$29.99</div>
+          </div>
+          <div>
+            <div style="background: #f3f4f6; border-radius: 8px; height: 180px; margin-bottom: 10px;"></div>
+            <div style="font-size: 14px; font-weight: 500; color: #111;">Premium Green Extract</div>
+            <div style="font-size: 13px; color: #6b7280; margin-top: 2px;">$44.99</div>
+          </div>
+          <div>
+            <div style="background: #f3f4f6; border-radius: 8px; height: 180px; margin-bottom: 10px;"></div>
+            <div style="font-size: 14px; font-weight: 500; color: #111;">Green Thai Powder 8oz</div>
+            <div style="font-size: 13px; color: #6b7280; margin-top: 2px;">$19.99</div>
+          </div>
+          <div>
+            <div style="background: #f3f4f6; border-radius: 8px; height: 180px; margin-bottom: 10px;"></div>
+            <div style="font-size: 14px; font-weight: 500; color: #111;">Green Malay Gummies</div>
+            <div style="font-size: 13px; color: #6b7280; margin-top: 2px;">$34.99</div>
+          </div>
+          <div>
+            <div style="background: #f3f4f6; border-radius: 8px; height: 180px; margin-bottom: 10px;"></div>
+            <div style="font-size: 14px; font-weight: 500; color: #111;">Green Borneo Powder</div>
+            <div style="font-size: 13px; color: #6b7280; margin-top: 2px;">$22.99</div>
+          </div>
+        </div>
+        <!-- Pagination -->
+        <div style="display: flex; justify-content: center; gap: 4px; margin-top: 32px;">
+          <span style="padding: 6px 12px; border-radius: 6px; background: #6366f1; color: #fff; font-size: 13px; font-weight: 500;">1</span>
+          <span style="padding: 6px 12px; border-radius: 6px; font-size: 13px; color: #6b7280; cursor: pointer;">2</span>
+          <span style="padding: 6px 12px; border-radius: 6px; font-size: 13px; color: #6b7280; cursor: pointer;">3</span>
+          <span style="padding: 6px 12px; border-radius: 6px; font-size: 13px; color: #6b7280; cursor: pointer;">4</span>
+          <span style="padding: 6px 12px; font-size: 13px; color: #6b7280;">→</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top: 24px;"></div>
+
+<div class="mockup">
+  <div class="mockup-header">Mobile — Filter Drawer (slide-in from right)</div>
+  <div class="mockup-body" style="padding: 0; background: #fff; color: #111; max-width: 320px; margin: 0 auto;">
+    <!-- Drawer header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">
+      <span style="font-size: 16px; font-weight: 500;">Filters</span>
+      <span style="color: #9ca3af; font-size: 20px; cursor: pointer;">✕</span>
+    </div>
+    <!-- Drawer body -->
+    <div style="padding: 16px;">
+      <div style="margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 500; color: #111; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+          <span>Collections</span><span style="color: #9ca3af;">−</span>
+        </div>
+        <div style="padding-top: 12px; display: flex; flex-direction: column; gap: 10px;">
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4b5563;">
+            <span style="width: 16px; height: 16px; border: 1.5px solid #d1d5db; border-radius: 3px; display: inline-block;"></span>
+            Powders
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4b5563;">
+            <span style="width: 16px; height: 16px; border: 1.5px solid #d1d5db; border-radius: 3px; display: inline-block;"></span>
+            Capsules
+          </label>
+        </div>
+      </div>
+      <div style="margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 500; color: #111; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+          <span>Price Range</span><span style="color: #9ca3af;">+</span>
+        </div>
+      </div>
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 500; color: #111; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+          <span>Availability</span><span style="color: #9ca3af;">+</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,71 @@
+<h2>Search Results Page Layout</h2>
+<p class="subtitle">How should facets and results be arranged?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Left Sidebar Facets (Recommended)</h3>
+      <p>Classic e-commerce pattern — sticky filter sidebar on the left, product grid on the right. Filters always visible. Mobile: filters collapse into a slide-out drawer triggered by a "Filters" button.</p>
+      <div style="margin-top: 12px; display: flex; gap: 12px; font-size: 13px;">
+        <div style="width: 180px; min-height: 200px; border: 1px dashed #555; border-radius: 8px; padding: 12px;">
+          <div style="font-weight: 600; margin-bottom: 8px;">Filters</div>
+          <div style="margin-bottom: 12px;">
+            <div style="font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 4px;">Collections</div>
+            <div style="color: #aaa;">☐ Powders</div>
+            <div style="color: #aaa;">☐ Capsules</div>
+            <div style="color: #aaa;">☐ Extracts</div>
+          </div>
+          <div style="margin-bottom: 12px;">
+            <div style="font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 4px;">Price</div>
+            <div style="color: #aaa;">[$10 ——— $100]</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 4px;">Availability</div>
+            <div style="color: #aaa;">☑ In stock only</div>
+          </div>
+        </div>
+        <div style="flex: 1; min-height: 200px; border: 1px dashed #555; border-radius: 8px; padding: 12px;">
+          <div style="font-weight: 600; margin-bottom: 8px;">Product Grid</div>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+            <div style="background: #2a2a2a; border-radius: 6px; height: 80px;"></div>
+            <div style="background: #2a2a2a; border-radius: 6px; height: 80px;"></div>
+            <div style="background: #2a2a2a; border-radius: 6px; height: 80px;"></div>
+            <div style="background: #2a2a2a; border-radius: 6px; height: 80px;"></div>
+            <div style="background: #2a2a2a; border-radius: 6px; height: 80px;"></div>
+            <div style="background: #2a2a2a; border-radius: 6px; height: 80px;"></div>
+          </div>
+          <div style="text-align: center; margin-top: 12px; color: #888;">1 2 3 ... 10</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Top Bar Filters</h3>
+      <p>Horizontal filter chips above the grid. Compact, works well with fewer facets. Clicking a chip opens a dropdown. Mobile: same chips, horizontally scrollable.</p>
+      <div style="margin-top: 12px; font-size: 13px;">
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+          <div style="border: 1px solid #555; border-radius: 20px; padding: 4px 14px; color: #aaa;">Collections ▾</div>
+          <div style="border: 1px solid #555; border-radius: 20px; padding: 4px 14px; color: #aaa;">Price ▾</div>
+          <div style="border: 1px solid #555; border-radius: 20px; padding: 4px 14px; color: #aaa;">In Stock ✓</div>
+        </div>
+        <div style="min-height: 160px; border: 1px dashed #555; border-radius: 8px; padding: 12px;">
+          <div style="font-weight: 600; margin-bottom: 8px;">Product Grid</div>
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+            <div style="background: #2a2a2a; border-radius: 6px; height: 70px;"></div>
+            <div style="background: #2a2a2a; border-radius: 6px; height: 70px;"></div>
+            <div style="background: #2a2a2a; border-radius: 6px; height: 70px;"></div>
+            <div style="background: #2a2a2a; border-radius: 6px; height: 70px;"></div>
+            <div style="background: #2a2a2a; border-radius: 6px; height: 70px;"></div>
+            <div style="background: #2a2a2a; border-radius: 6px; height: 70px;"></div>
+            <div style="background: #2a2a2a; border-radius: 6px; height: 70px;"></div>
+            <div style="background: #2a2a2a; border-radius: 6px; height: 70px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

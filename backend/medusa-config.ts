@@ -73,6 +73,9 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/invoice",
     },
+    {
+      resolve: "./src/modules/newsletter",
+    },
     // S3 file provider for persistent storage (conditional on S3_BUCKET)
     ...(process.env.S3_BUCKET
       ? [

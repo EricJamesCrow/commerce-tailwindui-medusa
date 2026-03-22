@@ -6,6 +6,7 @@ import "./globals.css";
 
 import { CartProvider } from "components/cart/cart-context";
 import Footer from "components/layout/footer";
+import { Incentives } from "components/layout/incentives";
 import { Navbar } from "components/layout/navbar";
 import {
   NotificationContainer,
@@ -50,6 +51,7 @@ async function AppProviders({ children }: { children: ReactNode }) {
             <SearchDialog />
             <Navbar />
             <main>{children}</main>
+            <Incentives />
             <Footer />
           </SearchProvider>
         </NotificationProvider>

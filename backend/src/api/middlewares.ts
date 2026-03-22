@@ -7,6 +7,7 @@ import {
 import { MedusaError } from "@medusajs/framework/utils"
 import multer from "multer"
 import { authRateLimit } from "./middlewares/rate-limit"
+import { newsletterRateLimit } from "./middlewares/newsletter-rate-limit"
 import { PostStoreReviewSchema } from "./store/reviews/route"
 import { PostAdminUpdateReviewsStatusSchema } from "./admin/reviews/status/route"
 import { PostAdminReviewResponseSchema } from "./admin/reviews/[id]/response/route"
@@ -21,6 +22,10 @@ import {
   PostImportWishlistSchema,
 } from "./store/wishlists/validators"
 import { PostAdminInvoiceConfigSchema } from "./admin/invoice-config/route"
+import {
+  SubscribeSchema,
+  UnsubscribeSchema,
+} from "./store/newsletter/validators"
 import * as Sentry from "@sentry/node"
 
 const upload = multer({
@@ -224,6 +229,33 @@ export default defineMiddlewares({
       matcher: "/admin/invoice-config",
       middlewares: [
         validateAndTransformBody(PostAdminInvoiceConfigSchema),
+      ],
+    },
+    // --- Newsletter routes ---
+    {
+      matcher: "/store/newsletter/subscribe",
+      method: ["POST"],
+      middlewares: [
+        newsletterRateLimit(),
+        authenticate("customer", ["session", "bearer"], {
+          allowUnauthenticated: true,
+        }),
+        (req, _res, next) => {
+          const body = req.body as Record<string, unknown>
+          if (body?.email && typeof body.email === "string") {
+            body.email = body.email.toLowerCase()
+          }
+          next()
+        },
+        validateAndTransformBody(SubscribeSchema),
+      ],
+    },
+    {
+      matcher: "/store/newsletter/unsubscribe",
+      method: ["POST"],
+      middlewares: [
+        newsletterRateLimit(),
+        validateAndTransformBody(UnsubscribeSchema),
       ],
     },
   ],

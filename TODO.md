@@ -31,6 +31,11 @@
 - [ ] Strip `payment_sessions` from checkout cart serialization — only pass `client_secret` to client via dedicated server action (Finding #1: broad payment-session exposure)
 - [ ] Add Zod schema validation to checkout server actions for `email`, address payloads, `providerId`, and `data` params (Finding #2: no input validation at action boundaries)
 
+### From PR #33 (Newsletter Signup)
+
+- [ ] Replace HMAC bearer unsubscribe token with opaque server-stored nonce — current token embeds email in reversible base64url and is replayable for 30 days. PostHog pageview captures the full tokenized URL, leaking the token to analytics pipelines. Fix: store a one-time nonce on the subscriber record, invalidate on re-subscribe, and strip the token from the address bar via `window.history.replaceState` after the unsubscribe page loads.
+- [ ] Email preferences page — currently the "manage your email preferences" link is hidden in email footers because no page exists. Two approaches: (1) for logged-in customers, add an email preferences section to `/account/settings` where they can toggle newsletter, order updates, and marketing emails; (2) for account-agnostic access, create a standalone `/email-preferences` page that accepts a signed token (same pattern as unsubscribe) and lets anyone with a valid link manage preferences for their email address without requiring an account. Ideal: support both — account settings for logged-in users, token-based page for email links. Wire the `legalLinks.preferences` config in the email footer to point to the appropriate URL.
+
 ### From PR #29 (PostHog Integration)
 
 - [ ] Redact PII from `search_performed` event query field — normalize, truncate to 80 chars, and redact strings matching email/phone patterns before sending to PostHog
@@ -62,8 +67,15 @@
 - [x] Set up PostHog reverse proxy — Next.js rewrites proxy `/api/ph/:path*` to `us.i.posthog.com` (avoids ad blockers that target `/ingest`). See [PostHog Next.js proxy docs](https://posthog.com/docs/advanced/proxy/nextjs).
 - [ ] Switch PostHog proxy to managed proxy — the Next.js rewrite approach is vulnerable to DNS-level CNAME uncloaking (NextDNS, Pi-hole, ISP blockers follow the CNAME chain to `posthog.com` and block before the rewrite runs). PostHog's managed proxy uses randomized hash subdomains on rotating AWS infra that aren't on common blocklists. Also eliminates the rewrite config, `skipTrailingSlashRedirect` workaround, and Vercel edge invocations spent on analytics proxying — replace it all with one DNS CNAME record. Requires PostHog Teams+ plan. See [PostHog managed proxy docs](https://posthog.com/docs/advanced/proxy/managed-reverse-proxy).
 
+## UI Consistency
+
+- [ ] Audit codebase for features not using the `NotificationProvider` / `useNotification()` toast system — identify server actions and user-facing mutations that silently succeed/fail without toast feedback and wire them up for consistent UX
+- [ ] Audit storefront components against the TailwindPlus component catalog (`/Users/itsjusteric/CrowCommerce/Resources/TailwindUI/tailwindplus-components.json`) — identify pages and sections using custom markup where a TailwindPlus UI block already exists (e.g., product pages, checkout steps, account settings, error pages). Reference the full catalog at https://tailwindcss.com/plus/ui-blocks/documentation
+
 ## Deferred Features
 
+- [ ] Cookie consent banner — use TailwindPlus Marketing > Banners > "Privacy notice left-aligned" component, rendered inside a Headless UI `<Dialog>` so it behaves as a modal overlay on first visit. Persist consent in a cookie to avoid showing again. Track: `cookie_consent_accepted`, `cookie_consent_declined` events.
+- [ ] Sticky add-to-cart bar on product pages — fixed to the bottom of the viewport, appears on scroll past the main add-to-cart button. Use TailwindPlus Marketing > Banners > full-width banner variant as the base layout. Show product name, selected variant, price, and "Add to Cart" button. Hide when the main add-to-cart button is back in viewport (IntersectionObserver).
 - [ ] Express checkout (Apple Pay / Google Pay) — composite flow that chains email → address → shipping → payment → order completion in one step. Requires Stripe `PaymentRequestButton` or `ExpressCheckoutElement`. `express-checkout.tsx` component exists but needs implementation. Track with: `express_checkout_started`, `express_checkout_completed`, `express_checkout_failed` events.
 
 ## Known Limitations

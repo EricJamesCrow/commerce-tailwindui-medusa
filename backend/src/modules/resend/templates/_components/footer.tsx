@@ -84,11 +84,15 @@ export const LeftAligned = ({
                 If you'd rather not receive this kind of email, you can{" "}
                 <EmailButton href={legalLinks?.unsubscribe || "#"} className="text-brand-secondary">
                     <span className="underline">unsubscribe</span>
-                </EmailButton>{" "}
-                or{" "}
-                <EmailButton href={legalLinks?.preferences || "#"} className="text-brand-secondary">
-                    <span className="underline">manage your email preferences</span>
                 </EmailButton>
+                {legalLinks?.preferences ? (
+                    <>
+                        {" "}or{" "}
+                        <EmailButton href={legalLinks.preferences} className="text-brand-secondary">
+                            <span className="underline">manage your email preferences</span>
+                        </EmailButton>
+                    </>
+                ) : null}
                 . <br />
                 <br />&copy; {copyrightYear} {companyName}{address ? `, ${address}` : ""}
             </Text>
@@ -273,11 +277,15 @@ export const LeftAlignedActions = ({
                     If you'd rather not receive this kind of email, you can{" "}
                     <EmailButton href={legalLinks?.unsubscribe || "#"} className="text-brand-secondary">
                         <span className="underline">unsubscribe</span>
-                    </EmailButton>{" "}
-                    or{" "}
-                    <EmailButton href={legalLinks?.preferences || "#"} className="text-brand-secondary">
-                        <span className="underline">manage your email preferences</span>
                     </EmailButton>
+                    {legalLinks?.preferences ? (
+                        <>
+                            {" "}or{" "}
+                            <EmailButton href={legalLinks.preferences} className="text-brand-secondary">
+                                <span className="underline">manage your email preferences</span>
+                            </EmailButton>
+                        </>
+                    ) : null}
                     . <br />
                     <br />&copy; {copyrightYear} {companyName}{address ? `, ${address}` : ""}
                 </Text>

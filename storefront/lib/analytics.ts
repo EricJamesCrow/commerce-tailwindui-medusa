@@ -94,6 +94,10 @@ export type AnalyticsEvents = {
   invoice_downloaded: { order_id: string }
   abandoned_cart_recovered: { cart_id: string; item_count: number }
 
+  // --- Newsletter ---
+  newsletter_subscribed: { source: "footer" }
+  newsletter_subscribe_failed: { source: "footer"; error: string }
+
   // --- Client-side UI ---
   cart_drawer_opened: Record<string, never>
   product_quick_view_opened: { product_id: string }
