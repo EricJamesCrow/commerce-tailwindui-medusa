@@ -4,13 +4,28 @@ Local development through production deployment for the Commerce TailwindUI + Me
 
 ## Prerequisites
 
+### Required
+
 | Tool | Version | Install |
 |------|---------|---------|
 | **Bun** | `1.1.18` | `curl -fsSL https://bun.sh/install \| bash` |
 | **Node.js** | `>=20` | Required by Medusa runtime |
 | **PostgreSQL** | `17` | `brew install postgresql@17 && brew services start postgresql@17` |
-| **Redis** | Latest | Optional locally, required in production. `brew install redis && brew services start redis` |
-| **Stripe CLI** | Latest | Only for webhook testing. `brew install stripe/stripe-cli/stripe` |
+
+### Optional Services
+
+These are all optional for local development. The app runs without them — each feature gracefully disables when its env vars are not set.
+
+| Service | Install / Setup | What it enables |
+|---------|----------------|-----------------|
+| **Redis** | `brew install redis && brew services start redis` | Caching, event bus, workflow engine, locking. Optional locally (in-memory fallback), required in production |
+| **Meilisearch** | `brew install meilisearch` — see [Local Meilisearch Setup](#7-meilisearch-optional) below | Full-text search with faceted filtering. Falls back to Medusa REST search without it |
+| **Stripe CLI** | `brew install stripe/stripe-cli/stripe` | Local webhook testing for payment flows |
+| **Stripe Account** | [dashboard.stripe.com](https://dashboard.stripe.com) — copy `sk_test_` and `pk_test_` keys | Payment processing (checkout, refunds) |
+| **Resend Account** | [resend.com](https://resend.com) — copy API key | Transactional emails (order confirmations, password resets, admin alerts). Test locally with email preview: `bun run dev:emails` |
+| **Cloudflare R2** | [dash.cloudflare.com](https://dash.cloudflare.com) — create R2 bucket + API token | Persistent file/image storage. Without it, files stored in-memory and lost on restart |
+| **Sentry Account** | [sentry.io](https://sentry.io) — create Node.js + Next.js projects, copy DSN | Error monitoring and performance tracing |
+| **PostHog Account** | [posthog.com](https://posthog.com) — create project, copy Project API Key | Product analytics, feature flags, session replay |
 
 ## Clone & Install
 
@@ -166,6 +181,47 @@ Copy the `whsec_...` signing secret from the CLI output into `backend/.env`:
 ```
 STRIPE_WEBHOOK_SECRET=whsec_...
 ```
+
+### 7. Meilisearch (optional)
+
+For full-text search with faceted filtering. Without this, the storefront uses Medusa's built-in REST search.
+
+```bash
+# Install
+brew install meilisearch
+
+# Start with a master key (use any string — this is for local dev only)
+meilisearch --master-key="test-master-key-123"
+```
+
+Meilisearch runs on `http://127.0.0.1:7700`. Add to your env files:
+
+**`backend/.env`:**
+```
+MEILISEARCH_HOST=http://127.0.0.1:7700
+MEILISEARCH_API_KEY=test-master-key-123
+```
+
+**`storefront/.env.local`:**
+```
+NEXT_PUBLIC_MEILISEARCH_HOST=http://127.0.0.1:7700
+NEXT_PUBLIC_MEILISEARCH_API_KEY=test-master-key-123
+```
+
+After starting the backend, trigger the initial product sync:
+
+```bash
+# Get an admin auth token first
+curl -X POST http://localhost:9000/auth/user/emailpass \
+  -H "Content-Type: application/json" \
+  -d '{"email":"<admin-email>","password":"<admin-password>"}'
+
+# Trigger sync (use the token from above)
+curl -X POST http://localhost:9000/admin/meilisearch/sync \
+  -H "Authorization: Bearer <token>"
+```
+
+See `docs/features/search.md` for full customization and troubleshooting guide.
 
 ## Production Deployment
 
