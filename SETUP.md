@@ -60,6 +60,9 @@ All other variables have working defaults for local development. See `backend/.e
 | `S3_ENDPOINT` | No | — | `https://<account-id>.r2.cloudflarestorage.com` |
 | `SENTRY_DSN` | No | — | Sentry project DSN for error monitoring |
 | `SENTRY_TRACES_SAMPLE_RATE` | No | `0.2` | Trace sample rate (0.0-1.0) |
+| `MEILISEARCH_HOST` | No | — | Meilisearch server URL (e.g. `http://127.0.0.1:7700`) |
+| `MEILISEARCH_API_KEY` | If Meilisearch | — | Meilisearch master key (admin access) |
+| `MEILISEARCH_PRODUCT_INDEX_NAME` | No | `products` | Meilisearch index name for products |
 
 ### Storefront
 
@@ -83,6 +86,9 @@ Edit `storefront/.env.local` — at minimum, set `NEXT_PUBLIC_MEDUSA_PUBLISHABLE
 | `NEXT_PUBLIC_SENTRY_DSN` | No | — | Sentry DSN (safe to expose client-side) |
 | `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` | No | `0.2` | Client-side trace sample rate |
 | `SENTRY_TRACES_SAMPLE_RATE` | No | `0.2` | Server-side trace sample rate |
+| `NEXT_PUBLIC_MEILISEARCH_HOST` | No | — | Meilisearch server URL (e.g. `http://127.0.0.1:7700`) |
+| `NEXT_PUBLIC_MEILISEARCH_API_KEY` | If Meilisearch | — | Meilisearch search-only API key |
+| `NEXT_PUBLIC_MEILISEARCH_INDEX_NAME` | No | `products` | Meilisearch index name for products |
 
 ## Local Development
 
