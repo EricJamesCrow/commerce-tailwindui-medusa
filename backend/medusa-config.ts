@@ -49,9 +49,15 @@ if (!process.env.POSTHOG_EVENTS_API_KEY) {
 }
 
 if (process.env.MEILISEARCH_HOST && !process.env.MEILISEARCH_API_KEY) {
+  if (isProd) {
+    throw new Error(
+      "[medusa-config] MEILISEARCH_HOST is set but MEILISEARCH_API_KEY is missing — " +
+      "refusing to start in production"
+    )
+  }
   console.warn(
     "[medusa-config] MEILISEARCH_HOST is set but MEILISEARCH_API_KEY is missing — " +
-    "Meilisearch indexing will fail"
+    "Meilisearch module will not be registered"
   )
 }
 
@@ -222,8 +228,8 @@ module.exports = defineConfig({
           },
         ]
       : []),
-    // Meilisearch search indexing (conditional on MEILISEARCH_HOST)
-    ...(process.env.MEILISEARCH_HOST
+    // Meilisearch search indexing (conditional on MEILISEARCH_HOST + API_KEY)
+    ...(process.env.MEILISEARCH_HOST && process.env.MEILISEARCH_API_KEY
       ? [
           {
             resolve: "./src/modules/meilisearch",

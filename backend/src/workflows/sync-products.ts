@@ -51,10 +51,15 @@ export const syncProductsWorkflow = createWorkflow(
               .map((t: { value?: string }) => t.value)
               .filter(Boolean) as string[]
 
+            // Only index USD prices (default store currency) to avoid
+            // leaking internal pricing from other regions/price lists
             const variant_prices: number[] = []
             for (const variant of product.variants || []) {
               for (const price of variant.prices || []) {
-                if (typeof price.amount === "number") {
+                if (
+                  typeof price.amount === "number" &&
+                  price.currency_code === "usd"
+                ) {
                   variant_prices.push(price.amount)
                 }
               }

@@ -2,6 +2,8 @@ const { MeiliSearch } = require("meilisearch")
 import { MedusaError } from "@medusajs/framework/utils"
 import type { MeilisearchOptions } from "./types"
 
+const MEDUSA_ID_RE = /^[a-zA-Z0-9_]+$/
+
 export default class MeilisearchModuleService {
   private client_: InstanceType<typeof MeiliSearch>
   private options_: MeilisearchOptions
@@ -24,40 +26,42 @@ export default class MeilisearchModuleService {
   async configureIndex(): Promise<void> {
     const index = this.client_.index(this.options_.productIndexName)
 
-    await index.updateSearchableAttributes([
+    const task1 = await index.updateSearchableAttributes([
       "title",
       "description",
       "handle",
       "tag_values",
       "collection_titles",
     ])
+    await index.tasks.waitForTask(task1.uid)
 
-    await index.updateFilterableAttributes([
+    const task2 = await index.updateFilterableAttributes([
       "collection_titles",
       "availability",
       "variant_prices",
-      "status",
       "tag_values",
     ])
+    await index.tasks.waitForTask(task2.uid)
 
-    await index.updateSortableAttributes([
+    const task3 = await index.updateSortableAttributes([
       "title",
       "created_at",
       "variant_prices",
     ])
+    await index.tasks.waitForTask(task3.uid)
   }
 
-  async indexData(
-    data: Record<string, unknown>[],
-  ): Promise<void> {
+  async indexData(data: Record<string, unknown>[]): Promise<void> {
     const index = this.client_.index(this.options_.productIndexName)
-    await index.addDocuments(data)
+    const task = await index.addDocuments(data)
+    await index.tasks.waitForTask(task.uid)
   }
 
   async deleteFromIndex(ids: string[]): Promise<void> {
     if (ids.length === 0) return
     const index = this.client_.index(this.options_.productIndexName)
-    await index.deleteDocuments(ids)
+    const task = await index.deleteDocuments(ids)
+    await index.tasks.waitForTask(task.uid)
   }
 
   async retrieveFromIndex(
@@ -65,16 +69,17 @@ export default class MeilisearchModuleService {
   ): Promise<Record<string, unknown>[]> {
     if (ids.length === 0) return []
     const index = this.client_.index(this.options_.productIndexName)
+    // Validate IDs match Medusa format to prevent filter injection
+    const validIds = ids.filter((id) => MEDUSA_ID_RE.test(id))
+    if (validIds.length === 0) return []
     try {
-      // Sanitize IDs to prevent filter injection
-      const sanitized = ids.map((id) => `"${id.replace(/"/g, "")}"`)
+      const sanitized = validIds.map((id) => `"${id}"`)
       const results = await index.getDocuments({
         filter: `id IN [${sanitized.join(", ")}]`,
-        limit: ids.length,
+        limit: validIds.length,
       })
       return results.results as Record<string, unknown>[]
     } catch (error) {
-      // Log rather than silently swallow
       console.warn("[Meilisearch] Failed to retrieve from index:", error)
       return []
     }
@@ -93,7 +98,7 @@ export default class MeilisearchModuleService {
         offset,
       })
       for (const doc of results.results) {
-        if (typeof doc.id === "string") ids.push(doc.id)
+        if (doc.id != null) ids.push(String(doc.id))
       }
       if (results.results.length < limit) break
       offset += limit
