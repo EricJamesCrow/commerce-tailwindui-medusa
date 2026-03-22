@@ -77,7 +77,9 @@ export type AnalyticsEvents = {
   }
 
   // --- Search ---
-  search_performed: { query: string; result_count: number }
+  search_performed: { query: string; result_count: number; source: "meilisearch" | "medusa" }
+  search_facet_applied: { facet_type: string; facet_value: string; query: string }
+  search_result_clicked: { query: string; product_id: string; position: number; source: "meilisearch" | "medusa" }
 
   // --- Product ---
   product_viewed: {

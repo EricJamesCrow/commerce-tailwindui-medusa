@@ -14,7 +14,7 @@ export async function searchProducts(
       reverse: false,
       limit: 8,
     });
-    try { await trackServer("search_performed", { query, result_count: products.length }) } catch {}
+    try { await trackServer("search_performed", { query, result_count: products.length, source: "medusa" }) } catch {}
     return {
       results: products,
       totalCount: products.length,
