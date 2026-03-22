@@ -21,6 +21,10 @@ import {
   PostImportWishlistSchema,
 } from "./store/wishlists/validators"
 import { PostAdminInvoiceConfigSchema } from "./admin/invoice-config/route"
+import {
+  SubscribeSchema,
+  UnsubscribeSchema,
+} from "./store/newsletter/validators"
 import * as Sentry from "@sentry/node"
 
 const upload = multer({
@@ -224,6 +228,29 @@ export default defineMiddlewares({
       matcher: "/admin/invoice-config",
       middlewares: [
         validateAndTransformBody(PostAdminInvoiceConfigSchema),
+      ],
+    },
+    // --- Newsletter routes ---
+    {
+      matcher: "/store/newsletter/subscribe",
+      method: ["POST"],
+      middlewares: [
+        (req, _res, next) => {
+          req.app.set("trust proxy", true)
+          next()
+        },
+        authRateLimit(),
+        authenticate("customer", ["session", "bearer"], {
+          allowUnauthenticated: true,
+        }),
+        validateAndTransformBody(SubscribeSchema),
+      ],
+    },
+    {
+      matcher: "/store/newsletter/unsubscribe",
+      method: ["POST"],
+      middlewares: [
+        validateAndTransformBody(UnsubscribeSchema),
       ],
     },
   ],
