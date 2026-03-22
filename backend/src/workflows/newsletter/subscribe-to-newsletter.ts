@@ -18,7 +18,11 @@ type SubscribeInput = {
 const upsertSubscriberStep = createStep(
   "upsert-newsletter-subscriber",
   async (
-    input: { email: string; source: string; customer_id?: string },
+    input: {
+      email: string
+      source: "footer" | "checkout" | "account" | "import"
+      customer_id?: string
+    },
     { container }
   ) => {
     const newsletterService: NewsletterModuleService =
@@ -47,10 +51,10 @@ const upsertSubscriberStep = createStep(
       }
 
       if (needsUpdate) {
-        const updated = await newsletterService.updateSubscribers(
-          existing.id,
-          updates
-        )
+        const updated = await newsletterService.updateSubscribers({
+          id: existing.id,
+          ...updates,
+        })
         return new StepResponse(
           { subscriber: updated, isNewSubscriber: false },
           existing.id

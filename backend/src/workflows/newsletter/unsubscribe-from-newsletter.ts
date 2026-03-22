@@ -38,7 +38,8 @@ const unsubscribeStep = createStep(
 
     const previousStatus = subscriber.status
 
-    const updated = await newsletterService.updateSubscribers(subscriber.id, {
+    const updated = await newsletterService.updateSubscribers({
+      id: subscriber.id,
       status: "unsubscribed",
       unsubscribed_at: new Date(),
     })
@@ -54,7 +55,8 @@ const unsubscribeStep = createStep(
     const newsletterService: NewsletterModuleService =
       container.resolve(NEWSLETTER_MODULE)
 
-    await newsletterService.updateSubscribers(compensationData.id, {
+    await newsletterService.updateSubscribers({
+      id: compensationData.id,
       status: compensationData.previousStatus,
       unsubscribed_at: null,
     })
