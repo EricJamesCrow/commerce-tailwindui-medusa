@@ -11,6 +11,7 @@ import {
 } from "lib/medusa/wishlist";
 import { useNotification } from "components/notifications";
 import clsx from "clsx";
+import * as Sentry from "@sentry/nextjs";
 
 type WishlistButtonProps = {
   variantId: string;
@@ -52,7 +53,7 @@ export function WishlistButton({
       setIsWishlisted(state.isInWishlist);
       setWishlistId(state.wishlistId);
       setWishlistItemId(state.wishlistItemId);
-    }).catch(() => {});
+    }).catch((e: unknown) => { Sentry.captureException(e, { tags: { action: "get_variant_wishlist_state" }, level: "warning" }) });
     return () => { cancelled = true; };
   }, [variantId, initialIsInWishlist, initialWishlistId, initialWishlistItemId]);
 

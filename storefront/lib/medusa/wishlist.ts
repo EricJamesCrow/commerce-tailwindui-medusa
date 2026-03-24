@@ -12,6 +12,7 @@ import {
   removeWishlistId,
 } from "lib/medusa/cookies";
 import { trackServer } from "lib/analytics-server";
+import * as Sentry from "@sentry/nextjs";
 
 export type WishlistActionResult = { error?: string; success?: boolean } | null;
 
@@ -38,6 +39,7 @@ async function wishlistMutation(
   try {
     await fn();
   } catch (e) {
+    Sentry.captureException(e, { tags: { action: "wishlist_mutation" }, level: "warning" });
     return { error: formatError(e, fallbackError) };
   } finally {
     revalidateWishlists();
@@ -64,7 +66,8 @@ async function fetchWishlists(): Promise<Wishlist[]> {
         { method: "GET", headers },
       );
       return result.wishlists;
-    } catch {
+    } catch (e) {
+      Sentry.captureException(e, { tags: { action: "fetch_wishlists" }, level: "warning" });
       return [];
     }
   }
@@ -78,7 +81,8 @@ async function fetchWishlists(): Promise<Wishlist[]> {
       { method: "GET" },
     );
     return [result.wishlist];
-  } catch {
+  } catch (e) {
+    Sentry.captureException(e, { tags: { action: "fetch_wishlists" }, level: "warning" });
     return [];
   }
 }
@@ -106,7 +110,8 @@ export async function getWishlist(wishlistId: string): Promise<Wishlist | null> 
       { method: "GET", headers },
     );
     return result.wishlist;
-  } catch {
+  } catch (e) {
+    Sentry.captureException(e, { tags: { action: "get_wishlist" }, level: "warning" });
     return null;
   }
 }
@@ -118,7 +123,8 @@ export async function getSharedWishlist(token: string): Promise<Wishlist | null>
       { method: "GET" },
     );
     return result.wishlist;
-  } catch {
+  } catch (e) {
+    Sentry.captureException(e, { tags: { action: "get_shared_wishlist" }, level: "warning" });
     return null;
   }
 }
@@ -137,7 +143,8 @@ export async function getProductWishlistCount(
       { method: "GET" },
     );
     return result.count;
-  } catch {
+  } catch (e) {
+    Sentry.captureException(e, { tags: { action: "get_wishlist_count" }, level: "info" });
     return 0;
   }
 }

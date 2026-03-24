@@ -3,6 +3,7 @@
 import { HeartIcon } from "@heroicons/react/20/solid";
 import { useEffect, useState } from "react";
 import { getProductWishlistCount } from "lib/medusa/wishlist";
+import * as Sentry from "@sentry/nextjs";
 
 export function WishlistCount({ productId }: { productId: string }) {
   const [count, setCount] = useState(0);
@@ -10,7 +11,7 @@ export function WishlistCount({ productId }: { productId: string }) {
   useEffect(() => {
     getProductWishlistCount(productId)
       .then(setCount)
-      .catch(() => {});
+      .catch((e: unknown) => { Sentry.captureException(e, { tags: { action: "get_product_wishlist_count" }, level: "info" }) });
   }, [productId]);
 
   if (count === 0) return null;

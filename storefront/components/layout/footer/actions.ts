@@ -3,6 +3,7 @@
 import { sdk } from "lib/medusa"
 import { getAuthHeaders } from "lib/medusa/cookies"
 import { trackServer } from "lib/analytics-server"
+import * as Sentry from "@sentry/nextjs"
 
 export type NewsletterResult = {
   success?: boolean
@@ -30,6 +31,7 @@ export async function subscribeToNewsletter(
 
     return { success: true }
   } catch (e) {
+    Sentry.captureException(e, { tags: { action: "newsletter_subscribe" }, level: "warning" })
     const errorMessage = e instanceof Error ? e.message : "Subscription failed"
 
     await trackServer("newsletter_subscribe_failed", {

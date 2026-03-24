@@ -3,6 +3,7 @@
 import { getProducts } from "lib/medusa";
 import { Product } from "lib/types";
 import { trackServer } from "lib/analytics-server";
+import * as Sentry from "@sentry/nextjs";
 
 export async function searchProducts(
   query: string,
@@ -25,6 +26,7 @@ export async function searchProducts(
       totalCount: products.length,
     };
   } catch (error) {
+    Sentry.captureException(error, { tags: { action: "search_products" }, level: "warning" });
     console.error("Search error:", error);
     return { results: [], totalCount: 0 };
   }

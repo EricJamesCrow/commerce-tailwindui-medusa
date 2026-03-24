@@ -7,6 +7,7 @@ import { cacheLife, cacheTag, revalidatePath, revalidateTag } from "next/cache";
 import { getAuthHeaders } from "lib/medusa/cookies";
 import { retrieveCustomer } from "lib/medusa/customer";
 import { trackServer } from "lib/analytics-server";
+import * as Sentry from "@sentry/nextjs";
 
 export type ReviewActionResult = { error?: string; success?: boolean } | null;
 
@@ -55,6 +56,7 @@ export async function getProductReviews(
       },
     });
   } catch (error) {
+    Sentry.captureException(error, { tags: { action: "get_product_reviews", product_id: productId }, level: "warning" });
     console.error("[reviews] Failed to fetch product reviews:", error);
     return emptyResult;
   }
@@ -125,6 +127,7 @@ export async function addProductReview(
     });
     try { await trackServer("review_submitted", { product_id: productId, rating, has_images: images.length > 0 }) } catch {}
   } catch (e) {
+    Sentry.captureException(e, { tags: { action: "add_product_review" }, level: "warning" });
     return {
       error: e instanceof Error ? e.message : "Error submitting review",
     };
