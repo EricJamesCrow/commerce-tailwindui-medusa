@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Suspense } from "react";
 import FooterCopyright from "./footer-copyright";
-import FooterNavigation from "./footer-navigation";
+import { FooterNavigation } from "./footer-navigation";
 import { FooterSocialLinks } from "./footer-social-links";
 import { FooterNewsletter } from "./footer-newsletter";
 import { retrieveCustomer } from "lib/medusa/customer";

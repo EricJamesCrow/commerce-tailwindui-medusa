@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
     "Learn how we collect, use, and protect your personal information.",
-  robots: { index: true },
+  robots: { index: false }, // Set to true after replacing placeholder content
 };
 
 export default function PrivacyPolicyPage() {

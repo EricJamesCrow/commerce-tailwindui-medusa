@@ -5,7 +5,7 @@ import { TERMS_OF_SERVICE } from "lib/constants/legal-content";
 export const metadata: Metadata = {
   title: "Terms of Service",
   description: "Read the terms and conditions for using our store.",
-  robots: { index: true },
+  robots: { index: false }, // Set to true after replacing placeholder content
 };
 
 export default function TermsOfServicePage() {

@@ -3,7 +3,7 @@ import { transformCollectionsToFooterProducts } from "lib/utils";
 import { FOOTER_CONFIG } from "lib/constants/footer";
 import Link from "next/link";
 
-export default async function FooterNavigation() {
+export async function FooterNavigation() {
   const collections = await getCollections();
   const products = transformCollectionsToFooterProducts(
     collections.slice(1, 6),
