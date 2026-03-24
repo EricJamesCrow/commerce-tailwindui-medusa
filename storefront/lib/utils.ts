@@ -3,7 +3,7 @@ import type {
   Product as TailwindProduct,
 } from "components/home/types";
 import { ReadonlyURLSearchParams } from "next/navigation";
-import type { Collection, Menu, Product } from "./types";
+import type { Collection, Product } from "./types";
 
 export const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
   ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
@@ -138,16 +138,6 @@ export const getColorHex = (colorName: string): string => {
 
   const normalizedColor = colorName.toLowerCase().trim();
   return colorMap[normalizedColor] || "#9CA3AF"; // Default gray if color not found
-};
-
-// Transform Menu items to footer navigation format
-export const transformMenuToFooterNav = (
-  menu: Menu[],
-): { name: string; href: string }[] => {
-  return menu.map((item) => ({
-    name: item.title,
-    href: item.path,
-  }));
 };
 
 // Transform Collections to footer products format

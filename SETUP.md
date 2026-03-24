@@ -223,6 +223,24 @@ curl -X POST http://localhost:9000/admin/meilisearch/sync \
 
 See `docs/features/search.md` for full customization and troubleshooting guide.
 
+### 8. Legal Pages
+
+The storefront ships with five placeholder legal pages:
+
+- `/privacy-policy`
+- `/terms-of-service`
+- `/return-policy`
+- `/shipping-policy`
+- `/cookie-policy`
+
+**To replace with your actual legal content:**
+
+1. Use [Termly](https://termly.io) (or a similar service) to generate policies specific to your store
+2. Replace the placeholder text in `storefront/lib/constants/legal-content.ts`
+3. Update the effective dates
+
+When migrating to a CMS (e.g., Payload), swap the import source in each route file — the `PolicyPage` component and routes stay the same.
+
 ## Production Deployment
 
 ### Backend → Railway

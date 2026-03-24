@@ -1,22 +1,13 @@
-import { getCollections, getMenu } from "lib/medusa";
-import {
-  transformCollectionsToFooterProducts,
-  transformMenuToFooterNav,
-} from "lib/utils";
+import { getCollections } from "lib/medusa";
+import { transformCollectionsToFooterProducts } from "lib/utils";
+import { FOOTER_CONFIG } from "lib/constants/footer";
 import Link from "next/link";
 
-export default async function FooterNavigation() {
-  // Fetch data from Medusa
+export async function FooterNavigation() {
   const collections = await getCollections();
-  const companyMenu = await getMenu("footer-company");
-  const customerServiceMenu = await getMenu("footer-customer-service");
-
-  // Transform data to footer format
-  const footerNavigation = {
-    products: transformCollectionsToFooterProducts(collections.slice(1, 6)), // Skip "All" collection, limit to 5
-    company: transformMenuToFooterNav(companyMenu),
-    customerService: transformMenuToFooterNav(customerServiceMenu),
-  };
+  const products = transformCollectionsToFooterProducts(
+    collections.slice(1, 6),
+  ); // Skip "All" collection, limit to 5
 
   return (
     <div className="col-span-6 mt-10 grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-8 md:col-start-3 md:row-start-1 md:mt-0 lg:col-span-6 lg:col-start-2">
@@ -24,7 +15,7 @@ export default async function FooterNavigation() {
         <div>
           <h3 className="text-sm font-medium text-gray-900">Products</h3>
           <ul role="list" className="mt-6 space-y-6">
-            {footerNavigation.products.map((item) => (
+            {products.map((item) => (
               <li key={item.name} className="text-sm">
                 <Link
                   href={item.href}
@@ -39,7 +30,7 @@ export default async function FooterNavigation() {
         <div>
           <h3 className="text-sm font-medium text-gray-900">Company</h3>
           <ul role="list" className="mt-6 space-y-6">
-            {footerNavigation.company.map((item) => (
+            {FOOTER_CONFIG.company.map((item) => (
               <li key={item.name} className="text-sm">
                 <Link
                   href={item.href}
@@ -53,9 +44,9 @@ export default async function FooterNavigation() {
         </div>
       </div>
       <div>
-        <h3 className="text-sm font-medium text-gray-900">Customer Service</h3>
+        <h3 className="text-sm font-medium text-gray-900">Legal</h3>
         <ul role="list" className="mt-6 space-y-6">
-          {footerNavigation.customerService.map((item) => (
+          {FOOTER_CONFIG.legal.map((item) => (
             <li key={item.name} className="text-sm">
               <Link
                 href={item.href}
