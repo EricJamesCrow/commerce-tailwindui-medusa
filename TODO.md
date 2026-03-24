@@ -66,7 +66,9 @@
 - [x] Shared TypeScript tooling (`@repo/typescript`)
 - [x] Enable React Compiler
 - [ ] React Compiler optimization (audit component boundaries, measure compile rate, fix bailouts)
-- [ ] Set up CI/CD (GitHub Actions)
+- [ ] **[PRIORITY] Set up CI/CD (GitHub Actions)** — add a pipeline that runs typecheck, lint, and e2e tests before merging to main. Should catch issues like the auth 500 before they reach production. At minimum: `bun run typecheck`, `bun run build` (storefront), and Playwright smoke tests against a test environment. Consider adding a staging/preview deployment health check step.
+- [ ] **[PRIORITY] Sentry deep integration audit** — go through every Sentry feature and ensure it's fully configured for both backend and storefront: error tracking (already set up), performance tracing, session replay, profiling, release health, source maps (just added auth token), alerts/notifications (enable Slack/email alerts for new errors and spikes), custom fingerprinting, user feedback widget. Test the integration in production — verify errors appear in dashboard with readable stack traces, traces link to the correct transactions, and alerts fire when they should. Enable Sentry notifications in the admin panel so errors surface immediately.
+- [ ] **[PRIORITY] PostHog deep integration audit** — verify all PostHog features are working in production: pageview autocapture, custom events (check all `AnalyticsEvents` are firing), session replay (verify recordings appear), feature flags (set up at least one flag to verify the pipeline), web analytics dashboard, funnels (checkout funnel, search-to-purchase funnel). Test the PostHog reverse proxy is working (events should appear even with ad blockers). Verify server-side events from the backend (order placed, review created, etc.) appear in PostHog.
 - [ ] Configure Medusa webhooks for cache revalidation
 - [ ] Update `DEFAULT_NAVIGATION` with real store categories
 - [ ] Upgrade Turborepo: `bunx @turbo/codemod@latest update`
@@ -77,6 +79,14 @@
 
 - [ ] Audit codebase for features not using the `NotificationProvider` / `useNotification()` toast system — identify server actions and user-facing mutations that silently succeed/fail without toast feedback and wire them up for consistent UX
 - [ ] Audit storefront components against the TailwindPlus component catalog (`/Users/itsjusteric/CrowCommerce/Resources/TailwindUI/tailwindplus-components.json`) — identify pages and sections using custom markup where a TailwindPlus UI block already exists (e.g., product pages, checkout steps, account settings, error pages). Reference the full catalog at https://tailwindcss.com/plus/ui-blocks/documentation
+
+## Security Audits
+
+- [ ] Run Codex security audit on custom modules — prioritize by attack surface: (1) **Invoice module** (financial data + PDF generation + public download routes), (2) **Review module** (user image uploads + user-generated content rendering), (3) **Wishlist module** (public endpoints like `/store/products/:id/wishlist-count`, JWT sharing tokens, guest routes). Focus on IDOR, SSRF in image uploads, JWT misconfiguration, and input validation gaps. Multiple passes recommended.
+
+## Evaluate
+
+- [ ] [Buttondown](https://buttondown.com/) for newsletter — evaluate as a potential upgrade/replacement for the current newsletter infrastructure. Supports RSS-to-email, markdown authoring, API-first design, paid subscriptions, and analytics. Could simplify the newsletter stack vs. rolling custom with Resend.
 
 ## Deferred Features
 
