@@ -40,7 +40,10 @@ export async function GET(
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      Sentry.captureException(new Error(`Invoice generation failed (${res.status})`), { tags: { action: "invoice_download", order_id: id } })
+      // Only report server errors — 4xx are expected (auth, not-found, no items)
+      if (res.status >= 500) {
+        Sentry.captureException(new Error(`Invoice generation failed (${res.status})`), { tags: { action: "invoice_download", order_id: id } })
+      }
       return NextResponse.json(
         { error: (err as { message?: string }).message || `Invoice generation failed (${res.status})` },
         { status: res.status },
