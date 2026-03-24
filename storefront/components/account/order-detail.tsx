@@ -65,6 +65,35 @@ function capitalizeBrand(brand: string | undefined): string {
   return b.charAt(0).toUpperCase() + b.slice(1);
 }
 
+function getStatusTimestamp(
+  order: StoreOrderDetail,
+  step: number,
+): string | null {
+  const fulfillments = [...(order.fulfillments || [])]
+    .filter(Boolean)
+    .sort((a, b) => {
+      const aTime = Date.parse(String(a?.created_at || 0));
+      const bTime = Date.parse(String(b?.created_at || 0));
+      return bTime - aTime;
+    });
+
+  if (step >= 3) {
+    return (
+      fulfillments.find((fulfillment) => fulfillment.delivered_at)
+        ?.delivered_at?.toString() || null
+    );
+  }
+
+  if (step >= 2) {
+    return (
+      fulfillments.find((fulfillment) => fulfillment.shipped_at)
+        ?.shipped_at?.toString() || null
+    );
+  }
+
+  return order.created_at ? String(order.created_at) : null;
+}
+
 function getPaymentCard(order: StoreOrderDetail) {
   const payment = order.payment_collections?.[0]?.payments?.[0];
   const data = payment?.data;
@@ -83,13 +112,29 @@ function getPaymentCard(order: StoreOrderDetail) {
 // ---------------------------------------------------------------------------
 
 const PROGRESS_STEPS = ["Order placed", "Processing", "Shipped", "Delivered"];
+const LAST_PROGRESS_STEP_INDEX = PROGRESS_STEPS.length - 1;
+
+function getProgressWidth(step: number): string {
+  const clampedStep = Math.max(
+    0,
+    Math.min(step, LAST_PROGRESS_STEP_INDEX),
+  );
+
+  // Preserve the staggered fill behavior for in-flight stages, but let the
+  // terminal state render as fully complete.
+  if (clampedStep === LAST_PROGRESS_STEP_INDEX) {
+    return "100%";
+  }
+
+  return `calc((${clampedStep} * 2 + 1) / ${PROGRESS_STEPS.length * 2} * 100%)`;
+}
 
 function ProgressBar({ step }: { step: number }) {
   return (
     <div className="mt-6">
       <div className="overflow-hidden rounded-full bg-gray-200">
         <div
-          style={{ width: `calc((${step} * 2 + 1) / 8 * 100%)` }}
+          style={{ width: getProgressWidth(step) }}
           className="h-2 rounded-full bg-primary-600"
         />
       </div>
@@ -188,6 +233,7 @@ export function OrderDetail({ order }: { order: StoreOrderDetail }) {
   const canceled = isCanceled(order);
   const showInvoice = isInvoiceEligible(order);
   const card = getPaymentCard(order);
+  const statusTimestamp = getStatusTimestamp(order, step);
 
   return (
     <div>
@@ -309,12 +355,14 @@ export function OrderDetail({ order }: { order: StoreOrderDetail }) {
                   <>
                     <p className="mt-6 font-medium text-gray-900 md:mt-10">
                       {PROGRESS_STEPS[step]}{" "}
-                      <span className="font-normal text-gray-500">
-                        on{" "}
-                        <time dateTime={order.created_at as string}>
-                          {formatDate(order.created_at as string)}
-                        </time>
-                      </span>
+                      {statusTimestamp && (
+                        <span className="font-normal text-gray-500">
+                          on{" "}
+                          <time dateTime={statusTimestamp}>
+                            {formatDate(statusTimestamp)}
+                          </time>
+                        </span>
+                      )}
                     </p>
                     <ProgressBar step={step} />
                   </>

@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 export async function PageContent({
   pagePromise,
 }: {
-  pagePromise: Promise<Page>;
+  pagePromise: Promise<Page | null>;
 }) {
   const page = await pagePromise;
 

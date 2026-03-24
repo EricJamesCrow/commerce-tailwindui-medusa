@@ -55,13 +55,13 @@ export const NAV_WISHLIST_LINK = 'header a[href="/account/wishlist"]';
 export const SOCIAL_PROOF_TEXT = 'p:has-text("saved this")';
 
 // Auth forms
-export const LOGIN_EMAIL = 'input[name="email"]';
-export const LOGIN_PASSWORD = 'input[name="password"]';
-export const LOGIN_SUBMIT = 'button[type="submit"]';
+export const LOGIN_EMAIL = 'main form input[name="email"]';
+export const LOGIN_PASSWORD = 'main form input[name="password"]';
+export const LOGIN_SUBMIT = 'main form button[type="submit"]';
 export const REGISTER_FIRST_NAME = 'input[name="first_name"]';
 export const REGISTER_LAST_NAME = 'input[name="last_name"]';
-export const REGISTER_EMAIL = 'input[name="email"]';
-export const REGISTER_PASSWORD = 'input[name="password"]';
+export const REGISTER_EMAIL = 'main form input[name="email"]';
+export const REGISTER_PASSWORD = 'main form input[name="password"]';
 
 // Reviews — summary & CTA
 export const REVIEW_SECTION_HEADING = 'h2:has-text("Customer Reviews")';
