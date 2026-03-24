@@ -11,6 +11,17 @@ type SyncProductsWorkflowInput = {
   filters?: Record<string, unknown>
 }
 
+type QueriedPrice = {
+  amount?: number | null
+  currency_code?: string | null
+}
+
+type QueriedVariant = {
+  prices?: QueriedPrice[] | null
+  inventory_quantity?: number | null
+  manage_inventory?: boolean | null
+}
+
 export const syncProductsWorkflow = createWorkflow(
   "sync-products-to-meilisearch",
   ({ filters }: SyncProductsWorkflowInput) => {
@@ -42,6 +53,7 @@ export const syncProductsWorkflow = createWorkflow(
 
         for (const product of data.products) {
           if (product.status === "published") {
+            const variants = (product.variants || []) as QueriedVariant[]
             const collection_titles: string[] = []
             if (product.collection?.title) {
               collection_titles.push(product.collection.title)
@@ -54,7 +66,7 @@ export const syncProductsWorkflow = createWorkflow(
             // Only index USD prices (default store currency) to avoid
             // leaking internal pricing from other regions/price lists
             const variant_prices: number[] = []
-            for (const variant of product.variants || []) {
+            for (const variant of variants) {
               for (const price of variant.prices || []) {
                 if (
                   typeof price.amount === "number" &&
@@ -65,8 +77,8 @@ export const syncProductsWorkflow = createWorkflow(
               }
             }
 
-            const availability = (product.variants || []).some(
-              (v: { manage_inventory?: boolean; inventory_quantity?: number }) =>
+            const availability = variants.some(
+              (v) =>
                 !v.manage_inventory || (v.inventory_quantity ?? 0) > 0
             )
 
