@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import clsx from "clsx";
 import { DownloadInvoiceButton } from "./download-invoice-button";
+import { isInvoiceEligible } from "./order-utils";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -44,20 +45,6 @@ function getFulfillmentStep(
 
 function isCanceled(order: StoreOrderDetail): boolean {
   return order.status === "canceled";
-}
-
-function isInvoiceEligible(order: StoreOrderDetail): boolean {
-  if (order.status === "canceled") return false;
-  if (order.status === "completed") return true;
-
-  const eligible = new Set([
-    "fulfilled",
-    "shipped",
-    "partially_shipped",
-    "delivered",
-    "partially_delivered",
-  ]);
-  return !!order.fulfillment_status && eligible.has(order.fulfillment_status);
 }
 
 function capitalizeBrand(brand: string | undefined): string {
@@ -144,7 +131,11 @@ function ProgressBar({ step }: { step: number }) {
             key={label}
             className={clsx(
               step >= i ? "text-primary-600" : "",
-              i === 0 ? "text-left" : i === 3 ? "text-right" : "text-center",
+              i === 0
+                ? "text-left"
+                : i === LAST_PROGRESS_STEP_INDEX
+                  ? "text-right"
+                  : "text-center",
             )}
           >
             {label}

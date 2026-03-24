@@ -46,11 +46,11 @@ test.describe("404 Page", () => {
 
     await expect(page.locator("text=404")).toBeVisible({ timeout: 10_000 });
 
-    // The background image should be an <img> with the Unsplash URL
+    // The background image should be a self-hosted asset.
     const bgImage = page.locator("main img");
     await expect(bgImage).toBeAttached();
     const src = await bgImage.getAttribute("src");
-    expect(src).toContain("unsplash.com");
+    expect(src).toBe("/images/404-background.svg");
   });
 
   test("'Back to home' link navigates to homepage", async ({ page }) => {

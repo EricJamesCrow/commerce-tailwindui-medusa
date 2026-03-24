@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Abstract storefront background</title>
+  <desc id="desc">A warm-toned gradient sky above soft landscape shapes for the 404 page background.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#16324f"/>
+      <stop offset="45%" stop-color="#345d7f"/>
+      <stop offset="100%" stop-color="#d8b58f"/>
+    </linearGradient>
+    <linearGradient id="sunset" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f7d6a3" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#f28b50" stop-opacity="0.1"/>
+    </linearGradient>
+    <linearGradient id="ridge" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#415a47"/>
+      <stop offset="100%" stop-color="#243528"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <circle cx="1180" cy="170" r="180" fill="url(#sunset)"/>
+  <path d="M0 580C140 520 280 520 420 560C560 600 720 610 860 565C1000 520 1140 505 1280 545C1420 585 1510 600 1600 575V900H0Z" fill="#496575"/>
+  <path d="M0 650C130 610 260 620 390 670C520 720 660 735 790 700C920 665 1060 640 1190 680C1320 720 1460 735 1600 700V900H0Z" fill="#7d6a58"/>
+  <path d="M0 740C180 700 340 705 500 755C660 805 820 810 980 760C1140 710 1310 700 1600 760V900H0Z" fill="url(#ridge)"/>
+</svg>

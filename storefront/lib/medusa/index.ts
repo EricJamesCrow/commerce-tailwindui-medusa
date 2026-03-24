@@ -27,6 +27,7 @@ const STATIC_PAGE_LINKS = [
   ...FOOTER_CONFIG.legal,
   { name: "Support", href: "/support" },
 ] as const;
+const STATIC_PAGE_TIMESTAMP = "2026-03-23T00:00:00.000Z";
 
 function createStaticPage(handle: string, title: string): Page {
   return {
@@ -35,8 +36,8 @@ function createStaticPage(handle: string, title: string): Page {
     handle,
     body: `<p>${title} content coming soon.</p>`,
     bodySummary: `${title} content coming soon.`,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: STATIC_PAGE_TIMESTAMP,
+    updatedAt: STATIC_PAGE_TIMESTAMP,
   };
 }
 
@@ -508,7 +509,7 @@ export type StoreOrderDetail = HttpTypes.StoreOrder & {
 };
 
 async function getE2EOrders(): Promise<StoreOrderDetail[] | null> {
-  if (process.env.NODE_ENV === "production") return null;
+  if (process.env.E2E_ORDER_FIXTURES !== "1") return null;
 
   const cookieStore = await cookies();
   const encodedFixture = cookieStore.get("__e2e_orders")?.value;

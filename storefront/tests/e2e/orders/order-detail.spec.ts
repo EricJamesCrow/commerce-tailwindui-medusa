@@ -34,9 +34,6 @@ test.describe("Order Detail Page", () => {
     await expect(signedInText.or(addressField)).toBeVisible({
       timeout: 15_000,
     });
-    if (!(await addressField.isVisible().catch(() => false))) {
-      await expect(addressField).toBeVisible({ timeout: 15_000 });
-    }
 
     await page.locator(sel.ADDR_FIRST_NAME).fill(TEST_ADDRESS.first_name);
     await page.locator(sel.ADDR_LAST_NAME).fill(TEST_ADDRESS.last_name);
