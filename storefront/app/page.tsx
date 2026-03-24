@@ -4,12 +4,20 @@ import { Hero } from "components/home/hero";
 import { TrendingProducts } from "components/home/trending-products";
 import { getCollections, getProducts } from "lib/medusa";
 import {
+  buildOrganizationJsonLd,
+  getSiteSchemaConfig,
+  JsonLdScript,
+} from "lib/structured-data";
+import {
   transformCollectionToTailwind,
   transformProductToTailwind,
 } from "lib/utils";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
   description:
     "High-performance ecommerce store built with Next.js, Vercel, and Medusa.",
   openGraph: {
@@ -37,9 +45,16 @@ export default async function HomePage() {
   const collections = allCollections
     .slice(1, 4)
     .map(transformCollectionToTailwind);
+  const organizationJsonLd = buildOrganizationJsonLd(
+    getSiteSchemaConfig({
+      description:
+        "High-performance ecommerce store built with Next.js, Vercel, and Medusa.",
+    }),
+  );
 
   return (
     <>
+      <JsonLdScript data={organizationJsonLd} />
       <Hero />
       <TrendingProducts products={trendingProducts} />
       <Collections collections={collections} />

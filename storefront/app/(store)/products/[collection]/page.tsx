@@ -5,8 +5,11 @@ import {
   getCollectionProducts,
   getCollections,
 } from "lib/medusa";
-import { safeJsonLd } from "lib/json-ld";
-import { baseUrl } from "lib/utils";
+import {
+  buildBreadcrumbJsonLd,
+  buildItemListJsonLd,
+  JsonLdScript,
+} from "lib/structured-data";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -49,6 +52,22 @@ export default async function ProductsCollectionPage(props: {
     getCollection(params.collection),
     getCollectionProducts({ collection: params.collection, sortKey, reverse }),
   ]);
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: "Home", path: "/" },
+    { name: "Products", path: "/products" },
+    {
+      name: collection?.title || params.collection,
+      path: `/products/${params.collection}`,
+    },
+  ]);
+  const itemListJsonLd = buildItemListJsonLd(
+    products.map((product, index) => ({
+      position: index + 1,
+      name: product.title,
+      path: `/product/${product.handle}`,
+      image: product.featuredImage?.url,
+    })),
+  );
 
   return (
     <div>
@@ -57,51 +76,8 @@ export default async function ProductsCollectionPage(props: {
       ) : (
         <ProductGrid products={products} />
       )}
-      <script
-        type="application/ld+json"
-        suppressHydrationWarning
-        dangerouslySetInnerHTML={{
-          __html: safeJsonLd({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: [
-              {
-                "@type": "ListItem",
-                position: 1,
-                name: "Home",
-                item: `${baseUrl}/`,
-              },
-              {
-                "@type": "ListItem",
-                position: 2,
-                name: "Products",
-                item: `${baseUrl}/products`,
-              },
-              {
-                "@type": "ListItem",
-                position: 3,
-                name: collection?.title || params.collection,
-                item: `${baseUrl}/products/${params.collection}`,
-              },
-            ],
-          }),
-        }}
-      />
-      <script
-        type="application/ld+json"
-        suppressHydrationWarning
-        dangerouslySetInnerHTML={{
-          __html: safeJsonLd({
-            "@context": "https://schema.org",
-            "@type": "ItemList",
-            itemListElement: products.map((p, i) => ({
-              "@type": "ListItem",
-              position: i + 1,
-              url: `${baseUrl}/product/${p.handle}`,
-            })),
-          }),
-        }}
-      />
+      <JsonLdScript data={breadcrumbJsonLd} />
+      <JsonLdScript data={itemListJsonLd} />
     </div>
   );
 }

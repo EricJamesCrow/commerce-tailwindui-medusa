@@ -9,6 +9,12 @@ import { ProductReviewsSection } from "components/reviews/ProductReviewsSection"
 import { HIDDEN_PRODUCT_TAG } from "lib/constants";
 import { getProduct, getProductRecommendations, getProducts } from "lib/medusa";
 import { getProductReviews } from "lib/medusa/reviews";
+import {
+  buildBreadcrumbJsonLd,
+  buildProductJsonLd,
+  getSiteSchemaConfig,
+  JsonLdScript,
+} from "lib/structured-data";
 import type { Product } from "lib/types";
 import { transformProductsToRelatedProducts } from "lib/utils";
 import { Suspense } from "react";
@@ -27,6 +33,9 @@ export async function generateMetadata(props: {
   return {
     title: product.seo.title || product.title,
     description: product.seo.description || product.description,
+    alternates: {
+      canonical: `/product/${product.handle}`,
+    },
     robots: {
       index: indexable,
       follow: indexable,
@@ -62,45 +71,55 @@ export default async function ProductPage(props: {
   params: Promise<{ handle: string }>;
 }) {
   const params = await props.params;
-  // Don't await the fetch, pass the Promise to the client component
-  const productPromise = getProduct(params.handle);
+  const product = await getProduct(params.handle);
 
-  if (!productPromise) return notFound();
+  if (!product) return notFound();
 
-  const reviewsPromise = productPromise.then((product) =>
-    product ? getProductReviews(product.id) : null,
-  );
+  const reviewsPromise = getProductReviews(product.id);
+  const reviews = await reviewsPromise;
+  const siteConfig = getSiteSchemaConfig();
+  const productJsonLd = buildProductJsonLd(product, reviews, siteConfig);
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: "Home", path: "/" },
+    { name: "Products", path: "/products" },
+    { name: product.title, path: `/product/${product.handle}` },
+  ]);
+  const productPromise = Promise.resolve(product);
 
   return (
-    <ProductPageContent
-      productPromise={productPromise}
-      reviewsPromise={reviewsPromise}
-      reviewsSlot={
-        <Suspense
-          fallback={
-            <div className="mx-auto max-w-7xl px-4 py-8">
-              <div className="h-32 animate-pulse rounded bg-gray-200" />
-            </div>
-          }
-        >
-          <ProductReviewsSection productPromise={productPromise} />
-        </Suspense>
-      }
-      relatedProductsSlot={
-        <Suspense
-          fallback={
-            <div className="mx-auto max-w-7xl px-4 py-8">
-              <h2 className="mb-4 text-xl font-bold text-gray-900">
-                Customers also bought
-              </h2>
-              <div className="h-24 animate-pulse rounded bg-gray-200" />
-            </div>
-          }
-        >
-          <RelatedProducts productPromise={productPromise} />
-        </Suspense>
-      }
-    />
+    <>
+      <JsonLdScript data={productJsonLd} />
+      <JsonLdScript data={breadcrumbJsonLd} />
+      <ProductPageContent
+        productPromise={productPromise}
+        reviewsPromise={Promise.resolve(reviews)}
+        reviewsSlot={
+          <Suspense
+            fallback={
+              <div className="mx-auto max-w-7xl px-4 py-8">
+                <div className="h-32 animate-pulse rounded bg-gray-200" />
+              </div>
+            }
+          >
+            <ProductReviewsSection productPromise={productPromise} />
+          </Suspense>
+        }
+        relatedProductsSlot={
+          <Suspense
+            fallback={
+              <div className="mx-auto max-w-7xl px-4 py-8">
+                <h2 className="mb-4 text-xl font-bold text-gray-900">
+                  Customers also bought
+                </h2>
+                <div className="h-24 animate-pulse rounded bg-gray-200" />
+              </div>
+            }
+          >
+            <RelatedProducts productPromise={productPromise} />
+          </Suspense>
+        }
+      />
+    </>
   );
 }
 

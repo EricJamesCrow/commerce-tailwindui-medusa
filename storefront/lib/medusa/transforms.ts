@@ -39,7 +39,9 @@ function toMoney(
 }
 
 function getCurrencyCode(product: HttpTypes.StoreProduct): string {
-  const variant = product.variants?.[0] as VariantWithCalculatedPrice | undefined;
+  const variant = product.variants?.[0] as
+    | VariantWithCalculatedPrice
+    | undefined;
   return variant?.calculated_price?.currency_code || "USD";
 }
 
@@ -68,6 +70,7 @@ function transformVariant(
     id: variant.id || "",
     title: variant.title || "",
     availableForSale: !manageInventory || inventoryQuantity > 0,
+    sku: variant.sku || undefined,
     selectedOptions: (variant.options || []).map((opt) => ({
       name: opt.option?.title || "",
       value: opt.value || "",
@@ -111,12 +114,10 @@ export function transformProduct(product: HttpTypes.StoreProduct): Product {
         height: 0,
       };
 
-  const tags: string[] = (product.tags || []).map(
-    (t) => {
-      const tag = t as unknown as ProductTagValue;
-      return tag.value || tag.name || String(t);
-    },
-  );
+  const tags: string[] = (product.tags || []).map((t) => {
+    const tag = t as unknown as ProductTagValue;
+    return tag.value || tag.name || String(t);
+  });
 
   return {
     id: product.id || "",

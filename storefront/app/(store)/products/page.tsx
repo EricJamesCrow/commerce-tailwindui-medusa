@@ -1,8 +1,7 @@
 import ProductGrid from "components/layout/product-grid";
 import { defaultSort, sorting } from "lib/constants";
 import { getProducts } from "lib/medusa";
-import { safeJsonLd } from "lib/json-ld";
-import { baseUrl } from "lib/utils";
+import { buildItemListJsonLd, JsonLdScript } from "lib/structured-data";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -20,25 +19,19 @@ export default async function ProductsPage(props: {
     sorting.find((item) => item.slug === sort) || defaultSort;
 
   const products = await getProducts({ sortKey, reverse });
+  const itemListJsonLd = buildItemListJsonLd(
+    products.map((product, index) => ({
+      position: index + 1,
+      name: product.title,
+      path: `/product/${product.handle}`,
+      image: product.featuredImage?.url,
+    })),
+  );
 
   return (
     <div>
       {products.length > 0 ? <ProductGrid products={products} /> : null}
-      <script
-        type="application/ld+json"
-        suppressHydrationWarning
-        dangerouslySetInnerHTML={{
-          __html: safeJsonLd({
-            "@context": "https://schema.org",
-            "@type": "ItemList",
-            itemListElement: products.map((p, i) => ({
-              "@type": "ListItem",
-              position: i + 1,
-              url: `${baseUrl}/product/${p.handle}`,
-            })),
-          }),
-        }}
-      />
+      <JsonLdScript data={itemListJsonLd} />
     </div>
   );
 }

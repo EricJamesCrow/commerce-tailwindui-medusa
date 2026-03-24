@@ -6,26 +6,26 @@ Local development through production deployment for the Commerce TailwindUI + Me
 
 ### Required
 
-| Tool | Version | Install |
-|------|---------|---------|
-| **Bun** | `1.1.18` | `curl -fsSL https://bun.sh/install \| bash` |
-| **Node.js** | `>=20` | Required by Medusa runtime |
-| **PostgreSQL** | `17` | `brew install postgresql@17 && brew services start postgresql@17` |
+| Tool           | Version  | Install                                                           |
+| -------------- | -------- | ----------------------------------------------------------------- |
+| **Bun**        | `1.1.18` | `curl -fsSL https://bun.sh/install \| bash`                       |
+| **Node.js**    | `>=20`   | Required by Medusa runtime                                        |
+| **PostgreSQL** | `17`     | `brew install postgresql@17 && brew services start postgresql@17` |
 
 ### Optional Services
 
 These are all optional for local development. The app runs without them — each feature gracefully disables when its env vars are not set.
 
-| Service | Install / Setup | What it enables |
-|---------|----------------|-----------------|
-| **Redis** | `brew install redis && brew services start redis` | Caching, event bus, workflow engine, locking. Optional locally (in-memory fallback), required in production |
-| **Meilisearch** | `brew install meilisearch` — see [Local Meilisearch Setup](#7-meilisearch-optional) below | Full-text search with faceted filtering. Falls back to Medusa REST search without it |
-| **Stripe CLI** | `brew install stripe/stripe-cli/stripe` | Local webhook testing for payment flows |
-| **Stripe Account** | [dashboard.stripe.com](https://dashboard.stripe.com) — copy `sk_test_` and `pk_test_` keys | Payment processing (checkout, refunds) |
-| **Resend Account** | [resend.com](https://resend.com) — copy API key | Transactional emails (order confirmations, password resets, admin alerts). Test locally with email preview: `bun run dev:emails` |
-| **Cloudflare R2** | [dash.cloudflare.com](https://dash.cloudflare.com) — create R2 bucket + API token | Persistent file/image storage. Without it, files stored in-memory and lost on restart |
-| **Sentry Account** | [sentry.io](https://sentry.io) — create Node.js + Next.js projects, copy DSN | Error monitoring and performance tracing |
-| **PostHog Account** | [posthog.com](https://posthog.com) — create project, copy Project API Key | Product analytics, feature flags, session replay |
+| Service             | Install / Setup                                                                            | What it enables                                                                                                                  |
+| ------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Redis**           | `brew install redis && brew services start redis`                                          | Caching, event bus, workflow engine, locking. Optional locally (in-memory fallback), required in production                      |
+| **Meilisearch**     | `brew install meilisearch` — see [Local Meilisearch Setup](#7-meilisearch-optional) below  | Full-text search with faceted filtering. Falls back to Medusa REST search without it                                             |
+| **Stripe CLI**      | `brew install stripe/stripe-cli/stripe`                                                    | Local webhook testing for payment flows                                                                                          |
+| **Stripe Account**  | [dashboard.stripe.com](https://dashboard.stripe.com) — copy `sk_test_` and `pk_test_` keys | Payment processing (checkout, refunds)                                                                                           |
+| **Resend Account**  | [resend.com](https://resend.com) — copy API key                                            | Transactional emails (order confirmations, password resets, admin alerts). Test locally with email preview: `bun run dev:emails` |
+| **Cloudflare R2**   | [dash.cloudflare.com](https://dash.cloudflare.com) — create R2 bucket + API token          | Persistent file/image storage. Without it, files stored in-memory and lost on restart                                            |
+| **Sentry Account**  | [sentry.io](https://sentry.io) — create Node.js + Next.js projects, copy DSN               | Error monitoring and performance tracing                                                                                         |
+| **PostHog Account** | [posthog.com](https://posthog.com) — create project, copy Project API Key                  | Product analytics, feature flags, session replay                                                                                 |
 
 ## Clone & Install
 
@@ -50,34 +50,34 @@ DATABASE_URL=postgres://localhost/medusa_db
 
 All other variables have working defaults for local development. See `backend/.env.example` for the full list with documentation.
 
-| Variable | Required | Default (dev) | Purpose |
-|----------|----------|---------------|---------|
-| `DATABASE_URL` | Yes | — | PostgreSQL connection string |
-| `REDIS_URL` | Prod only | — | Redis for caching, events, workflows, locking |
-| `JWT_SECRET` | Yes | `"supersecret"` | Auth token signing |
-| `COOKIE_SECRET` | Yes | `"supersecret"` | Session cookie signing |
-| `STORE_CORS` | Yes | `http://localhost:3000` | Storefront origin |
-| `ADMIN_CORS` | Yes | `http://localhost:5173,http://localhost:9000` | Admin UI origins |
-| `AUTH_CORS` | Yes | `http://localhost:5173,http://localhost:9000` | Auth flow origins |
-| `STRIPE_API_KEY` | No | — | `sk_test_...` from Stripe dashboard |
-| `STRIPE_WEBHOOK_SECRET` | If Stripe | — | `whsec_...` from Stripe webhook endpoint |
-| `RESEND_API_KEY` | No | — | Enables email notifications |
-| `RESEND_FROM_EMAIL` | No | `onboarding@resend.dev` | Sender address for emails |
-| `STOREFRONT_URL` | No | `http://localhost:3000` | Base URL for links in emails |
-| `MEDUSA_BACKEND_URL` | Prod only | — | Public backend URL (admin UI build) |
-| `ADMIN_ORDER_EMAILS` | No | — | Comma-separated emails for order alerts |
-| `CART_RECOVERY_SECRET` | If cart recovery | — | HMAC secret for abandoned cart tokens |
-| `S3_FILE_URL` | No | — | R2 public base URL (e.g. `https://pub-abc123.r2.dev`) |
-| `S3_ACCESS_KEY_ID` | No | — | Cloudflare R2 API token ID |
-| `S3_SECRET_ACCESS_KEY` | No | — | Cloudflare R2 API token secret |
-| `S3_BUCKET` | No | — | R2 bucket name (e.g. `crowcommerce-assets`) |
-| `S3_REGION` | No | `auto` | Always `auto` for Cloudflare R2 |
-| `S3_ENDPOINT` | No | — | `https://<account-id>.r2.cloudflarestorage.com` |
-| `SENTRY_DSN` | No | — | Sentry project DSN for error monitoring |
-| `SENTRY_TRACES_SAMPLE_RATE` | No | `0.2` | Trace sample rate (0.0-1.0) |
-| `MEILISEARCH_HOST` | No | — | Meilisearch server URL (e.g. `http://127.0.0.1:7700`) |
-| `MEILISEARCH_API_KEY` | If Meilisearch | — | Meilisearch master key (admin access) |
-| `MEILISEARCH_PRODUCT_INDEX_NAME` | No | `products` | Meilisearch index name for products |
+| Variable                         | Required         | Default (dev)                                 | Purpose                                               |
+| -------------------------------- | ---------------- | --------------------------------------------- | ----------------------------------------------------- |
+| `DATABASE_URL`                   | Yes              | —                                             | PostgreSQL connection string                          |
+| `REDIS_URL`                      | Prod only        | —                                             | Redis for caching, events, workflows, locking         |
+| `JWT_SECRET`                     | Yes              | `"supersecret"`                               | Auth token signing                                    |
+| `COOKIE_SECRET`                  | Yes              | `"supersecret"`                               | Session cookie signing                                |
+| `STORE_CORS`                     | Yes              | `http://localhost:3000`                       | Storefront origin                                     |
+| `ADMIN_CORS`                     | Yes              | `http://localhost:5173,http://localhost:9000` | Admin UI origins                                      |
+| `AUTH_CORS`                      | Yes              | `http://localhost:5173,http://localhost:9000` | Auth flow origins                                     |
+| `STRIPE_API_KEY`                 | No               | —                                             | `sk_test_...` from Stripe dashboard                   |
+| `STRIPE_WEBHOOK_SECRET`          | If Stripe        | —                                             | `whsec_...` from Stripe webhook endpoint              |
+| `RESEND_API_KEY`                 | No               | —                                             | Enables email notifications                           |
+| `RESEND_FROM_EMAIL`              | No               | `onboarding@resend.dev`                       | Sender address for emails                             |
+| `STOREFRONT_URL`                 | No               | `http://localhost:3000`                       | Base URL for links in emails                          |
+| `MEDUSA_BACKEND_URL`             | Prod only        | —                                             | Public backend URL (admin UI build)                   |
+| `ADMIN_ORDER_EMAILS`             | No               | —                                             | Comma-separated emails for order alerts               |
+| `CART_RECOVERY_SECRET`           | If cart recovery | —                                             | HMAC secret for abandoned cart tokens                 |
+| `S3_FILE_URL`                    | No               | —                                             | R2 public base URL (e.g. `https://pub-abc123.r2.dev`) |
+| `S3_ACCESS_KEY_ID`               | No               | —                                             | Cloudflare R2 API token ID                            |
+| `S3_SECRET_ACCESS_KEY`           | No               | —                                             | Cloudflare R2 API token secret                        |
+| `S3_BUCKET`                      | No               | —                                             | R2 bucket name (e.g. `crowcommerce-assets`)           |
+| `S3_REGION`                      | No               | `auto`                                        | Always `auto` for Cloudflare R2                       |
+| `S3_ENDPOINT`                    | No               | —                                             | `https://<account-id>.r2.cloudflarestorage.com`       |
+| `SENTRY_DSN`                     | No               | —                                             | Sentry project DSN for error monitoring               |
+| `SENTRY_TRACES_SAMPLE_RATE`      | No               | `0.2`                                         | Trace sample rate (0.0-1.0)                           |
+| `MEILISEARCH_HOST`               | No               | —                                             | Meilisearch server URL (e.g. `http://127.0.0.1:7700`) |
+| `MEILISEARCH_API_KEY`            | If Meilisearch   | —                                             | Meilisearch master key (admin access)                 |
+| `MEILISEARCH_PRODUCT_INDEX_NAME` | No               | `products`                                    | Meilisearch index name for products                   |
 
 ### Storefront
 
@@ -87,23 +87,29 @@ cp storefront/.env.example storefront/.env.local
 
 Edit `storefront/.env.local` — at minimum, set `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` after seeding:
 
-| Variable | Required | Default (dev) | Purpose |
-|----------|----------|---------------|---------|
-| `MEDUSA_BACKEND_URL` | Yes | `http://localhost:9000` | Medusa API endpoint |
-| `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` | Yes | — | `pk_...` from seed output or admin |
-| `NEXT_PUBLIC_STRIPE_KEY` | No | — | `pk_test_...` from Stripe dashboard |
-| `NEXT_PUBLIC_DEFAULT_REGION_ID` | No | — | Skip region detection (use specific region) |
-| `SITE_NAME` | No | — | Browser tab title, OG images |
-| `COMPANY_NAME` | No | — | Footer copyright |
-| `REVALIDATE_SECRET` | No | — | On-demand cache revalidation token |
-| `S3_IMAGE_HOSTNAME` | No | — | R2 public hostname for `next/image` (e.g. `pub-abc123.r2.dev`) |
-| `CART_RECOVERY_SECRET` | If cart recovery | — | Same secret as backend (HMAC verification) |
-| `NEXT_PUBLIC_SENTRY_DSN` | No | — | Sentry DSN (safe to expose client-side) |
-| `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` | No | `0.2` | Client-side trace sample rate |
-| `SENTRY_TRACES_SAMPLE_RATE` | No | `0.2` | Server-side trace sample rate |
-| `NEXT_PUBLIC_MEILISEARCH_HOST` | No | — | Meilisearch server URL (e.g. `http://127.0.0.1:7700`) |
-| `NEXT_PUBLIC_MEILISEARCH_API_KEY` | If Meilisearch | — | Meilisearch search-only API key |
-| `NEXT_PUBLIC_MEILISEARCH_INDEX_NAME` | No | `products` | Meilisearch index name for products |
+| Variable                                | Required         | Default (dev)                                    | Purpose                                                             |
+| --------------------------------------- | ---------------- | ------------------------------------------------ | ------------------------------------------------------------------- |
+| `MEDUSA_BACKEND_URL`                    | Yes              | `http://localhost:9000`                          | Medusa API endpoint                                                 |
+| `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY`    | Yes              | —                                                | `pk_...` from seed output or admin                                  |
+| `NEXT_PUBLIC_STRIPE_KEY`                | No               | —                                                | `pk_test_...` from Stripe dashboard                                 |
+| `NEXT_PUBLIC_DEFAULT_REGION_ID`         | No               | —                                                | Skip region detection (use specific region)                         |
+| `NEXT_PUBLIC_SITE_URL`                  | No               | Vercel production URL or `http://localhost:3000` | Preferred canonical/site URL for metadata, sitemap, robots, JSON-LD |
+| `NEXT_PUBLIC_SITE_LOGO_URL`             | No               | —                                                | Logo URL for homepage Organization JSON-LD                          |
+| `SITE_NAME`                             | No               | —                                                | Browser tab title, OG images                                        |
+| `COMPANY_NAME`                          | No               | —                                                | Footer copyright                                                    |
+| `SITE_COMPANY_LEGAL_NAME`               | No               | —                                                | Legal entity name for Organization JSON-LD                          |
+| `SITE_COMPANY_PHONE`                    | No               | —                                                | Support phone number for Organization JSON-LD                       |
+| `SITE_COMPANY_EMAIL`                    | No               | —                                                | Support email for Organization JSON-LD                              |
+| `SITE_COMPANY_SAME_AS`                  | No               | —                                                | Comma-separated social/profile URLs for Organization JSON-LD        |
+| `REVALIDATE_SECRET`                     | No               | —                                                | On-demand cache revalidation token                                  |
+| `S3_IMAGE_HOSTNAME`                     | No               | —                                                | R2 public hostname for `next/image` (e.g. `pub-abc123.r2.dev`)      |
+| `CART_RECOVERY_SECRET`                  | If cart recovery | —                                                | Same secret as backend (HMAC verification)                          |
+| `NEXT_PUBLIC_SENTRY_DSN`                | No               | —                                                | Sentry DSN (safe to expose client-side)                             |
+| `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` | No               | `0.2`                                            | Client-side trace sample rate                                       |
+| `SENTRY_TRACES_SAMPLE_RATE`             | No               | `0.2`                                            | Server-side trace sample rate                                       |
+| `NEXT_PUBLIC_MEILISEARCH_HOST`          | No               | —                                                | Meilisearch server URL (e.g. `http://127.0.0.1:7700`)               |
+| `NEXT_PUBLIC_MEILISEARCH_API_KEY`       | If Meilisearch   | —                                                | Meilisearch search-only API key                                     |
+| `NEXT_PUBLIC_MEILISEARCH_INDEX_NAME`    | No               | `products`                                       | Meilisearch index name for products                                 |
 
 ## Local Development
 
@@ -153,12 +159,12 @@ bun run dev
 
 This starts all services in parallel:
 
-| Service | URL | Port |
-|---------|-----|------|
-| Storefront | http://localhost:3000 | 3000 |
-| Backend API | http://localhost:9000 | 9000 |
-| Admin UI | http://localhost:9000/app | 9000 |
-| Email Preview | http://localhost:3003 | 3003 |
+| Service       | URL                       | Port |
+| ------------- | ------------------------- | ---- |
+| Storefront    | http://localhost:3000     | 3000 |
+| Backend API   | http://localhost:9000     | 9000 |
+| Admin UI      | http://localhost:9000/app | 9000 |
+| Email Preview | http://localhost:3003     | 3003 |
 
 Or start individually:
 
@@ -197,12 +203,14 @@ meilisearch --master-key="test-master-key-123"
 Meilisearch runs on `http://127.0.0.1:7700`. Add to your env files:
 
 **`backend/.env`:**
+
 ```
 MEILISEARCH_HOST=http://127.0.0.1:7700
 MEILISEARCH_API_KEY=test-master-key-123
 ```
 
 **`storefront/.env.local`:**
+
 ```
 NEXT_PUBLIC_MEILISEARCH_HOST=http://127.0.0.1:7700
 NEXT_PUBLIC_MEILISEARCH_API_KEY=test-master-key-123
@@ -291,8 +299,14 @@ When migrating to a CMS (e.g., Payload), swap the import source in each route fi
    MEDUSA_BACKEND_URL=                      # Your Railway backend URL
    NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=      # pk_... from seed output
    NEXT_PUBLIC_STRIPE_KEY=                  # pk_test_... (if using Stripe)
+   NEXT_PUBLIC_SITE_URL=                    # Preferred public storefront URL, e.g. https://store.example.com
+   NEXT_PUBLIC_SITE_LOGO_URL=               # Public logo URL for Organization JSON-LD
    SITE_NAME=                               # Your store name
    COMPANY_NAME=                            # Footer copyright
+   SITE_COMPANY_LEGAL_NAME=                 # Legal entity name for Organization JSON-LD
+   SITE_COMPANY_PHONE=                      # Support phone number (optional)
+   SITE_COMPANY_EMAIL=                      # Support email (optional)
+   SITE_COMPANY_SAME_AS=                    # Comma-separated social/profile URLs (optional)
    REVALIDATE_SECRET=                       # Generate: openssl rand -hex 32
    NEXT_PUBLIC_SENTRY_DSN=                  # Sentry project DSN
    SENTRY_AUTH_TOKEN=                       # Source map uploads (sentry.io/settings/auth-tokens/)
@@ -306,9 +320,23 @@ When migrating to a CMS (e.g., Payload), swap the import source in each route fi
 
 4. **Update backend CORS** — add your Vercel production domain to `STORE_CORS` in Railway.
 
+## Structured Data Coverage
+
+The storefront emits typed JSON-LD for:
+
+- Homepage: `Organization`
+- Product detail pages: `Product`, `BreadcrumbList`
+- Product listing pages: `ItemList`
+- Collection pages: `BreadcrumbList`, `ItemList`
+
+Absolute URLs for metadata, sitemap, robots, and JSON-LD prefer `NEXT_PUBLIC_SITE_URL`. If it is unset, the storefront falls back to Vercel's production URL and finally `http://localhost:3000` for local development.
+
+Homepage `Organization` schema is only as complete as the env vars provided. Missing optional values are omitted rather than guessed.
+
 ### Stripe Webhooks (Production)
 
 1. In the [Stripe Dashboard](https://dashboard.stripe.com/webhooks), create a webhook endpoint:
+
    - **URL:** `https://api.example.com/hooks/payment/stripe_stripe`
    - **Events:** `payment_intent.succeeded`, `payment_intent.payment_failed`, `payment_intent.canceled`
 

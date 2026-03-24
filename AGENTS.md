@@ -167,19 +167,21 @@ gt submit --stack                              # Push all stacked PRs
 When executing an implementation plan (via `superpowers:executing-plans`, `superpowers:subagent-driven-development`, or any plan from `docs/superpowers/plans/`), follow this lifecycle. **This overrides any conflicting skill instructions.**
 
 **Before starting implementation:**
-1. Create a Graphite branch: `gt create -a -m "feat: <description from plan>"`
-2. Verify you're on the new branch: `git branch --show-current`
-3. Then begin executing tasks from the plan
+1. Create the Graphite branch **before making repo-tracked edits**: `gt create -a -m "feat: <description from plan>"`
+2. Verify you're no longer on `main`: `git branch --show-current`
+3. Only after the branch exists may you begin executing tasks from the plan
+4. If implementation work was started on `main` by mistake, stop and immediately move that work onto a Graphite branch before making any further edits or commits
 
 **After all plan tasks are complete:**
 1. Run `cr review` (CodeRabbit CLI) to catch issues locally
-2. Fix any relevant findings, commit the fixes
+2. Fix any relevant findings and commit those fixes on the same Graphite branch
 3. Run the `code-simplifier` skill to review changed code for reuse, quality, and efficiency
 4. Run `gt submit --stack --no-interactive` to push and create the PR
 5. Unless explicitly asked to keep as draft, run `gh pr ready <number>` to mark the PR as ready for review
 6. Update the PR description with a summary, event table, and test plan
+7. Do not stop after coding is done; the plan is not complete until the Graphite branch exists and the post-plan submit steps above are either finished or explicitly deferred by the user
 
-This ensures every plan execution produces a clean Graphite branch with a pre-reviewed PR — no manual branch creation or post-submit fix cycles needed.
+This ensures every plan execution produces a clean Graphite branch with a pre-reviewed PR — no implementation on `main`, no manual branch creation after the fact, and no post-submit fix cycles caused by skipping the required review flow.
 
 ## Never Do
 
