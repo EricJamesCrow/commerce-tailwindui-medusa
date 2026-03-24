@@ -4,13 +4,28 @@ Local development through production deployment for the Commerce TailwindUI + Me
 
 ## Prerequisites
 
+### Required
+
 | Tool | Version | Install |
 |------|---------|---------|
 | **Bun** | `1.1.18` | `curl -fsSL https://bun.sh/install \| bash` |
 | **Node.js** | `>=20` | Required by Medusa runtime |
 | **PostgreSQL** | `17` | `brew install postgresql@17 && brew services start postgresql@17` |
-| **Redis** | Latest | Optional locally, required in production. `brew install redis && brew services start redis` |
-| **Stripe CLI** | Latest | Only for webhook testing. `brew install stripe/stripe-cli/stripe` |
+
+### Optional Services
+
+These are all optional for local development. The app runs without them — each feature gracefully disables when its env vars are not set.
+
+| Service | Install / Setup | What it enables |
+|---------|----------------|-----------------|
+| **Redis** | `brew install redis && brew services start redis` | Caching, event bus, workflow engine, locking. Optional locally (in-memory fallback), required in production |
+| **Meilisearch** | `brew install meilisearch` — see [Local Meilisearch Setup](#7-meilisearch-optional) below | Full-text search with faceted filtering. Falls back to Medusa REST search without it |
+| **Stripe CLI** | `brew install stripe/stripe-cli/stripe` | Local webhook testing for payment flows |
+| **Stripe Account** | [dashboard.stripe.com](https://dashboard.stripe.com) — copy `sk_test_` and `pk_test_` keys | Payment processing (checkout, refunds) |
+| **Resend Account** | [resend.com](https://resend.com) — copy API key | Transactional emails (order confirmations, password resets, admin alerts). Test locally with email preview: `bun run dev:emails` |
+| **Cloudflare R2** | [dash.cloudflare.com](https://dash.cloudflare.com) — create R2 bucket + API token | Persistent file/image storage. Without it, files stored in-memory and lost on restart |
+| **Sentry Account** | [sentry.io](https://sentry.io) — create Node.js + Next.js projects, copy DSN | Error monitoring and performance tracing |
+| **PostHog Account** | [posthog.com](https://posthog.com) — create project, copy Project API Key | Product analytics, feature flags, session replay |
 
 ## Clone & Install
 
@@ -60,6 +75,9 @@ All other variables have working defaults for local development. See `backend/.e
 | `S3_ENDPOINT` | No | — | `https://<account-id>.r2.cloudflarestorage.com` |
 | `SENTRY_DSN` | No | — | Sentry project DSN for error monitoring |
 | `SENTRY_TRACES_SAMPLE_RATE` | No | `0.2` | Trace sample rate (0.0-1.0) |
+| `MEILISEARCH_HOST` | No | — | Meilisearch server URL (e.g. `http://127.0.0.1:7700`) |
+| `MEILISEARCH_API_KEY` | If Meilisearch | — | Meilisearch master key (admin access) |
+| `MEILISEARCH_PRODUCT_INDEX_NAME` | No | `products` | Meilisearch index name for products |
 
 ### Storefront
 
@@ -83,6 +101,9 @@ Edit `storefront/.env.local` — at minimum, set `NEXT_PUBLIC_MEDUSA_PUBLISHABLE
 | `NEXT_PUBLIC_SENTRY_DSN` | No | — | Sentry DSN (safe to expose client-side) |
 | `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` | No | `0.2` | Client-side trace sample rate |
 | `SENTRY_TRACES_SAMPLE_RATE` | No | `0.2` | Server-side trace sample rate |
+| `NEXT_PUBLIC_MEILISEARCH_HOST` | No | — | Meilisearch server URL (e.g. `http://127.0.0.1:7700`) |
+| `NEXT_PUBLIC_MEILISEARCH_API_KEY` | If Meilisearch | — | Meilisearch search-only API key |
+| `NEXT_PUBLIC_MEILISEARCH_INDEX_NAME` | No | `products` | Meilisearch index name for products |
 
 ## Local Development
 
@@ -161,6 +182,47 @@ Copy the `whsec_...` signing secret from the CLI output into `backend/.env`:
 STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 
+### 7. Meilisearch (optional)
+
+For full-text search with faceted filtering. Without this, the storefront uses Medusa's built-in REST search.
+
+```bash
+# Install
+brew install meilisearch
+
+# Start with a master key (use any string — this is for local dev only)
+meilisearch --master-key="test-master-key-123"
+```
+
+Meilisearch runs on `http://127.0.0.1:7700`. Add to your env files:
+
+**`backend/.env`:**
+```
+MEILISEARCH_HOST=http://127.0.0.1:7700
+MEILISEARCH_API_KEY=test-master-key-123
+```
+
+**`storefront/.env.local`:**
+```
+NEXT_PUBLIC_MEILISEARCH_HOST=http://127.0.0.1:7700
+NEXT_PUBLIC_MEILISEARCH_API_KEY=test-master-key-123
+```
+
+After starting the backend, trigger the initial product sync:
+
+```bash
+# Get an admin auth token first
+curl -X POST http://localhost:9000/auth/user/emailpass \
+  -H "Content-Type: application/json" \
+  -d '{"email":"<admin-email>","password":"<admin-password>"}'
+
+# Trigger sync (use the token from above)
+curl -X POST http://localhost:9000/admin/meilisearch/sync \
+  -H "Authorization: Bearer <token>"
+```
+
+See `docs/features/search.md` for full customization and troubleshooting guide.
+
 ## Production Deployment
 
 ### Backend → Railway
@@ -187,6 +249,8 @@ STRIPE_WEBHOOK_SECRET=whsec_...
    S3_REGION=auto          # Always "auto" for Cloudflare R2
    S3_ENDPOINT=            # https://<account-id>.r2.cloudflarestorage.com
    SENTRY_DSN=              # Sentry project DSN
+   MEILISEARCH_HOST=        # Meilisearch server URL (e.g. https://ms-xxx.meilisearch.io or self-hosted)
+   MEILISEARCH_API_KEY=     # Meilisearch master key (admin access for indexing)
    ```
 
 4. **Deploy** — Railway detects the `Dockerfile` and `railway.toml` automatically. The container runs migrations on startup (`bunx medusa db:migrate && bun run start`).
@@ -216,6 +280,8 @@ STRIPE_WEBHOOK_SECRET=whsec_...
    SENTRY_AUTH_TOKEN=                       # Source map uploads (sentry.io/settings/auth-tokens/)
    SENTRY_ORG=                              # Sentry organization slug
    SENTRY_PROJECT=                          # Sentry project slug
+   NEXT_PUBLIC_MEILISEARCH_HOST=            # Meilisearch server URL (same as backend)
+   NEXT_PUBLIC_MEILISEARCH_API_KEY=         # Meilisearch search-only API key (NOT master key)
    ```
 
 3. **Deploy** — Vercel detects `vercel.json` (`installCommand: "bun install"`, framework: `nextjs`) and builds automatically.
@@ -239,6 +305,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 - [ ] Stripe test payment succeeds (if configured)
 - [ ] Order confirmation email sends (if Resend configured)
 - [ ] Admin order alert email sends (if `ADMIN_ORDER_EMAILS` configured)
+- [ ] Meilisearch search works: trigger sync (`POST /admin/meilisearch/sync`), verify faceted search on storefront (if Meilisearch configured)
 
 ## Common Issues
 

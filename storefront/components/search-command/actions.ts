@@ -7,14 +7,19 @@ import { trackServer } from "lib/analytics-server";
 export async function searchProducts(
   query: string,
 ): Promise<{ results: Product[]; totalCount: number }> {
+  const sanitizedQuery = query.trim().slice(0, 120);
+  if (!sanitizedQuery) {
+    return { results: [], totalCount: 0 };
+  }
+
   try {
     const products = await getProducts({
-      query,
+      query: sanitizedQuery,
       sortKey: "RELEVANCE",
       reverse: false,
       limit: 8,
     });
-    try { await trackServer("search_performed", { query, result_count: products.length }) } catch {}
+    try { await trackServer("search_performed", { query: sanitizedQuery, result_count: products.length, source: "medusa" }) } catch {}
     return {
       results: products,
       totalCount: products.length,

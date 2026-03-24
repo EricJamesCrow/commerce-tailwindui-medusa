@@ -40,6 +40,7 @@
     "@sentry/profiling-node": "^10",
     "ioredis": "^5.10.0",
     "jsonwebtoken": "^9.0.3",
+    "meilisearch": "^0.56.0",
     "resend": "^6.9.3"
   },
   "devDependencies": {

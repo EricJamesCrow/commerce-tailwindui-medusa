@@ -48,6 +48,19 @@ if (!process.env.POSTHOG_EVENTS_API_KEY) {
   console.warn("[medusa-config] POSTHOG_EVENTS_API_KEY is not set — backend analytics will be disabled")
 }
 
+if (process.env.MEILISEARCH_HOST && !process.env.MEILISEARCH_API_KEY) {
+  if (isProd) {
+    throw new Error(
+      "[medusa-config] MEILISEARCH_HOST is set but MEILISEARCH_API_KEY is missing — " +
+      "refusing to start in production"
+    )
+  }
+  console.warn(
+    "[medusa-config] MEILISEARCH_HOST is set but MEILISEARCH_API_KEY is missing — " +
+    "Meilisearch module will not be registered"
+  )
+}
+
 module.exports = defineConfig({
   admin: {
     backendUrl: process.env.MEDUSA_BACKEND_URL,
@@ -211,6 +224,20 @@ module.exports = defineConfig({
                   },
                 },
               ],
+            },
+          },
+        ]
+      : []),
+    // Meilisearch search indexing (conditional on MEILISEARCH_HOST + API_KEY)
+    ...(process.env.MEILISEARCH_HOST && process.env.MEILISEARCH_API_KEY
+      ? [
+          {
+            resolve: "./src/modules/meilisearch",
+            options: {
+              host: process.env.MEILISEARCH_HOST,
+              apiKey: process.env.MEILISEARCH_API_KEY,
+              productIndexName:
+                process.env.MEILISEARCH_PRODUCT_INDEX_NAME || "products",
             },
           },
         ]

@@ -86,6 +86,19 @@ brew services stop postgresql@17   # Stop
 rm -rf storefront/.next            # Clear Next.js cache (needed after transform changes)
 ```
 
+## Environment Variable Audit Checklist
+
+**When integrating any new service or dependency**, always complete this checklist before the PR is merged:
+
+1. **Add env vars to `.env.example`** — both `backend/.env.example` and `storefront/.env.example` with comments explaining the variable's purpose, where to get it, and whether it's optional
+2. **Add env vars to `SETUP.md`** — both the Prerequisites table (if it's a new service) and the Production Deployment section (Railway + Vercel env var blocks)
+3. **Verify production env vars are set** — check Railway (backend) and Vercel (storefront) dashboards. Missing production env vars are the #1 cause of post-deploy 500 errors
+4. **Verify CORS variables** — `STORE_CORS`, `ADMIN_CORS`, and `AUTH_CORS` must include all origins that make requests. `AUTH_CORS` must include both the storefront domain AND the backend/admin domain
+5. **Check for key type mismatches** — never use master/admin keys where search-only or publishable keys are expected (e.g., `NEXT_PUBLIC_MEILISEARCH_API_KEY` must be a search-only key, `NEXT_PUBLIC_STRIPE_KEY` must be a publishable `pk_` key)
+6. **Verify preview deployments** — Vercel preview deployments need the same env vars as production (or separate values for staging services)
+
+**Periodic audit:** Run `grep -roE 'process\.env\.[A-Z_]+' backend/medusa-config.ts storefront/lib/ | sed 's/.*process.env.//' | sort -u` to see all referenced env vars and cross-check against what's deployed.
+
 ## Agent Permissions
 
 | Level            | Actions                                                                                  |
@@ -251,6 +264,28 @@ When implementing any new feature, add PostHog tracking as part of the feature P
 | **Context7**   | Up-to-date library documentation      |
 | **Linear**     | Issue tracking and project management |
 | **PostHog**    | Analytics, feature flags, experiments |
+
+## Production Deployment
+
+| Service | Platform | URL | CLI Access |
+|---------|----------|-----|------------|
+| **Backend** | Railway | `https://api.medusa.crowcommerce.org` | `railway` CLI (installed, linked). Use `railway variables` to audit env vars, `railway run` to execute commands in production. |
+| **Storefront** | Vercel | `https://medusa.crowcommerce.org` | `vercel` CLI. Project: `crow-commerce/commerce-tailwindui-medusa`. Use `vercel env ls --scope crow-commerce` to audit env vars. |
+| **Preview** | Vercel | `https://preview.medusa.crowcommerce.org` | Same Vercel project, preview environment |
+| **Admin UI** | Railway | `https://api.medusa.crowcommerce.org/app` | Served from backend |
+| **Meilisearch** | Meilisearch Cloud | `https://ms-812b362930a3-43619.sfo.meilisearch.io` | Dashboard at cloud.meilisearch.com |
+
+**Admin / test credentials:** Stored in `backend/.env` (gitignored) under `ADMIN_EMAIL` and `ADMIN_PASSWORD`. These work for both the admin UI (`/app`) and as a storefront customer account. Use them for testing and troubleshooting against local, preview, and production deployments.
+
+**Redeploy storefront:**
+```bash
+# Get latest production deployment URL
+vercel list --scope crow-commerce --prod 2>&1 | head -7
+# Redeploy it (copies the deployment URL from above)
+vercel redeploy <deployment-url> --scope crow-commerce
+```
+
+**Redeploy backend:** Push to `main` — Railway auto-deploys on push. Or trigger manually from the Railway dashboard.
 
 ## See Also
 

@@ -36,6 +36,11 @@
 - [ ] Replace HMAC bearer unsubscribe token with opaque server-stored nonce — current token embeds email in reversible base64url and is replayable for 30 days. PostHog pageview captures the full tokenized URL, leaking the token to analytics pipelines. Fix: store a one-time nonce on the subscriber record, invalidate on re-subscribe, and strip the token from the address bar via `window.history.replaceState` after the unsubscribe page loads.
 - [ ] Email preferences page — currently the "manage your email preferences" link is hidden in email footers because no page exists. Two approaches: (1) for logged-in customers, add an email preferences section to `/account/settings` where they can toggle newsletter, order updates, and marketing emails; (2) for account-agnostic access, create a standalone `/email-preferences` page that accepts a signed token (same pattern as unsubscribe) and lets anyone with a valid link manage preferences for their email address without requiring an account. Ideal: support both — account settings for logged-in users, token-based page for email links. Wire the `legalLinks.preferences` config in the email footer to point to the appropriate URL.
 
+### From PR #32 (Meilisearch Integration)
+
+- [ ] Faceted search results page — the current `meilisearch-results.tsx` was reverted because it conflicts with the shared `(store)` layout (duplicate sort dropdown, nested grid). The proper approach: integrate Meilisearch faceted filters (collections, price range, availability) INTO the existing `(store)` layout components (`components/layout/search/collections.tsx`, `sort-filter-menu.tsx`, `mobile-filters.tsx`) rather than rendering a separate InstantSearch layout. The Cmd+K palette Meilisearch integration works correctly — only the search results page needs this redesign.
+- [ ] Investigate `variant_prices` indexing — price range filter shows $0–$0 in Meilisearch results, suggesting variant prices may not be indexed correctly. Check whether `variants.prices.*` in the `useQueryGraphStep` query returns the expected amounts. May need to use `variants.calculated_price.*` with a `QueryContext` instead.
+
 ### From PR #29 (PostHog Integration)
 
 - [ ] Redact PII from `search_performed` event query field — normalize, truncate to 80 chars, and redact strings matching email/phone patterns before sending to PostHog
@@ -45,6 +50,7 @@
 
 - [ ] Testing discounts (apply promo codes, verify discount display in checkout + order confirmation)
 - [ ] Compare checkout page UI to TailwindUI components (ensure all checkout/order pages match TailwindUI patterns)
+- [ ] Order details page — build using TailwindPlus Ecommerce > Page Examples > Order Detail Pages > "With large images and progress bars" component. Features: product images, order progress bar (Order placed → Processing → Shipped → Delivered), delivery address, shipping updates, billing summary with payment info. Wire to Medusa order data (`/account/orders/[id]`). The TailwindPlus component includes a full navbar with mega menus, footer, and billing section — adapt to use existing layout components.
 - [ ] Create `vitest.config.ts`
 - [x] Create `playwright.config.ts`
 - [ ] Unit tests for `lib/medusa/transforms.ts`
@@ -60,7 +66,9 @@
 - [x] Shared TypeScript tooling (`@repo/typescript`)
 - [x] Enable React Compiler
 - [ ] React Compiler optimization (audit component boundaries, measure compile rate, fix bailouts)
-- [ ] Set up CI/CD (GitHub Actions)
+- [ ] **[PRIORITY] Set up CI/CD (GitHub Actions)** — add a pipeline that runs typecheck, lint, and e2e tests before merging to main. Should catch issues like the auth 500 before they reach production. At minimum: `bun run typecheck`, `bun run build` (storefront), and Playwright smoke tests against a test environment. Consider adding a staging/preview deployment health check step.
+- [ ] **[PRIORITY] Sentry deep integration audit** — go through every Sentry feature and ensure it's fully configured for both backend and storefront: error tracking (already set up), performance tracing, session replay, profiling, release health, source maps (just added auth token), alerts/notifications (enable Slack/email alerts for new errors and spikes), custom fingerprinting, user feedback widget. Test the integration in production — verify errors appear in dashboard with readable stack traces, traces link to the correct transactions, and alerts fire when they should. Enable Sentry notifications in the admin panel so errors surface immediately.
+- [ ] **[PRIORITY] PostHog deep integration audit** — verify all PostHog features are working in production: pageview autocapture, custom events (check all `AnalyticsEvents` are firing), session replay (verify recordings appear), feature flags (set up at least one flag to verify the pipeline), web analytics dashboard, funnels (checkout funnel, search-to-purchase funnel). Test the PostHog reverse proxy is working (events should appear even with ad blockers). Verify server-side events from the backend (order placed, review created, etc.) appear in PostHog.
 - [ ] Configure Medusa webhooks for cache revalidation
 - [ ] Update `DEFAULT_NAVIGATION` with real store categories
 - [ ] Upgrade Turborepo: `bunx @turbo/codemod@latest update`
@@ -72,10 +80,19 @@
 - [ ] Audit codebase for features not using the `NotificationProvider` / `useNotification()` toast system — identify server actions and user-facing mutations that silently succeed/fail without toast feedback and wire them up for consistent UX
 - [ ] Audit storefront components against the TailwindPlus component catalog (`/Users/itsjusteric/CrowCommerce/Resources/TailwindUI/tailwindplus-components.json`) — identify pages and sections using custom markup where a TailwindPlus UI block already exists (e.g., product pages, checkout steps, account settings, error pages). Reference the full catalog at https://tailwindcss.com/plus/ui-blocks/documentation
 
+## Security Audits
+
+- [ ] Run Codex security audit on custom modules — prioritize by attack surface: (1) **Invoice module** (financial data + PDF generation + public download routes), (2) **Review module** (user image uploads + user-generated content rendering), (3) **Wishlist module** (public endpoints like `/store/products/:id/wishlist-count`, JWT sharing tokens, guest routes). Focus on IDOR, SSRF in image uploads, JWT misconfiguration, and input validation gaps. Multiple passes recommended.
+
+## Evaluate
+
+- [ ] [Buttondown](https://buttondown.com/) for newsletter — evaluate as a potential upgrade/replacement for the current newsletter infrastructure. Supports RSS-to-email, markdown authoring, API-first design, paid subscriptions, and analytics. Could simplify the newsletter stack vs. rolling custom with Resend.
+
 ## Deferred Features
 
 - [ ] Cookie consent banner — use TailwindPlus Marketing > Banners > "Privacy notice left-aligned" component, rendered inside a Headless UI `<Dialog>` so it behaves as a modal overlay on first visit. Persist consent in a cookie to avoid showing again. Track: `cookie_consent_accepted`, `cookie_consent_declined` events.
 - [ ] Sticky add-to-cart bar on product pages — fixed to the bottom of the viewport, appears on scroll past the main add-to-cart button. Use TailwindPlus Marketing > Banners > full-width banner variant as the base layout. Show product name, selected variant, price, and "Add to Cart" button. Hide when the main add-to-cart button is back in viewport (IntersectionObserver).
+- [ ] Search-focused layout option — brainstorm an alternative navbar/layout where search is the primary interaction (like the [Meilisearch ecommerce demo](https://github.com/meilisearch/ecommerce-demo)). Instant faceted filtering on `/products` and `/search` with the search bar front-and-center. This could be a swappable layout style alongside the current TailwindUI sidebar layout. Reference the demo for UX patterns (instant results, facet chips, filter counts).
 - [ ] Express checkout (Apple Pay / Google Pay) — composite flow that chains email → address → shipping → payment → order completion in one step. Requires Stripe `PaymentRequestButton` or `ExpressCheckoutElement`. `express-checkout.tsx` component exists but needs implementation. Track with: `express_checkout_started`, `express_checkout_completed`, `express_checkout_failed` events.
 
 ## Known Limitations
