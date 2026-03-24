@@ -5,7 +5,6 @@ import { DEFAULT_NAVIGATION } from "lib/constants/navigation";
 import type {
   Cart,
   Collection,
-  Menu,
   Navigation,
   Page,
   Product,
@@ -518,22 +517,6 @@ export async function getNavigation(): Promise<Navigation> {
           ],
     pages: DEFAULT_NAVIGATION.pages,
   };
-}
-
-export async function getMenu(handle: string): Promise<Menu[]> {
-  "use cache";
-  cacheTag(TAGS.collections);
-  cacheLife("days");
-
-  if (handle.includes("footer")) {
-    const collections = await getCollections();
-    return collections
-      .filter((c) => c.handle !== "")
-      .slice(0, 6)
-      .map((c) => ({ title: c.title, path: c.path }));
-  }
-
-  return [];
 }
 
 // --- Pages ---
