@@ -8,5 +8,9 @@ Sentry.init({
   ),
   profilesSampleRate: 0.1,
   integrations: [nodeProfilingIntegration()],
-  environment: process.env.NODE_ENV || "development",
+  environment:
+    process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT ||
+    process.env.VERCEL_ENV ||
+    process.env.NODE_ENV ||
+    "development",
 })

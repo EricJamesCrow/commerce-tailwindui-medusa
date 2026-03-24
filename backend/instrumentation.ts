@@ -7,7 +7,11 @@ Sentry.init({
   tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || "0.2"),
   profilesSampleRate: 0.1,
   integrations: [nodeProfilingIntegration()],
-  environment: process.env.NODE_ENV || "development",
+  environment:
+    process.env.SENTRY_ENVIRONMENT ||
+    process.env.RAILWAY_ENVIRONMENT ||
+    process.env.NODE_ENV ||
+    "development",
 })
 
 export function register() {
