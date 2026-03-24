@@ -270,7 +270,7 @@ When implementing any new feature, add PostHog tracking as part of the feature P
 | Service | Platform | URL | CLI Access |
 |---------|----------|-----|------------|
 | **Backend** | Railway | `https://api.medusa.crowcommerce.org` | `railway` CLI (installed, linked). Use `railway variables` to audit env vars, `railway run` to execute commands in production. |
-| **Storefront** | Vercel | `https://medusa.crowcommerce.org` | `vercel` CLI. Project: `crow-commerce/commerce-tailwindui-medusa`. Use `vercel env ls --scope crow-commerce` to audit env vars. |
+| **Storefront** | Vercel | `https://medusa.crowcommerce.org` | `vercel` CLI. Project: `crow-development/commerce-tailwindui-medusa`. Use `vercel env ls --scope crow-development` to audit env vars. |
 | **Preview** | Vercel | `https://preview.medusa.crowcommerce.org` | Same Vercel project, preview environment |
 | **Admin UI** | Railway | `https://api.medusa.crowcommerce.org/app` | Served from backend |
 | **Meilisearch** | Meilisearch Cloud | `https://ms-812b362930a3-43619.sfo.meilisearch.io` | Dashboard at cloud.meilisearch.com |
@@ -280,9 +280,9 @@ When implementing any new feature, add PostHog tracking as part of the feature P
 **Redeploy storefront:**
 ```bash
 # Get latest production deployment URL
-vercel list --scope crow-commerce --prod 2>&1 | head -7
+vercel list --scope crow-development --prod 2>&1 | head -7
 # Redeploy it (copies the deployment URL from above)
-vercel redeploy <deployment-url> --scope crow-commerce
+vercel redeploy <deployment-url> --scope crow-development
 ```
 
 **Redeploy backend:** Push to `main` — Railway auto-deploys on push. Or trigger manually from the Railway dashboard.
