@@ -47,6 +47,10 @@ export default defineConfig({
   ],
   webServer: {
     command: "cd .. && bun run dev",
+    env: {
+      ...process.env,
+      E2E_ORDER_FIXTURES: "1",
+    },
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

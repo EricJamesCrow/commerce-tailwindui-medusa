@@ -4,6 +4,7 @@ import { formatMoney } from "lib/medusa/format";
 import Image from "next/image";
 import Link from "next/link";
 import { DownloadInvoiceButton } from "./download-invoice-button";
+import { isInvoiceEligible } from "./order-utils";
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString(DEFAULT_LOCALE, {
@@ -17,32 +18,6 @@ type OrderWithStatus = HttpTypes.StoreOrder & {
   status?: string;
   fulfillment_status?: string;
 };
-
-/**
- * Returns true if the order is eligible for invoice download.
- * Invoices are available for orders that have been fulfilled or completed,
- * but not for pending, canceled, or refunded orders.
- */
-function isInvoiceEligible(order: OrderWithStatus): boolean {
-  const { status, fulfillment_status: fulfillmentStatus } = order;
-
-  // Exclude canceled orders
-  if (status === "canceled") return false;
-
-  // Show for completed orders
-  if (status === "completed") return true;
-
-  // Show for fulfilled/shipped/delivered orders
-  const eligibleFulfillmentStatuses = new Set([
-    "fulfilled",
-    "shipped",
-    "partially_shipped",
-    "delivered",
-    "partially_delivered",
-  ]);
-
-  return !!fulfillmentStatus && eligibleFulfillmentStatuses.has(fulfillmentStatus);
-}
 
 export function OrderCard({ order }: { order: HttpTypes.StoreOrder }) {
   const currencyCode = order.currency_code || "usd";
@@ -71,11 +46,16 @@ export function OrderCard({ order }: { order: HttpTypes.StoreOrder }) {
             </dd>
           </div>
         </dl>
-        {showInvoice && (
-          <div className="hidden lg:col-span-2 lg:flex lg:items-center lg:justify-end lg:space-x-4">
-            <DownloadInvoiceButton orderId={order.id} />
-          </div>
-        )}
+        <div className="hidden lg:col-span-2 lg:flex lg:items-center lg:justify-end lg:space-x-4">
+          {showInvoice && <DownloadInvoiceButton orderId={order.id} />}
+          <Link
+            href={`/account/orders/${order.id}`}
+            className="text-sm font-medium text-primary-600 hover:text-primary-500"
+          >
+            View Order
+            <span aria-hidden="true"> &rarr;</span>
+          </Link>
+        </div>
       </div>
 
       <h4 className="sr-only">Items</h4>
@@ -112,7 +92,7 @@ export function OrderCard({ order }: { order: HttpTypes.StoreOrder }) {
             </div>
 
             {item.product_handle && (
-              <div className="mt-6 flex items-center border-t border-gray-200 pt-4 text-sm font-medium">
+              <div className="mt-6 flex items-center gap-x-6 border-t border-gray-200 pt-4 text-sm font-medium">
                 <Link
                   href={`/product/${item.product_handle}`}
                   className="text-primary-600 hover:text-primary-500"
@@ -125,11 +105,20 @@ export function OrderCard({ order }: { order: HttpTypes.StoreOrder }) {
         ))}
       </ul>
 
-      {showInvoice && (
-        <div className="border-t border-gray-200 p-4 sm:p-6 lg:hidden">
-          <DownloadInvoiceButton orderId={order.id} />
-        </div>
-      )}
+      <div
+        className={`flex items-center border-t border-gray-200 p-4 sm:p-6 lg:hidden ${
+          showInvoice ? "justify-between" : "justify-end"
+        }`}
+      >
+        {showInvoice && <DownloadInvoiceButton orderId={order.id} />}
+        <Link
+          href={`/account/orders/${order.id}`}
+          className="text-sm font-medium text-primary-600 hover:text-primary-500"
+        >
+          View Order
+          <span aria-hidden="true"> &rarr;</span>
+        </Link>
+      </div>
     </div>
   );
 }

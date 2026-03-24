@@ -2,6 +2,7 @@ import * as Sentry from "@sentry/nextjs"
 import Medusa from "@medusajs/js-sdk";
 import type { HttpTypes } from "@medusajs/types";
 import { HIDDEN_PRODUCT_TAG, TAGS } from "lib/constants";
+import { FOOTER_CONFIG } from "lib/constants/footer";
 import { DEFAULT_NAVIGATION } from "lib/constants/navigation";
 import type {
   Cart,
@@ -11,6 +12,7 @@ import type {
   Product,
 } from "lib/types";
 import { cacheLife, cacheTag, revalidateTag } from "next/cache";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthHeaders, getCartId, removeCartId, setCartId } from "./cookies";
 import { medusaError } from "./error";
@@ -19,6 +21,32 @@ import {
   transformCollection,
   transformProduct,
 } from "./transforms";
+
+const STATIC_PAGE_LINKS = [
+  ...FOOTER_CONFIG.company,
+  ...FOOTER_CONFIG.legal,
+  { name: "Support", href: "/support" },
+] as const;
+const STATIC_PAGE_TIMESTAMP = "2026-03-23T00:00:00.000Z";
+
+function createStaticPage(handle: string, title: string): Page {
+  return {
+    id: `page_${handle}`,
+    title,
+    handle,
+    body: `<p>${title} content coming soon.</p>`,
+    bodySummary: `${title} content coming soon.`,
+    createdAt: STATIC_PAGE_TIMESTAMP,
+    updatedAt: STATIC_PAGE_TIMESTAMP,
+  };
+}
+
+const STATIC_PAGES = new Map(
+  STATIC_PAGE_LINKS.map(({ href, name }) => [
+    href.replace(/^\//, ""),
+    createStaticPage(href.replace(/^\//, ""), name),
+  ]),
+);
 
 type ProductFetchQuery = {
   region_id: string;
@@ -464,9 +492,47 @@ export async function getCart(): Promise<Cart | undefined> {
 
 // --- Orders ---
 
+export type StoreOrderDetail = HttpTypes.StoreOrder & {
+  status?: string;
+  fulfillment_status?: string;
+  payment_collections?: Array<{
+    payments?: Array<{
+      provider_id?: string;
+      data?: {
+        payment_method?: { card?: { brand?: string; last4?: string; exp_month?: number; exp_year?: number } };
+        card?: { brand?: string; last4?: string; exp_month?: number; exp_year?: number };
+      };
+    }>;
+    payment_sessions?: Array<{ provider_id?: string }>;
+  }>;
+  promotions?: Array<{ code?: string }>;
+};
+
+async function getE2EOrders(): Promise<StoreOrderDetail[] | null> {
+  if (process.env.E2E_ORDER_FIXTURES !== "1") return null;
+
+  const cookieStore = await cookies();
+  const encodedFixture = cookieStore.get("__e2e_orders")?.value;
+  if (!encodedFixture) return null;
+
+  try {
+    const fixture = JSON.parse(
+      decodeURIComponent(encodedFixture),
+    ) as { orders?: StoreOrderDetail[] };
+
+    return Array.isArray(fixture.orders) ? fixture.orders : null;
+  } catch (error) {
+    console.error("[E2E] Failed to parse mocked order fixture:", error);
+    return null;
+  }
+}
+
 export async function getOrders(): Promise<HttpTypes.StoreOrder[]> {
   const headers = await getAuthHeaders();
   if (!headers.authorization) return [];
+
+  const e2eOrders = await getE2EOrders();
+  if (e2eOrders) return e2eOrders;
 
   try {
     const { orders } = await sdk.client.fetch<{
@@ -484,6 +550,34 @@ export async function getOrders(): Promise<HttpTypes.StoreOrder[]> {
   } catch (error) {
     console.error("[Orders] Failed to retrieve orders:", error);
     return [];
+  }
+}
+
+export async function getOrder(orderId: string): Promise<StoreOrderDetail | null> {
+  const headers = await getAuthHeaders();
+  if (!headers.authorization) return null;
+
+  const e2eOrders = await getE2EOrders();
+  if (e2eOrders) {
+    return e2eOrders.find((order) => order.id === orderId) ?? null;
+  }
+
+  try {
+    const { order } = await sdk.client.fetch<{ order: StoreOrderDetail }>(
+      `/store/orders/${orderId}`,
+      {
+        method: "GET",
+        headers,
+        query: {
+          fields:
+            "*items,*items.variant,*items.product,*shipping_address,*billing_address,*shipping_methods,*payment_collections,*payment_collections.payments,*payment_collections.payment_sessions,*fulfillments,+status,+fulfillment_status,+promotions",
+        },
+      },
+    ).catch(medusaError);
+    return order;
+  } catch (error) {
+    console.error("[Order] Failed to retrieve order:", error);
+    return null;
   }
 }
 
@@ -523,20 +617,13 @@ export async function getNavigation(): Promise<Navigation> {
 
 // --- Pages ---
 
-export async function getPage(handle: string): Promise<Page> {
-  return {
-    id: "",
-    title: "",
-    handle,
-    body: "",
-    bodySummary: "",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
+export async function getPage(handle: string): Promise<Page | null> {
+  const page = STATIC_PAGES.get(handle);
+  return page ? { ...page } : null;
 }
 
 export async function getPages(): Promise<Page[]> {
-  return [];
+  return Array.from(STATIC_PAGES.values(), (page) => ({ ...page }));
 }
 
 // --- Webhook Revalidation ---

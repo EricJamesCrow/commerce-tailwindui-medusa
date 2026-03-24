@@ -1,5 +1,6 @@
 import { test as base, type Page } from "@playwright/test";
 import { MedusaApiClient } from "./api.fixture";
+import { loginThroughAccountPage } from "../helpers/account-login";
 
 type TestCredentials = {
   email: string;
@@ -45,15 +46,11 @@ export const test = base.extend<AuthFixtures>({
     const page = await context.newPage();
 
     // Login through the UI — ensures all cookies are set by Next.js server actions
-    await page.goto("/account/login");
-    await page.waitForLoadState("networkidle");
-    await page.locator('input[name="email"]').fill(testCredentials.email);
-    await page.locator('input[name="password"]').fill(testCredentials.password);
-    await page.locator('button[type="submit"]').click();
-
-    // Wait for redirect to account page (login complete)
-    await page.waitForURL("**/account", { timeout: 15_000 });
-    await page.waitForLoadState("networkidle");
+    await loginThroughAccountPage(
+      page,
+      testCredentials.email,
+      testCredentials.password,
+    );
 
     // Visit home page to stabilize session before handing off to tests
     await page.goto("/");

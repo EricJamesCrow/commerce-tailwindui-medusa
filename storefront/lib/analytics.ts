@@ -93,6 +93,11 @@ export type AnalyticsEvents = {
   }
 
   // --- Orders ---
+  order_detail_viewed: {
+    order_id: string
+    display_id: number
+    item_count: number
+  }
   invoice_downloaded: { order_id: string }
   abandoned_cart_recovered: { cart_id: string; item_count: number }
 

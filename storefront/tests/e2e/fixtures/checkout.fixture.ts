@@ -34,7 +34,11 @@ async function addToCartAndCheckout(page: Page): Promise<void> {
     .filter({ has: page.locator("img") })
     .first();
   await expect(productLink).toBeVisible({ timeout: 15_000 });
-  await productLink.click();
+  const productHref = await productLink.getAttribute("href");
+  if (!productHref) {
+    throw new Error("Could not determine product URL from search results");
+  }
+  await page.goto(productHref);
   await page.waitForURL("**/product/**");
   await page.waitForLoadState("networkidle");
 
@@ -141,7 +145,7 @@ async function fillStripeCard(page: Page): Promise<void> {
     value: string,
     required = true,
   ): Promise<boolean> {
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < 5; attempt++) {
       for (const frame of page.frames()) {
         const input = frame.locator(selectors);
         if (
@@ -153,7 +157,7 @@ async function fillStripeCard(page: Page): Promise<void> {
         }
       }
       if (!required) return false;
-      await page.waitForTimeout(1_000);
+      await page.waitForTimeout(1_500);
     }
     if (required) {
       throw new Error(
@@ -164,15 +168,15 @@ async function fillStripeCard(page: Page): Promise<void> {
   }
 
   await typeInFrame(
-    '[placeholder="1234 1234 1234 1234"], [name="cardnumber"], [aria-label*="Card number" i]',
+    '[placeholder="1234 1234 1234 1234"], [name="cardnumber"], [name="number"], [autocomplete="cc-number"], [aria-label*="Card number" i], [data-elements-stable-field-name="cardNumber"]',
     STRIPE_TEST_CARD.number,
   );
   await typeInFrame(
-    '[placeholder="MM / YY"], [name="exp-date"], [aria-label*="expir" i]',
+    '[placeholder="MM / YY"], [name="exp-date"], [name="expiry"], [autocomplete="cc-exp"], [aria-label*="expir" i], [data-elements-stable-field-name="cardExpiry"]',
     STRIPE_TEST_CARD.expiry,
   );
   await typeInFrame(
-    '[placeholder="CVC"], [name="cvc"], [aria-label*="CVC" i]',
+    '[placeholder="CVC"], [name="cvc"], [autocomplete="cc-csc"], [aria-label*="CVC" i], [data-elements-stable-field-name="cardCvc"]',
     STRIPE_TEST_CARD.cvc,
   );
   // ZIP code — Stripe may render it with various placeholders
