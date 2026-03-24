@@ -31,15 +31,15 @@ export function PolicyPage({
           {sections.map((section) => (
             <div key={section.heading} className="mt-16 first:mt-0">
               <h2>{section.heading}</h2>
-              {section.content.map((block, i) =>
+              {section.content.map((block) =>
                 Array.isArray(block) ? (
-                  <ul key={i}>
-                    {block.map((item, j) => (
-                      <li key={j}>{item}</li>
+                  <ul key={block[0]}>
+                    {block.map((item) => (
+                      <li key={item}>{item}</li>
                     ))}
                   </ul>
                 ) : (
-                  <p key={i}>{block}</p>
+                  <p key={block.slice(0, 60)}>{block}</p>
                 ),
               )}
             </div>
