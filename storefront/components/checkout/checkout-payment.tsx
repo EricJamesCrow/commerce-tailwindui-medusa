@@ -13,7 +13,10 @@ import { useEffect, useRef, useState } from "react";
 
 import { SavedPaymentMethods } from "components/checkout/saved-payment-methods";
 import { STRIPE_PROVIDER_ID } from "lib/constants";
-import { initializePaymentSession } from "lib/medusa/checkout";
+import {
+  getPaymentClientSecret,
+  initializePaymentSession,
+} from "lib/medusa/checkout";
 
 const stripePromise = process.env.NEXT_PUBLIC_STRIPE_KEY
   ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_KEY)
@@ -125,13 +128,8 @@ function PaymentForm({
 }
 
 // ---------------------------------------------------------------------------
-// Outer component — handles session init + clientSecret extraction
+// Outer component — handles session init + clientSecret fetching
 // ---------------------------------------------------------------------------
-
-function extractClientSecret(cart: HttpTypes.StoreCart): string | null {
-  const session = cart.payment_collection?.payment_sessions?.[0] ?? null;
-  return (session?.data?.client_secret as string) ?? null;
-}
 
 export function CheckoutPayment({
   cart,
@@ -183,15 +181,14 @@ export function CheckoutPayment({
           return;
         }
 
-        // The server action revalidates the cart, but we need the updated
-        // payment session data. Extract from the current cart prop — if not
-        // available yet, it will be after revalidation triggers a re-render.
-        const secret = extractClientSecret(cart);
+        // Fetch only the client_secret via a dedicated server action —
+        // it is never included in the cart RSC payload.
+        const secret = await getPaymentClientSecret(cart.id);
         if (secret) {
           setClientSecret(secret);
         }
-        // If secret is not yet in the cart prop, the component will re-render
-        // with updated cart data after revalidation.
+        // If secret is not yet available, the useEffect below will pick it
+        // up after revalidation triggers a re-render with the updated cart.
       } catch (err) {
         setError(
           err instanceof Error
@@ -207,14 +204,16 @@ export function CheckoutPayment({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cart.id]);
 
-  // Re-extract clientSecret when cart updates (e.g. after revalidation)
+  // Re-fetch clientSecret when cart updates (e.g. after payment method switch).
+  // Guards on initRef so it only fires after the initial session is created.
   useEffect(() => {
-    if (isZeroTotal) return;
+    if (isZeroTotal || !initRef.current) return;
 
-    const secret = extractClientSecret(cart);
-    if (secret && secret !== clientSecret) {
-      setClientSecret(secret);
-    }
+    getPaymentClientSecret(cart.id).then((secret) => {
+      if (secret && secret !== clientSecret) {
+        setClientSecret(secret);
+      }
+    });
   }, [cart, clientSecret, isZeroTotal]);
 
   // --- Zero-total rendering ---
