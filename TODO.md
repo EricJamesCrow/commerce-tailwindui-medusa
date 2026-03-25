@@ -48,6 +48,7 @@
 
 ## Testing
 
+- [ ] Discount / promo code UI — add a "Promo code" input to the checkout order summary (collapsible section below the line items). Use Medusa's `updateCart` with `promo_codes` to apply codes. Display applied discount as a removable chip/tag. The order summary already renders `discount_total` when present — this just needs the input to apply codes. Use TailwindPlus Ecommerce > Shopping Carts for input pattern reference. Server action: `applyPromoCode(cartId, code)` and `removePromoCode(cartId, code)`. Track: `promo_code_applied`, `promo_code_removed`, `promo_code_failed` events.
 - [ ] Testing discounts (apply promo codes, verify discount display in checkout + order confirmation)
 - [ ] Compare checkout page UI to TailwindUI components (ensure all checkout/order pages match TailwindUI patterns)
 - [ ] Order details page — build using TailwindPlus Ecommerce > Page Examples > Order Detail Pages > "With large images and progress bars" component. Features: product images, order progress bar (Order placed → Processing → Shipped → Delivered), delivery address, shipping updates, billing summary with payment info. Wire to Medusa order data (`/account/orders/[id]`). The TailwindPlus component includes a full navbar with mega menus, footer, and billing section — adapt to use existing layout components.
