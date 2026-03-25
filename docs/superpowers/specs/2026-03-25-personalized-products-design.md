@@ -16,7 +16,7 @@ This is a reference implementation intended to be adapted per client. All busine
 
 ## Architecture
 
-```
+```text
 Storefront                           Backend
 ─────────────────────────────────    ─────────────────────────────────────────
 ProductDetail
@@ -54,7 +54,7 @@ Order confirmation + account orders
 
 ### Pricing constant
 
-```
+```text
 DIMENSION_PRICE_FACTOR = 0.01
 customPrice = basePrice + (height × width × DIMENSION_PRICE_FACTOR)
 ```
@@ -84,7 +84,7 @@ import { Container } from "@medusajs/ui"
 
 File: `backend/src/workflows/get-custom-price.ts`
 
-```
+```text
 Input:  { variantId: string, regionId: string, metadata: { height: number, width: number } }
 Output: { amount: number, currency_code: string }
 ```
@@ -98,7 +98,7 @@ Steps:
 
 File: `backend/src/workflows/custom-add-to-cart.ts`
 
-```
+```text
 Input:  { cartId: string, variantId: string, quantity: number, metadata: Record<string, unknown> }
 Output: { cart: StoreCart }
 ```
@@ -148,7 +148,7 @@ const PostVariantPriceSchema = z.object({
 
 Middleware: `validateAndTransformBody(PostVariantPriceSchema)` applied in `backend/src/api/middlewares.ts`.
 
-Handler: runs `getCustomPriceWorkflow({ variantId: req.params.id, regionId: body.region_id, metadata: body.metadata })`. Returns `{ amount: number, currency_code: string }` directly from workflow output. **Amount is in smallest currency unit (e.g., cents).**
+Handler: runs `getCustomPriceWorkflow({ variantId: req.params.id, regionId: body.region_id, metadata: body.metadata })`. Returns `{ amount: number, currency_code: string }` directly from workflow output. **Amount is in the main currency unit (for example, `10` = `$10.00`).**
 
 ### API route: `POST /store/carts/:id/line-items-custom`
 
@@ -278,8 +278,6 @@ Inside the delayed callback:
 - Call `getDefaultRegion()` then `getCustomVariantPrice(variantId, regionId, { height, width })`
 - On success: `setCustomPrice(price)` + `trackClient("personalized_price_calculated", ...)`
 - On error: `Sentry.captureException(err)` + `setCustomPrice(null)` (fall back to base price)
-```
-
 **Render (when `sourceProduct.metadata?.is_personalized`):**
 - Two `<input type="number" min="0.1" step="0.1">` fields for Height and Width (labeled in cm)
 - Pass `customPrice?.amount ?? selectedVariant?.price.amount` and `customPrice?.currency_code ?? selectedVariant?.price.currencyCode` to `ProductDetailPrice`
@@ -386,7 +384,7 @@ Add to `AnalyticsEvents` type map before use:
 
 ## Subagent Parallelism
 
-Two independent tracks can run in parallel in separate git worktrees. The API contract (endpoint shapes, amount-as-cents) is fixed in this spec.
+Two independent tracks can run in parallel in separate git worktrees. The API contract (endpoint shapes, amount in main currency units) is fixed in this spec.
 
 **Track A — Backend** (files: all in `backend/`)
 - `backend/src/workflows/get-custom-price.ts`

@@ -80,7 +80,7 @@ git commit -m "feat: add promoCodeSchema and promo analytics event types"
 **Files:**
 - Modify: `storefront/lib/medusa/checkout.ts`
 
-The actions follow the exact same pattern as `setCartEmail` in the same file: Zod validate → `assertSessionCart` → `sdk.client.fetch` → `revalidateCheckout()` → `trackServer`. Add these at the bottom of the file.
+The actions follow the same server-side pattern as `setCartEmail` in the same file: Zod validate → resolve the active cart from cookies/session → `assertSessionCart` → `sdk.client.fetch` → `revalidateCheckout()` → `trackServer`. Add these at the bottom of the file.
 
 - [ ] **Step 1: Add the imports at the top of checkout.ts**
 
@@ -102,7 +102,6 @@ import {
 // === Promo Codes ===
 
 export async function applyPromoCode(
-  cartId: string,
   code: string,
 ): Promise<string | null> {
   const codeResult = promoCodeSchema.safeParse(code);
@@ -112,6 +111,10 @@ export async function applyPromoCode(
   const normalizedCode = codeResult.data;
 
   const headers = await getAuthHeaders();
+  const cartId = await getCartId();
+  if (!cartId) {
+    return "No active cart found";
+  }
 
   try {
     await assertSessionCart(cartId);
@@ -139,7 +142,6 @@ export async function applyPromoCode(
 }
 
 export async function removePromoCode(
-  cartId: string,
   code: string,
 ): Promise<string | null> {
   const codeResult = promoCodeSchema.safeParse(code);
@@ -149,6 +151,10 @@ export async function removePromoCode(
   const normalizedCode = codeResult.data;
 
   const headers = await getAuthHeaders();
+  const cartId = await getCartId();
+  if (!cartId) {
+    return "No active cart found";
+  }
 
   try {
     await assertSessionCart(cartId);
@@ -194,7 +200,7 @@ git commit -m "feat: add applyPromoCode and removePromoCode server actions"
 **Files:**
 - Create: `storefront/components/checkout/promo-code-input.tsx`
 
-This is a client component that uses Headless UI `Disclosure` for the collapsible section. Reference the TailwindUI Ecommerce > Shopping Carts component catalog at `/Users/itsjusteric/CrowCommerce/Resources/TailwindUI/tailwindplus-components.json` to find the closest shopping cart input pattern and adapt it.
+This is a client component that uses Headless UI `Disclosure` for the collapsible section. Reference the TailwindUI Ecommerce > Shopping Carts catalog entry from the team's shared Tailwind Plus resources and adapt the closest shopping-cart input pattern.
 
 - [ ] **Step 1: Create the component**
 
@@ -211,11 +217,10 @@ import { useRef, useState, useTransition } from "react";
 import type { HttpTypes } from "@medusajs/types";
 
 type Props = {
-  cartId: string;
   promotions: HttpTypes.StorePromotion[];
 };
 
-export function PromoCodeInput({ cartId, promotions }: Props) {
+export function PromoCodeInput({ promotions }: Props) {
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -231,7 +236,7 @@ export function PromoCodeInput({ cartId, promotions }: Props) {
     setError(null);
 
     startTransition(async () => {
-      const result = await applyPromoCode(cartId, code);
+      const result = await applyPromoCode(code);
       if (result) {
         setError(result);
       } else {
@@ -244,7 +249,7 @@ export function PromoCodeInput({ cartId, promotions }: Props) {
   function handleRemove(code: string) {
     setError(null);
     startTransition(async () => {
-      const result = await removePromoCode(cartId, code);
+      const result = await removePromoCode(code);
       if (result) setError(result);
     });
   }
@@ -386,10 +391,7 @@ Find the closing `</div>` after the `<ul>` items list (around the `flow-root` di
 ```tsx
       </div>  {/* end flow-root */}
 
-      <PromoCodeInput
-        cartId={cart.id}
-        promotions={cart.promotions ?? []}
-      />
+      <PromoCodeInput promotions={cart.promotions ?? []} />
 
       <dl className="mt-10 space-y-6 ...">
 ```
@@ -399,10 +401,7 @@ The full updated `OrderSummary` render after the items list should look like:
 ```tsx
       </div>
 
-      <PromoCodeInput
-        cartId={cart.id}
-        promotions={cart.promotions ?? []}
-      />
+      <PromoCodeInput promotions={cart.promotions ?? []} />
 
       <dl className="mt-10 space-y-6 text-sm font-medium text-gray-500">
         {/* ... existing totals rows ... */}
@@ -431,7 +430,7 @@ git commit -m "feat: add PromoCodeInput to checkout order summary"
 **Files:**
 - Create: `storefront/components/common/discount-popup.tsx`
 
-This uses Headless UI `Dialog`. Reference the TailwindUI Marketing > Overlays section in the component catalog at `/Users/itsjusteric/CrowCommerce/Resources/TailwindUI/tailwindplus-components.json` — find the closest overlay/modal component and adapt its styling.
+This uses Headless UI `Dialog`. Reference the TailwindUI Marketing > Overlays entry from the team's shared Tailwind Plus resources, then adapt the closest overlay/modal component for this flow.
 
 - [ ] **Step 1: Create the component**
 

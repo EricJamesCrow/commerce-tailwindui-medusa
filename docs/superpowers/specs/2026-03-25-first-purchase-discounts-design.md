@@ -89,7 +89,7 @@ Steps executed in sequence:
 
 **New file:** `storefront/components/checkout/promo-code-input.tsx` (client component)
 
-Props: `cartId: string`, `promotions: HttpTypes.StorePromotion[]`
+Props: `promotions: HttpTypes.StorePromotion[]`
 
 UI behavior:
 - Collapsible section using Headless UI `Disclosure`, placed below the line items list in `order-summary.tsx`
@@ -100,20 +100,20 @@ UI behavior:
 
 **Modified file:** `storefront/components/checkout/order-summary.tsx`
 - Remains a Server Component
-- Renders `<PromoCodeInput cartId={cart.id} promotions={cart.promotions ?? []} />` below the items list, before the totals
+- Renders `<PromoCodeInput promotions={cart.promotions ?? []} />` below the items list, before the totals
 
 ### Server Actions
 
 Added to `storefront/lib/medusa/checkout.ts`:
 
-```
-applyPromoCode(cartId: string, code: string): Promise<CartActionState>
-removePromoCode(cartId: string, code: string): Promise<CartActionState>
+```ts
+applyPromoCode(code: string): Promise<CartActionState>
+removePromoCode(code: string): Promise<CartActionState>
 ```
 
 Both actions:
 - Validate input with `promoCodeSchema` (Zod: non-empty string, max 50 chars, uppercase-normalised)
-- `PATCH /store/carts/:id` with updated `promo_codes` array
+- Resolve the active cart from the server-side session/cookie boundary, then update `/store/carts/:id/promotions`
 - Call `revalidateCheckout()` on success
 - Track analytics events (see below)
 - Capture to Sentry on error
