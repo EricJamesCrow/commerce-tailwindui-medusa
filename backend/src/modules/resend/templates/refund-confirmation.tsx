@@ -1,5 +1,12 @@
 // backend/src/modules/resend/templates/refund-confirmation.tsx
-import { Container, Html, Preview, Row, Section, Column } from "@react-email/components";
+import {
+  Container,
+  Html,
+  Preview,
+  Row,
+  Section,
+  Column,
+} from "@react-email/components";
 import { Body } from "./_components/body";
 import { Button } from "./_components/button";
 import { LeftAligned as Footer } from "./_components/footer";
@@ -18,13 +25,15 @@ export interface RefundConfirmationProps extends BaseTemplateProps {
   orderUrl?: string;
 }
 
-export function isValidRefundConfirmationData(data: unknown): data is RefundConfirmationProps {
-  const d = data as Record<string, any>
+export function isValidRefundConfirmationData(
+  data: unknown,
+): data is RefundConfirmationProps {
+  const d = data as Record<string, any>;
   return (
     typeof d?.orderNumber === "string" &&
     typeof d?.refundAmount === "string" &&
     typeof d?.refundDate === "string"
-  )
+  );
 }
 
 export const RefundConfirmation = ({
@@ -44,7 +53,10 @@ export const RefundConfirmation = ({
         <Head />
         <Preview>Refund issued for order #{orderNumber}</Preview>
         <Body>
-          <Container align="center" className="w-full max-w-160 bg-primary md:p-8">
+          <Container
+            align="center"
+            className="w-full max-w-160 bg-primary md:p-8"
+          >
             <Header logoUrl={config.logoUrl} logoAlt={config.logoAlt} />
             <Section align="left" className="max-w-full px-6 py-8">
               <Row className="mb-6">
@@ -54,7 +66,8 @@ export const RefundConfirmation = ({
               </Row>
               <Row className="mb-6">
                 <Text className="text-tertiary">
-                  We've issued a refund to your original payment method for order #{orderNumber}.
+                  We've issued a refund to your original payment method for
+                  order #{orderNumber}.
                 </Text>
               </Row>
 
@@ -114,14 +127,17 @@ export const RefundConfirmation = ({
 
               <Row className="mb-6">
                 <Text className="text-md text-tertiary">
-                  Refunds typically appear on your statement within 5–10 business days, depending on your bank or card issuer.
+                  Refunds typically appear on your statement within 5–10
+                  business days, depending on your bank or card issuer.
                 </Text>
               </Row>
 
               {orderUrl && (
                 <Row className="mt-2 mb-6">
                   <Button href={orderUrl}>
-                    <Text className="text-md font-semibold">View your order</Text>
+                    <Text className="text-md font-semibold">
+                      View your order
+                    </Text>
                   </Button>
                 </Row>
               )}

@@ -1,7 +1,5 @@
 {
-  "namespaces": [
-    "public"
-  ],
+  "namespaces": ["public"],
   "name": "public",
   "tables": [
     {
@@ -117,9 +115,7 @@
         },
         {
           "keyName": "invoice_pkey",
-          "columnNames": [
-            "id"
-          ],
+          "columnNames": ["id"],
           "composite": false,
           "constraint": true,
           "primary": true,
@@ -261,9 +257,7 @@
         },
         {
           "keyName": "invoice_config_pkey",
-          "columnNames": [
-            "id"
-          ],
+          "columnNames": ["id"],
           "composite": false,
           "constraint": true,
           "primary": true,

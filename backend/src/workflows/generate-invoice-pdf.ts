@@ -2,21 +2,21 @@ import {
   createWorkflow,
   transform,
   WorkflowResponse,
-} from "@medusajs/framework/workflows-sdk"
-import { MedusaError } from "@medusajs/framework/utils"
-import { useQueryGraphStep } from "@medusajs/medusa/core-flows"
-import { getOrCreateInvoiceStep } from "./steps/get-or-create-invoice"
+} from "@medusajs/framework/workflows-sdk";
+import { MedusaError } from "@medusajs/framework/utils";
+import { useQueryGraphStep } from "@medusajs/medusa/core-flows";
+import { getOrCreateInvoiceStep } from "./steps/get-or-create-invoice";
 import {
   formatInvoiceDataStep,
   type FormatInvoiceDataInput,
-} from "./steps/format-invoice-data"
-import { renderInvoicePdfStep } from "./steps/render-invoice-pdf"
-import { trackAnalyticsEventStep } from "./steps/track-analytics-event"
+} from "./steps/format-invoice-data";
+import { renderInvoicePdfStep } from "./steps/render-invoice-pdf";
+import { trackAnalyticsEventStep } from "./steps/track-analytics-event";
 
 type GenerateInvoicePdfInput = {
-  order_id: string
-  delivery_method?: "attachment" | "link"
-}
+  order_id: string;
+  delivery_method?: "attachment" | "link";
+};
 
 export const generateInvoicePdfWorkflow = createWorkflow(
   "generate-invoice-pdf",
@@ -43,18 +43,15 @@ export const generateInvoicePdfWorkflow = createWorkflow(
         "billing_address.*",
       ],
       filters: { id: input.order_id },
-    })
+    });
 
     const order = transform({ orders }, ({ orders: result }) => {
-      const o = result[0]
+      const o = result[0];
       if (!o) {
-        throw new MedusaError(
-          MedusaError.Types.NOT_FOUND,
-          "Order not found"
-        )
+        throw new MedusaError(MedusaError.Types.NOT_FOUND, "Order not found");
       }
-      return o
-    })
+      return o;
+    });
 
     // Step 2: Fetch InvoiceConfig
     const { data: configs } = useQueryGraphStep({
@@ -70,29 +67,29 @@ export const generateInvoicePdfWorkflow = createWorkflow(
         "notes",
         "attach_to_email",
       ],
-    }).config({ name: "fetch-invoice-config" })
+    }).config({ name: "fetch-invoice-config" });
 
     const config = transform({ configs }, ({ configs: result }) => {
-      const c = result[0]
+      const c = result[0];
       if (!c) {
         throw new MedusaError(
           MedusaError.Types.NOT_FOUND,
-          "Invoice configuration not found. Please configure invoice settings in the admin panel."
-        )
+          "Invoice configuration not found. Please configure invoice settings in the admin panel.",
+        );
       }
-      return c
-    })
+      return c;
+    });
 
     // Step 3: Get or create Invoice record
     const invoiceResult = getOrCreateInvoiceStep({
       order_id: input.order_id,
-    })
+    });
 
     // Cast: Medusa TS2590 — WorkflowData union too complex to resolve nested step result types
     const invoice = transform(
       { invoiceResult },
-      (data) => (data as any).invoiceResult.invoice
-    )
+      (data) => (data as any).invoiceResult.invoice,
+    );
 
     // Step 4: Format data for PDF template
     // Cast to `any` to avoid TS2590 "union type too complex" from WorkflowData intersection
@@ -113,13 +110,13 @@ export const generateInvoicePdfWorkflow = createWorkflow(
           tax_id: data.config.tax_id,
           notes: data.config.notes,
         },
-      })
-    )
+      }),
+    );
 
-    const invoiceProps = formatInvoiceDataStep(formatInput)
+    const invoiceProps = formatInvoiceDataStep(formatInput);
 
     // Step 5: Render PDF buffer
-    const buffer = renderInvoicePdfStep(invoiceProps)
+    const buffer = renderInvoicePdfStep(invoiceProps);
 
     // Step 6: Track invoice_generated analytics event
     // Cast to `any` to avoid TS2590 "union type too complex" from WorkflowData intersection
@@ -134,11 +131,11 @@ export const generateInvoicePdfWorkflow = createWorkflow(
           invoice_number: `${data.invoice.year}-${data.invoice.display_id}`,
           delivery_method: data.input.delivery_method ?? "unknown",
         },
-      })
-    )
+      }),
+    );
 
-    trackAnalyticsEventStep(trackingInput)
+    trackAnalyticsEventStep(trackingInput);
 
-    return new WorkflowResponse({ buffer, invoice })
-  }
-)
+    return new WorkflowResponse({ buffer, invoice });
+  },
+);

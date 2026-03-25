@@ -29,7 +29,7 @@ export const OrderStatusBadge = ({ status }: OrderStatusBadgeProps) => {
       <Text
         className={cx(
           "m-0 inline-block rounded-full px-3 py-1 text-xs font-semibold",
-          statusStyles[status]
+          statusStyles[status],
         )}
       >
         {statusLabels[status]}

@@ -1,17 +1,17 @@
-import { View, Text } from "@react-pdf/renderer"
-import { styles } from "../styles"
+import { View, Text } from "@react-pdf/renderer";
+import { styles } from "../styles";
 
 interface PartyInfo {
-  name: string
-  address: string
-  email: string
-  phone?: string
-  taxId?: string
+  name: string;
+  address: string;
+  email: string;
+  phone?: string;
+  taxId?: string;
 }
 
 interface PartiesProps {
-  from: PartyInfo
-  billTo: PartyInfo
+  from: PartyInfo;
+  billTo: PartyInfo;
 }
 
 export function Parties({ from, billTo }: PartiesProps) {
@@ -31,11 +31,9 @@ export function Parties({ from, billTo }: PartiesProps) {
         <Text style={styles.partyLabel}>Bill To</Text>
         <Text style={styles.partyName}>{billTo.name}</Text>
         <Text style={styles.partyDetail}>{billTo.address}</Text>
-        {billTo.phone && (
-          <Text style={styles.partyDetail}>{billTo.phone}</Text>
-        )}
+        {billTo.phone && <Text style={styles.partyDetail}>{billTo.phone}</Text>}
         <Text style={styles.partyDetail}>{billTo.email}</Text>
       </View>
     </View>
-  )
+  );
 }

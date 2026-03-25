@@ -1,7 +1,5 @@
 {
-  "namespaces": [
-    "public"
-  ],
+  "namespaces": ["public"],
   "name": "public",
   "tables": [
     {
@@ -68,11 +66,7 @@
           "primary": false,
           "nullable": false,
           "default": "'pending'",
-          "enumItems": [
-            "pending",
-            "approved",
-            "flagged"
-          ],
+          "enumItems": ["pending", "approved", "flagged"],
           "mappedType": "enum"
         },
         "product_id": {
@@ -149,9 +143,7 @@
         },
         {
           "keyName": "review_pkey",
-          "columnNames": [
-            "id"
-          ],
+          "columnNames": ["id"],
           "composite": false,
           "constraint": true,
           "primary": true,
@@ -263,9 +255,7 @@
         },
         {
           "keyName": "review_image_pkey",
-          "columnNames": [
-            "id"
-          ],
+          "columnNames": ["id"],
           "composite": false,
           "constraint": true,
           "primary": true,
@@ -276,13 +266,9 @@
       "foreignKeys": {
         "review_image_review_id_foreign": {
           "constraintName": "review_image_review_id_foreign",
-          "columnNames": [
-            "review_id"
-          ],
+          "columnNames": ["review_id"],
           "localTableName": "public.review_image",
-          "referencedColumnNames": [
-            "id"
-          ],
+          "referencedColumnNames": ["id"],
           "referencedTableName": "public.review",
           "updateRule": "cascade"
         }
@@ -374,9 +360,7 @@
         },
         {
           "keyName": "review_response_pkey",
-          "columnNames": [
-            "id"
-          ],
+          "columnNames": ["id"],
           "composite": false,
           "constraint": true,
           "primary": true,
@@ -387,13 +371,9 @@
       "foreignKeys": {
         "review_response_review_id_foreign": {
           "constraintName": "review_response_review_id_foreign",
-          "columnNames": [
-            "review_id"
-          ],
+          "columnNames": ["review_id"],
           "localTableName": "public.review_response",
-          "referencedColumnNames": [
-            "id"
-          ],
+          "referencedColumnNames": ["id"],
           "referencedTableName": "public.review",
           "updateRule": "cascade"
         }
@@ -546,9 +526,7 @@
         },
         {
           "keyName": "review_stats_pkey",
-          "columnNames": [
-            "id"
-          ],
+          "columnNames": ["id"],
           "composite": false,
           "constraint": true,
           "primary": true,

@@ -1,18 +1,18 @@
-import { View, Text, Image } from "@react-pdf/renderer"
-import { styles, colors } from "../styles"
+import { View, Text, Image } from "@react-pdf/renderer";
+import { styles, colors } from "../styles";
 
 interface LineItem {
-  name: string
-  variant?: string
-  sku?: string
-  thumbnail?: string
-  quantity: number
-  unitPrice: string
-  total: string
+  name: string;
+  variant?: string;
+  sku?: string;
+  thumbnail?: string;
+  quantity: number;
+  unitPrice: string;
+  total: string;
 }
 
 interface LineItemsProps {
-  items: LineItem[]
+  items: LineItem[];
 }
 
 export function LineItems({ items }: LineItemsProps) {
@@ -35,7 +35,12 @@ export function LineItems({ items }: LineItemsProps) {
             index < items.length - 1 ? styles.tableRow : styles.tableRowLast
           }
         >
-          <View style={[styles.colDescription, { flexDirection: "row", alignItems: "center", gap: 8 }]}>
+          <View
+            style={[
+              styles.colDescription,
+              { flexDirection: "row", alignItems: "center", gap: 8 },
+            ]}
+          >
             {item.thumbnail && (
               <Image
                 src={item.thumbnail}
@@ -65,5 +70,5 @@ export function LineItems({ items }: LineItemsProps) {
         </View>
       ))}
     </View>
-  )
+  );
 }

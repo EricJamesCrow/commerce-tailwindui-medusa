@@ -1,44 +1,44 @@
-import { Document, Page } from "@react-pdf/renderer"
-import { styles } from "./styles"
-import { Header } from "./components/header"
-import { Parties } from "./components/parties"
-import { LineItems } from "./components/line-items"
-import { Totals } from "./components/totals"
-import { Footer } from "./components/footer"
+import { Document, Page } from "@react-pdf/renderer";
+import { styles } from "./styles";
+import { Header } from "./components/header";
+import { Parties } from "./components/parties";
+import { LineItems } from "./components/line-items";
+import { Totals } from "./components/totals";
+import { Footer } from "./components/footer";
 
 export interface InvoiceDocumentProps {
-  invoiceNumber: string
-  issuedDate: string
-  orderDisplayId: string
+  invoiceNumber: string;
+  issuedDate: string;
+  orderDisplayId: string;
   company: {
-    name: string
-    address: string
-    phone?: string
-    email: string
-    logo?: string
-    taxId?: string
-  }
+    name: string;
+    address: string;
+    phone?: string;
+    email: string;
+    logo?: string;
+    taxId?: string;
+  };
   customer: {
-    name: string
-    address: string
-    email: string
-  }
+    name: string;
+    address: string;
+    email: string;
+  };
   items: {
-    name: string
-    variant?: string
-    sku?: string
-    thumbnail?: string
-    quantity: number
-    unitPrice: string
-    total: string
-  }[]
-  subtotal: string
-  shipping: string
-  discount?: string
-  tax: string
-  total: string
-  currency: string
-  notes?: string
+    name: string;
+    variant?: string;
+    sku?: string;
+    thumbnail?: string;
+    quantity: number;
+    unitPrice: string;
+    total: string;
+  }[];
+  subtotal: string;
+  shipping: string;
+  discount?: string;
+  tax: string;
+  total: string;
+  currency: string;
+  notes?: string;
 }
 
 export function InvoiceDocument(props: InvoiceDocumentProps) {
@@ -76,5 +76,5 @@ export function InvoiceDocument(props: InvoiceDocumentProps) {
         <Footer companyEmail={props.company.email} notes={props.notes} />
       </Page>
     </Document>
-  )
+  );
 }

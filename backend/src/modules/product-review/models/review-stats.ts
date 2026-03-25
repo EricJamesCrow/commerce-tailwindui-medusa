@@ -1,4 +1,4 @@
-import { model } from "@medusajs/framework/utils"
+import { model } from "@medusajs/framework/utils";
 
 const ReviewStats = model.define("review_stats", {
   id: model.id().primaryKey(),
@@ -10,6 +10,6 @@ const ReviewStats = model.define("review_stats", {
   rating_count_3: model.number().default(0),
   rating_count_4: model.number().default(0),
   rating_count_5: model.number().default(0),
-})
+});
 
-export default ReviewStats
+export default ReviewStats;

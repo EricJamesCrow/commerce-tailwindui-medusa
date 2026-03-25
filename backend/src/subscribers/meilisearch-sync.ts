@@ -1,58 +1,59 @@
-import { SubscriberArgs, type SubscriberConfig } from "@medusajs/framework"
-import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
-import * as Sentry from "@sentry/node"
-import { MEILISEARCH_MODULE } from "../modules/meilisearch"
-import MeilisearchModuleService from "../modules/meilisearch/service"
-import { syncProductsWorkflow } from "../workflows/sync-products"
+import { SubscriberArgs, type SubscriberConfig } from "@medusajs/framework";
+import { ContainerRegistrationKeys } from "@medusajs/framework/utils";
+import * as Sentry from "@sentry/node";
+import { MEILISEARCH_MODULE } from "../modules/meilisearch";
+import MeilisearchModuleService from "../modules/meilisearch/service";
+import { syncProductsWorkflow } from "../workflows/sync-products";
 
 export default async function handleMeilisearchSync({
   container,
 }: SubscriberArgs<Record<string, never>>) {
-  const logger = container.resolve("logger")
+  const logger = container.resolve("logger");
 
-  let meilisearchService: MeilisearchModuleService
+  let meilisearchService: MeilisearchModuleService;
   try {
-    meilisearchService = container.resolve<MeilisearchModuleService>(
-      MEILISEARCH_MODULE
-    )
+    meilisearchService =
+      container.resolve<MeilisearchModuleService>(MEILISEARCH_MODULE);
   } catch {
-    return
+    return;
   }
 
-  const startTime = Date.now()
-  logger.info("[Meilisearch] Starting full product sync")
+  const startTime = Date.now();
+  logger.info("[Meilisearch] Starting full product sync");
 
   try {
     await syncProductsWorkflow(container).run({
       input: {},
-    })
+    });
 
-    const query = container.resolve(ContainerRegistrationKeys.QUERY)
+    const query = container.resolve(ContainerRegistrationKeys.QUERY);
     const { data: allProducts } = await query.graph({
       entity: "product",
       fields: ["id"],
       filters: {},
-    })
-    const medusaIds = new Set(allProducts.map((p: { id: string }) => p.id))
-    const indexedIds = await meilisearchService.getAllIndexedIds()
-    const staleIds = indexedIds.filter((id) => !medusaIds.has(id))
+    });
+    const medusaIds = new Set(allProducts.map((p: { id: string }) => p.id));
+    const indexedIds = await meilisearchService.getAllIndexedIds();
+    const staleIds = indexedIds.filter((id) => !medusaIds.has(id));
 
     if (staleIds.length > 0) {
-      logger.info(`[Meilisearch] Removing ${staleIds.length} stale entries`)
-      await meilisearchService.deleteFromIndex(staleIds)
+      logger.info(`[Meilisearch] Removing ${staleIds.length} stale entries`);
+      await meilisearchService.deleteFromIndex(staleIds);
     }
 
-    const duration = Date.now() - startTime
+    const duration = Date.now() - startTime;
     logger.info(
-      `[Meilisearch] Full sync completed in ${duration}ms — ${allProducts.length} products`
-    )
+      `[Meilisearch] Full sync completed in ${duration}ms — ${allProducts.length} products`,
+    );
   } catch (error) {
-    Sentry.captureException(error, { tags: { subscriber: "meilisearch_sync", step: "full_sync" } })
-    logger.error("[Meilisearch] Full sync failed:", error)
-    throw error
+    Sentry.captureException(error, {
+      tags: { subscriber: "meilisearch_sync", step: "full_sync" },
+    });
+    logger.error("[Meilisearch] Full sync failed:", error);
+    throw error;
   }
 }
 
 export const config: SubscriberConfig = {
   event: "meilisearch.sync",
-}
+};

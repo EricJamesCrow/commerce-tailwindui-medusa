@@ -1,4 +1,4 @@
-import { model } from "@medusajs/framework/utils"
+import { model } from "@medusajs/framework/utils";
 
 const InvoiceConfig = model.define("invoice_config", {
   id: model.id().primaryKey(),
@@ -10,6 +10,6 @@ const InvoiceConfig = model.define("invoice_config", {
   tax_id: model.text().nullable(),
   notes: model.text().nullable(),
   attach_to_email: model.boolean().default(false),
-})
+});
 
-export default InvoiceConfig
+export default InvoiceConfig;

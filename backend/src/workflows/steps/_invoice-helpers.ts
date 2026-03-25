@@ -1,20 +1,20 @@
-import type InvoiceModuleService from "../../modules/invoice/service"
+import type InvoiceModuleService from "../../modules/invoice/service";
 import {
   createCurrencyFormatter,
   formatAddress,
   formatOrderDate,
-} from "../notifications/_format-helpers"
-import type { InvoiceDocumentProps } from "../../modules/invoice/templates/invoice-document"
+} from "../notifications/_format-helpers";
+import type { InvoiceDocumentProps } from "../../modules/invoice/templates/invoice-document";
 
 export type InvoiceConfigData = {
-  company_name: string
-  company_address: string
-  company_phone?: string | null
-  company_email: string
-  company_logo?: string | null
-  tax_id?: string | null
-  notes?: string | null
-}
+  company_name: string;
+  company_address: string;
+  company_phone?: string | null;
+  company_email: string;
+  company_logo?: string | null;
+  tax_id?: string | null;
+  notes?: string | null;
+};
 
 /**
  * Get an existing invoice for the order, or create a new one.
@@ -22,18 +22,18 @@ export type InvoiceConfigData = {
  */
 export async function getOrCreateInvoiceRecord(
   invoiceService: InvoiceModuleService,
-  orderId: string
+  orderId: string,
 ) {
   const existing = await invoiceService.listInvoices({
     order_id: orderId,
-  })
+  });
 
   if (existing[0]) {
-    return { invoice: existing[0], isNew: false }
+    return { invoice: existing[0], isNew: false };
   }
 
-  const year = new Date().getFullYear()
-  const displayId = await invoiceService.getNextDisplayId(year)
+  const year = new Date().getFullYear();
+  const displayId = await invoiceService.getNextDisplayId(year);
 
   try {
     const invoice = await invoiceService.createInvoices({
@@ -41,25 +41,25 @@ export async function getOrCreateInvoiceRecord(
       order_id: orderId,
       year,
       generated_at: new Date(),
-    })
-    return { invoice, isNew: true }
+    });
+    return { invoice, isNew: true };
   } catch (error: unknown) {
     // Only retry on unique constraint violations (Postgres error code 23505)
     const isUniqueViolation =
       error instanceof Error &&
       (("code" in error && (error as { code: string }).code === "23505") ||
         error.message.includes("unique") ||
-        error.message.includes("duplicate"))
-    if (!isUniqueViolation) throw error
+        error.message.includes("duplicate"));
+    if (!isUniqueViolation) throw error;
 
-    const retryDisplayId = await invoiceService.getNextDisplayId(year)
+    const retryDisplayId = await invoiceService.getNextDisplayId(year);
     const invoice = await invoiceService.createInvoices({
       display_id: retryDisplayId,
       order_id: orderId,
       year,
       generated_at: new Date(),
-    })
-    return { invoice, isNew: true }
+    });
+    return { invoice, isNew: true };
   }
 }
 
@@ -70,18 +70,18 @@ export function buildInvoiceDocumentProps(
   invoiceService: InvoiceModuleService,
   order: Record<string, any>,
   invoice: { display_id: number; year: number },
-  config: InvoiceConfigData
+  config: InvoiceConfigData,
 ): InvoiceDocumentProps {
-  const fmt = createCurrencyFormatter(order.currency_code || "USD")
-  const formatMoney = (amount: number): string => fmt.format(amount)
+  const fmt = createCurrencyFormatter(order.currency_code || "USD");
+  const formatMoney = (amount: number): string => fmt.format(amount);
 
   const invoiceNumber = invoiceService.formatInvoiceNumber(
     invoice.year,
-    invoice.display_id
-  )
+    invoice.display_id,
+  );
   const address = formatAddress(
-    order.shipping_address || order.billing_address
-  )
+    order.shipping_address || order.billing_address,
+  );
 
   return {
     invoiceNumber,
@@ -116,7 +116,7 @@ export function buildInvoiceDocumentProps(
       unitPrice: formatMoney(item.unit_price as number),
       total: formatMoney(
         (item.total as number) ??
-          (item.unit_price as number) * (item.quantity as number)
+          (item.unit_price as number) * (item.quantity as number),
       ),
     })),
     subtotal: formatMoney(order.item_subtotal ?? order.subtotal ?? 0),
@@ -128,5 +128,5 @@ export function buildInvoiceDocumentProps(
     total: formatMoney(order.total || 0),
     currency: order.currency_code || "USD",
     notes: config.notes || undefined,
-  }
+  };
 }

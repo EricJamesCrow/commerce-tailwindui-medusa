@@ -1,36 +1,41 @@
 import type {
   AuthenticatedMedusaRequest,
   MedusaResponse,
-} from "@medusajs/framework/http"
-import { z } from "@medusajs/framework/zod"
-import { createWishlistWorkflow } from "../../../../../workflows/create-wishlist"
-import { requireSalesChannelId } from "../../../wishlists/helpers"
-import { WishlistNameSchema } from "./validators"
+} from "@medusajs/framework/http";
+import { z } from "@medusajs/framework/zod";
+import { createWishlistWorkflow } from "../../../../../workflows/create-wishlist";
+import { requireSalesChannelId } from "../../../wishlists/helpers";
+import { WishlistNameSchema } from "./validators";
 
-type PostReq = z.infer<typeof WishlistNameSchema>
+type PostReq = z.infer<typeof WishlistNameSchema>;
 
 export async function GET(
   req: AuthenticatedMedusaRequest,
-  res: MedusaResponse
+  res: MedusaResponse,
 ) {
-  const query = req.scope.resolve("query")
+  const query = req.scope.resolve("query");
 
   const { data } = await query.graph({
     entity: "wishlist",
-    fields: ["*", "items.*", "items.product_variant.*", "items.product_variant.product.*"],
+    fields: [
+      "*",
+      "items.*",
+      "items.product_variant.*",
+      "items.product_variant.product.*",
+    ],
     filters: {
       customer_id: req.auth_context.actor_id,
     },
-  })
+  });
 
-  res.json({ wishlists: data })
+  res.json({ wishlists: data });
 }
 
 export async function POST(
   req: AuthenticatedMedusaRequest<PostReq>,
-  res: MedusaResponse
+  res: MedusaResponse,
 ) {
-  const salesChannelId = requireSalesChannelId(req)
+  const salesChannelId = requireSalesChannelId(req);
 
   const { result } = await createWishlistWorkflow(req.scope).run({
     input: {
@@ -38,7 +43,7 @@ export async function POST(
       sales_channel_id: salesChannelId,
       name: req.validatedBody?.name,
     },
-  })
+  });
 
-  res.status(201).json({ wishlist: result.wishlist })
+  res.status(201).json({ wishlist: result.wishlist });
 }

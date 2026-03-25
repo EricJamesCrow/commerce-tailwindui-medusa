@@ -1,64 +1,94 @@
-import { loadEnv, defineConfig } from '@medusajs/framework/utils'
+import { loadEnv, defineConfig } from "@medusajs/framework/utils";
 
-loadEnv(process.env.NODE_ENV || 'development', process.cwd())
+loadEnv(process.env.NODE_ENV || "development", process.cwd());
 
-const isProd = process.env.NODE_ENV === "production"
-const INSECURE_SECRETS = ["supersecret", "change-me-to-a-secure-random-string"]
+const isProd = process.env.NODE_ENV === "production";
+const INSECURE_SECRETS = ["supersecret", "change-me-to-a-secure-random-string"];
 
-if (isProd && (!process.env.JWT_SECRET || INSECURE_SECRETS.includes(process.env.JWT_SECRET))) {
-  throw new Error("JWT_SECRET must be set to a secure value in production")
+if (
+  isProd &&
+  (!process.env.JWT_SECRET || INSECURE_SECRETS.includes(process.env.JWT_SECRET))
+) {
+  throw new Error("JWT_SECRET must be set to a secure value in production");
 }
-if (isProd && (!process.env.COOKIE_SECRET || INSECURE_SECRETS.includes(process.env.COOKIE_SECRET))) {
-  throw new Error("COOKIE_SECRET must be set to a secure value in production")
+if (
+  isProd &&
+  (!process.env.COOKIE_SECRET ||
+    INSECURE_SECRETS.includes(process.env.COOKIE_SECRET))
+) {
+  throw new Error("COOKIE_SECRET must be set to a secure value in production");
 }
-if (isProd && process.env.STRIPE_API_KEY && !process.env.STRIPE_WEBHOOK_SECRET) {
-  throw new Error("STRIPE_WEBHOOK_SECRET must be set when Stripe is enabled in production")
+if (
+  isProd &&
+  process.env.STRIPE_API_KEY &&
+  !process.env.STRIPE_WEBHOOK_SECRET
+) {
+  throw new Error(
+    "STRIPE_WEBHOOK_SECRET must be set when Stripe is enabled in production",
+  );
 }
 
 if (!isProd) {
-  if (!process.env.JWT_SECRET || INSECURE_SECRETS.includes(process.env.JWT_SECRET)) {
-    console.warn("[medusa-config] JWT_SECRET is using default value — set a secure secret before deploying")
+  if (
+    !process.env.JWT_SECRET ||
+    INSECURE_SECRETS.includes(process.env.JWT_SECRET)
+  ) {
+    console.warn(
+      "[medusa-config] JWT_SECRET is using default value — set a secure secret before deploying",
+    );
   }
-  if (!process.env.COOKIE_SECRET || INSECURE_SECRETS.includes(process.env.COOKIE_SECRET)) {
-    console.warn("[medusa-config] COOKIE_SECRET is using default value — set a secure secret before deploying")
+  if (
+    !process.env.COOKIE_SECRET ||
+    INSECURE_SECRETS.includes(process.env.COOKIE_SECRET)
+  ) {
+    console.warn(
+      "[medusa-config] COOKIE_SECRET is using default value — set a secure secret before deploying",
+    );
   }
 }
 
-const redisUrl = process.env.REDIS_URL
+const redisUrl = process.env.REDIS_URL;
 
 if (!process.env.STRIPE_API_KEY) {
-  console.warn("[medusa-config] STRIPE_API_KEY is not set — Stripe payments will not work")
+  console.warn(
+    "[medusa-config] STRIPE_API_KEY is not set — Stripe payments will not work",
+  );
 }
 
 if (process.env.STRIPE_API_KEY && !process.env.STRIPE_WEBHOOK_SECRET) {
   console.warn(
     "[medusa-config] STRIPE_WEBHOOK_SECRET is not set — Stripe webhooks will not be verified. " +
-    "Set STRIPE_WEBHOOK_SECRET before going live."
-  )
+      "Set STRIPE_WEBHOOK_SECRET before going live.",
+  );
 }
 
-if (process.env.S3_BUCKET && (!process.env.S3_ACCESS_KEY_ID || !process.env.S3_SECRET_ACCESS_KEY)) {
+if (
+  process.env.S3_BUCKET &&
+  (!process.env.S3_ACCESS_KEY_ID || !process.env.S3_SECRET_ACCESS_KEY)
+) {
   console.warn(
     "[medusa-config] S3_BUCKET is set but S3_ACCESS_KEY_ID or S3_SECRET_ACCESS_KEY is missing — " +
-    "file uploads will fail"
-  )
+      "file uploads will fail",
+  );
 }
 
 if (!process.env.POSTHOG_EVENTS_API_KEY) {
-  console.warn("[medusa-config] POSTHOG_EVENTS_API_KEY is not set — backend analytics will be disabled")
+  console.warn(
+    "[medusa-config] POSTHOG_EVENTS_API_KEY is not set — backend analytics will be disabled",
+  );
 }
 
 if (process.env.MEILISEARCH_HOST && !process.env.MEILISEARCH_API_KEY) {
   if (isProd) {
     throw new Error(
       "[medusa-config] MEILISEARCH_HOST is set but MEILISEARCH_API_KEY is missing — " +
-      "refusing to start in production"
-    )
+        "refusing to start in production",
+    );
   }
   console.warn(
     "[medusa-config] MEILISEARCH_HOST is set but MEILISEARCH_API_KEY is missing — " +
-    "Meilisearch module will not be registered"
-  )
+      "Meilisearch module will not be registered",
+  );
 }
 
 module.exports = defineConfig({
@@ -74,7 +104,7 @@ module.exports = defineConfig({
       authCors: process.env.AUTH_CORS!,
       jwtSecret: process.env.JWT_SECRET || "supersecret",
       cookieSecret: process.env.COOKIE_SECRET || "supersecret",
-    }
+    },
   },
   modules: [
     {
@@ -129,7 +159,8 @@ module.exports = defineConfig({
                   options: {
                     channels: ["email"],
                     api_key: process.env.RESEND_API_KEY,
-                    from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
+                    from:
+                      process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
                   },
                 },
               ],
@@ -243,4 +274,4 @@ module.exports = defineConfig({
         ]
       : []),
   ],
-})
+});

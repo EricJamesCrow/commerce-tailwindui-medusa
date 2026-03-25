@@ -1,5 +1,12 @@
 // backend/src/modules/resend/templates/shipping-confirmation.tsx
-import { Container, Html, Preview, Row, Section, Column } from "@react-email/components";
+import {
+  Container,
+  Html,
+  Preview,
+  Row,
+  Section,
+  Column,
+} from "@react-email/components";
 import { Body } from "./_components/body";
 import { Button } from "./_components/button";
 import { LeftAligned as Footer } from "./_components/footer";
@@ -29,8 +36,10 @@ export interface ShippingConfirmationProps extends BaseTemplateProps {
   orderStatusUrl?: string;
 }
 
-export function isValidShippingConfirmationData(data: unknown): data is ShippingConfirmationProps {
-  const d = data as Record<string, any>
+export function isValidShippingConfirmationData(
+  data: unknown,
+): data is ShippingConfirmationProps {
+  const d = data as Record<string, any>;
   return (
     typeof d?.orderNumber === "string" &&
     typeof d?.orderDate === "string" &&
@@ -40,7 +49,7 @@ export function isValidShippingConfirmationData(data: unknown): data is Shipping
     typeof d?.total === "string" &&
     typeof d?.shippingAddress === "object" &&
     d?.shippingAddress !== null
-  )
+  );
 }
 
 export const ShippingConfirmation = ({
@@ -69,7 +78,10 @@ export const ShippingConfirmation = ({
         <Head />
         <Preview>Your order #{orderNumber} has shipped</Preview>
         <Body>
-          <Container align="center" className="w-full max-w-160 bg-primary md:p-8">
+          <Container
+            align="center"
+            className="w-full max-w-160 bg-primary md:p-8"
+          >
             <Header logoUrl={config.logoUrl} logoAlt={config.logoAlt} />
             <Section align="left" className="max-w-full px-6 py-8">
               <Row className="mb-6">
@@ -134,10 +146,20 @@ export const ShippingConfirmation = ({
                 total={total}
               />
 
-              <AddressBlock label="Shipping Address" address={shippingAddress} />
+              <AddressBlock
+                label="Shipping Address"
+                address={shippingAddress}
+              />
 
               <Row className="mt-6 mb-6">
-                <Button href={trackingUrl || orderStatusUrl || config.appUrl || config.websiteUrl}>
+                <Button
+                  href={
+                    trackingUrl ||
+                    orderStatusUrl ||
+                    config.appUrl ||
+                    config.websiteUrl
+                  }
+                >
                   <Text className="text-md font-semibold">
                     {trackingUrl ? "Track your order" : "View your order"}
                   </Text>
@@ -179,8 +201,20 @@ ShippingConfirmation.PreviewProps = {
   orderNumber: "1042",
   orderDate: "March 14, 2026",
   items: [
-    { name: "Leather Crossbody Bag", variant: "Tan / One Size", quantity: 1, price: "$128.00", imageUrl: "https://placehold.co/128x128?text=Product" },
-    { name: "Merino Wool Scarf", variant: "Charcoal", quantity: 2, price: "$98.00", imageUrl: "https://placehold.co/128x128?text=Product" },
+    {
+      name: "Leather Crossbody Bag",
+      variant: "Tan / One Size",
+      quantity: 1,
+      price: "$128.00",
+      imageUrl: "https://placehold.co/128x128?text=Product",
+    },
+    {
+      name: "Merino Wool Scarf",
+      variant: "Charcoal",
+      quantity: 2,
+      price: "$98.00",
+      imageUrl: "https://placehold.co/128x128?text=Product",
+    },
   ],
   subtotal: "$226.00",
   shipping: "$8.00",

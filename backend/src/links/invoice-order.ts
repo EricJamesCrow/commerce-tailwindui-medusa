@@ -1,6 +1,6 @@
-import { defineLink } from "@medusajs/framework/utils"
-import InvoiceModule from "../modules/invoice"
-import OrderModule from "@medusajs/medusa/order"
+import { defineLink } from "@medusajs/framework/utils";
+import InvoiceModule from "../modules/invoice";
+import OrderModule from "@medusajs/medusa/order";
 
 export default defineLink(
   {
@@ -11,5 +11,5 @@ export default defineLink(
   OrderModule.linkable.order,
   {
     readOnly: true,
-  }
-)
+  },
+);

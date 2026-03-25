@@ -3,56 +3,65 @@ import {
   authenticate,
   validateAndTransformBody,
   validateAndTransformQuery,
-} from "@medusajs/framework/http"
-import { MedusaError } from "@medusajs/framework/utils"
-import multer from "multer"
-import { authRateLimit } from "./middlewares/rate-limit"
-import { newsletterRateLimit } from "./middlewares/newsletter-rate-limit"
-import { PostStoreReviewSchema } from "./store/reviews/route"
-import { PostAdminUpdateReviewsStatusSchema } from "./admin/reviews/status/route"
-import { PostAdminReviewResponseSchema } from "./admin/reviews/[id]/response/route"
-import { GetAdminReviewsSchema } from "./admin/reviews/route"
-import { GetStoreReviewsSchema } from "./store/products/[id]/reviews/route"
+} from "@medusajs/framework/http";
+import { MedusaError } from "@medusajs/framework/utils";
+import multer from "multer";
+import { authRateLimit } from "./middlewares/rate-limit";
+import { newsletterRateLimit } from "./middlewares/newsletter-rate-limit";
+import { PostStoreReviewSchema } from "./store/reviews/route";
+import { PostAdminUpdateReviewsStatusSchema } from "./admin/reviews/status/route";
+import { PostAdminReviewResponseSchema } from "./admin/reviews/[id]/response/route";
+import { GetAdminReviewsSchema } from "./admin/reviews/route";
+import { GetStoreReviewsSchema } from "./store/products/[id]/reviews/route";
 import {
   WishlistNameSchema,
   PostCreateWishlistItemSchema,
-} from "./store/customers/me/wishlists/validators"
+} from "./store/customers/me/wishlists/validators";
 import {
   PostGuestCreateWishlistItemSchema,
   PostImportWishlistSchema,
-} from "./store/wishlists/validators"
-import { PostAdminInvoiceConfigSchema } from "./admin/invoice-config/route"
+} from "./store/wishlists/validators";
+import { PostAdminInvoiceConfigSchema } from "./admin/invoice-config/route";
 import {
   SubscribeSchema,
   UnsubscribeSchema,
-} from "./store/newsletter/validators"
-import * as Sentry from "@sentry/node"
+} from "./store/newsletter/validators";
+import * as Sentry from "@sentry/node";
 
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
   fileFilter: (_req, file, cb) => {
-    const allowed = ["image/jpeg", "image/png", "image/webp"]
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
     if (allowed.includes(file.mimetype)) {
-      cb(null, true)
+      cb(null, true);
     } else {
-      cb(new MedusaError(MedusaError.Types.INVALID_DATA, "Only JPEG, PNG, and WebP images are allowed"))
+      cb(
+        new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          "Only JPEG, PNG, and WebP images are allowed",
+        ),
+      );
     }
   },
-})
+});
 
 export default defineMiddlewares({
   errorHandler: (error, req, res, next) => {
     Sentry.withScope((scope) => {
-      const actorId = "auth_context" in req ? (req as { auth_context?: { actor_id?: string } }).auth_context?.actor_id : undefined
+      const actorId =
+        "auth_context" in req
+          ? (req as { auth_context?: { actor_id?: string } }).auth_context
+              ?.actor_id
+          : undefined;
       if (actorId) {
-        scope.setUser({ id: actorId })
+        scope.setUser({ id: actorId });
       }
-      scope.setTag("method", req.method)
-      scope.setTag("path", req.path)
-      Sentry.captureException(error)
-    })
-    next(error)
+      scope.setTag("method", req.method);
+      scope.setTag("path", req.path);
+      Sentry.captureException(error);
+    });
+    next(error);
   },
   routes: [
     // --- Trust proxy for correct IP detection behind reverse proxy ---
@@ -60,8 +69,8 @@ export default defineMiddlewares({
       matcher: "/auth*",
       middlewares: [
         (req, _res, next) => {
-          req.app.set("trust proxy", true)
-          next()
+          req.app.set("trust proxy", true);
+          next();
         },
       ],
     },
@@ -71,11 +80,11 @@ export default defineMiddlewares({
       method: ["POST"],
       middlewares: [
         (req, _res, next) => {
-          const body = req.body as Record<string, unknown>
+          const body = req.body as Record<string, unknown>;
           if (body?.email && typeof body.email === "string") {
-            body.email = body.email.toLowerCase()
+            body.email = body.email.toLowerCase();
           }
-          next()
+          next();
         },
       ],
     },
@@ -94,9 +103,7 @@ export default defineMiddlewares({
     {
       matcher: "/store/payment-methods/:account_holder_id",
       method: "GET",
-      middlewares: [
-        authenticate("customer", ["bearer", "session"]),
-      ],
+      middlewares: [authenticate("customer", ["bearer", "session"])],
     },
     // --- Store review routes ---
     {
@@ -168,38 +175,28 @@ export default defineMiddlewares({
     {
       matcher: "/admin/reviews/:id/response",
       method: ["POST"],
-      middlewares: [
-        validateAndTransformBody(PostAdminReviewResponseSchema),
-      ],
+      middlewares: [validateAndTransformBody(PostAdminReviewResponseSchema)],
     },
     // --- Customer wishlist routes — auth on all paths ---
     {
       matcher: "/store/customers/me/wishlists*",
-      middlewares: [
-        authenticate("customer", ["session", "bearer"]),
-      ],
+      middlewares: [authenticate("customer", ["session", "bearer"])],
     },
     // Body validation for specific customer wishlist mutations
     {
       matcher: "/store/customers/me/wishlists",
       method: ["POST"],
-      middlewares: [
-        validateAndTransformBody(WishlistNameSchema),
-      ],
+      middlewares: [validateAndTransformBody(WishlistNameSchema)],
     },
     {
       matcher: "/store/customers/me/wishlists/:id",
       method: ["PUT"],
-      middlewares: [
-        validateAndTransformBody(WishlistNameSchema),
-      ],
+      middlewares: [validateAndTransformBody(WishlistNameSchema)],
     },
     {
       matcher: "/store/customers/me/wishlists/:id/items",
       method: ["POST"],
-      middlewares: [
-        validateAndTransformBody(PostCreateWishlistItemSchema),
-      ],
+      middlewares: [validateAndTransformBody(PostCreateWishlistItemSchema)],
     },
     // Guest wishlist routes — no auth required
     {
@@ -222,9 +219,7 @@ export default defineMiddlewares({
     {
       method: ["GET"],
       matcher: "/store/orders/:id/invoice",
-      middlewares: [
-        authenticate("customer", ["session", "bearer"]),
-      ],
+      middlewares: [authenticate("customer", ["session", "bearer"])],
     },
     // --- Admin invoice routes ---
     {
@@ -235,9 +230,7 @@ export default defineMiddlewares({
     {
       method: ["POST"],
       matcher: "/admin/invoice-config",
-      middlewares: [
-        validateAndTransformBody(PostAdminInvoiceConfigSchema),
-      ],
+      middlewares: [validateAndTransformBody(PostAdminInvoiceConfigSchema)],
     },
     // --- Newsletter routes ---
     {
@@ -249,11 +242,11 @@ export default defineMiddlewares({
           allowUnauthenticated: true,
         }),
         (req, _res, next) => {
-          const body = req.body as Record<string, unknown>
+          const body = req.body as Record<string, unknown>;
           if (body?.email && typeof body.email === "string") {
-            body.email = body.email.toLowerCase()
+            body.email = body.email.toLowerCase();
           }
-          next()
+          next();
         },
         validateAndTransformBody(SubscribeSchema),
       ],
@@ -267,4 +260,4 @@ export default defineMiddlewares({
       ],
     },
   ],
-})
+});

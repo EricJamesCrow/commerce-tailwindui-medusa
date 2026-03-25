@@ -4,68 +4,72 @@ import {
   StepResponse,
   transform,
   WorkflowResponse,
-} from "@medusajs/framework/workflows-sdk"
-import { emitEventStep } from "@medusajs/medusa/core-flows"
-import { NEWSLETTER_MODULE } from "../../modules/newsletter"
-import NewsletterModuleService from "../../modules/newsletter/service"
+} from "@medusajs/framework/workflows-sdk";
+import { emitEventStep } from "@medusajs/medusa/core-flows";
+import { NEWSLETTER_MODULE } from "../../modules/newsletter";
+import NewsletterModuleService from "../../modules/newsletter/service";
 
 type SubscribeInput = {
-  email: string
-  source: "footer" | "checkout" | "account" | "import"
-  customer_id?: string
-}
+  email: string;
+  source: "footer" | "checkout" | "account" | "import";
+  customer_id?: string;
+};
 
 const upsertSubscriberStep = createStep(
   "upsert-newsletter-subscriber",
   async (
     input: {
-      email: string
-      source: "footer" | "checkout" | "account" | "import"
-      customer_id?: string
+      email: string;
+      source: "footer" | "checkout" | "account" | "import";
+      customer_id?: string;
     },
-    { container }
+    { container },
   ) => {
     const newsletterService: NewsletterModuleService =
-      container.resolve(NEWSLETTER_MODULE)
+      container.resolve(NEWSLETTER_MODULE);
 
-    const email = input.email.toLowerCase()
+    const email = input.email.toLowerCase();
 
     const [existing] = await newsletterService.listSubscribers(
       { email },
-      { take: 1 }
-    )
+      { take: 1 },
+    );
 
     if (existing) {
-      let needsUpdate = false
-      const updates: Record<string, unknown> = {}
+      let needsUpdate = false;
+      const updates: Record<string, unknown> = {};
 
       if (input.customer_id && !existing.customer_id) {
-        updates.customer_id = input.customer_id
-        needsUpdate = true
+        updates.customer_id = input.customer_id;
+        needsUpdate = true;
       }
 
-      const wasUnsubscribed = existing.status === "unsubscribed"
+      const wasUnsubscribed = existing.status === "unsubscribed";
       if (wasUnsubscribed) {
-        updates.status = "active"
-        updates.unsubscribed_at = null
-        needsUpdate = true
+        updates.status = "active";
+        updates.unsubscribed_at = null;
+        needsUpdate = true;
       }
 
       if (needsUpdate) {
         const updated = await newsletterService.updateSubscribers({
           id: existing.id,
           ...updates,
-        })
+        });
         return new StepResponse(
-          { subscriber: updated, isNewSubscriber: false, wasReactivated: wasUnsubscribed },
-          existing.id
-        )
+          {
+            subscriber: updated,
+            isNewSubscriber: false,
+            wasReactivated: wasUnsubscribed,
+          },
+          existing.id,
+        );
       }
 
       return new StepResponse(
         { subscriber: existing, isNewSubscriber: false, wasReactivated: false },
-        existing.id
-      )
+        existing.id,
+      );
     }
 
     const subscriber = await newsletterService.createSubscribers({
@@ -73,14 +77,14 @@ const upsertSubscriberStep = createStep(
       source: input.source,
       customer_id: input.customer_id || null,
       status: "active",
-    })
+    });
 
     return new StepResponse(
       { subscriber, isNewSubscriber: true, wasReactivated: false },
-      subscriber.id
-    )
-  }
-)
+      subscriber.id,
+    );
+  },
+);
 
 export const subscribeToNewsletterWorkflow = createWorkflow(
   "subscribe-to-newsletter",
@@ -89,7 +93,7 @@ export const subscribeToNewsletterWorkflow = createWorkflow(
       email: input.email,
       source: input.source,
       customer_id: input.customer_id,
-    })
+    });
 
     const eventData = transform({ result }, (data) => ({
       eventName: "newsletter.subscribed" as const,
@@ -99,10 +103,10 @@ export const subscribeToNewsletterWorkflow = createWorkflow(
         isNewSubscriber: data.result.isNewSubscriber,
         wasReactivated: data.result.wasReactivated,
       },
-    }))
+    }));
 
-    emitEventStep(eventData)
+    emitEventStep(eventData);
 
-    return new WorkflowResponse(result)
-  }
-)
+    return new WorkflowResponse(result);
+  },
+);

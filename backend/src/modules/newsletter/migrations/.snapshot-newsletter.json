@@ -1,7 +1,5 @@
 {
-  "namespaces": [
-    "public"
-  ],
+  "namespaces": ["public"],
   "name": "public",
   "tables": [
     {
@@ -32,11 +30,7 @@
           "primary": false,
           "nullable": false,
           "default": "'active'",
-          "enumItems": [
-            "active",
-            "pending",
-            "unsubscribed"
-          ],
+          "enumItems": ["active", "pending", "unsubscribed"],
           "mappedType": "enum"
         },
         "source": {
@@ -46,12 +40,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "enumItems": [
-            "footer",
-            "checkout",
-            "account",
-            "import"
-          ],
+          "enumItems": ["footer", "checkout", "account", "import"],
           "mappedType": "enum"
         },
         "customer_id": {
@@ -138,9 +127,7 @@
         },
         {
           "keyName": "newsletter_subscriber_pkey",
-          "columnNames": [
-            "id"
-          ],
+          "columnNames": ["id"],
           "composite": false,
           "constraint": true,
           "primary": true,

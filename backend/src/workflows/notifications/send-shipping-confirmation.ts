@@ -2,18 +2,18 @@ import {
   createWorkflow,
   transform,
   WorkflowResponse,
-} from "@medusajs/framework/workflows-sdk"
-import { MedusaError } from "@medusajs/framework/utils"
+} from "@medusajs/framework/workflows-sdk";
+import { MedusaError } from "@medusajs/framework/utils";
 import {
   useQueryGraphStep,
   sendNotificationsStep,
-} from "@medusajs/medusa/core-flows"
-import { formatOrderForEmailStep } from "../steps/format-order-for-email"
-import { EmailTemplates } from "../../modules/resend/templates/template-registry"
+} from "@medusajs/medusa/core-flows";
+import { formatOrderForEmailStep } from "../steps/format-order-for-email";
+import { EmailTemplates } from "../../modules/resend/templates/template-registry";
 
 type SendShippingConfirmationInput = {
-  fulfillmentId: string
-}
+  fulfillmentId: string;
+};
 
 export const sendShippingConfirmationWorkflow = createWorkflow(
   "send-shipping-confirmation",
@@ -39,45 +39,45 @@ export const sendShippingConfirmationWorkflow = createWorkflow(
         "order.tax_total",
       ],
       filters: { id: input.fulfillmentId },
-    })
+    });
 
     const orderAndTracking = transform(
       { fulfillments },
       ({ fulfillments: result }) => {
-        const fulfillment = result[0]
+        const fulfillment = result[0];
         if (!fulfillment) {
           throw new MedusaError(
             MedusaError.Types.NOT_FOUND,
-            "Fulfillment not found"
-          )
+            "Fulfillment not found",
+          );
         }
 
-        const order = (fulfillment as any).order
+        const order = (fulfillment as any).order;
         if (!order?.email) {
           throw new MedusaError(
             MedusaError.Types.INVALID_DATA,
-            "Order has no email address, cannot send shipping confirmation"
-          )
+            "Order has no email address, cannot send shipping confirmation",
+          );
         }
 
         return {
           order,
           trackingNumbers: (fulfillment as any).tracking_numbers || [],
-        }
-      }
-    )
+        };
+      },
+    );
 
     const formatted = formatOrderForEmailStep({
       order: orderAndTracking.order,
-    })
+    });
 
     const notifications = transform(
       { formatted, orderAndTracking },
       ({ formatted: data, orderAndTracking: ot }) => {
         const storefrontUrl =
-          process.env.STOREFRONT_URL || "http://localhost:3000"
+          process.env.STOREFRONT_URL || "http://localhost:3000";
 
-        const trackingNumber = ot.trackingNumbers[0] || null
+        const trackingNumber = ot.trackingNumbers[0] || null;
 
         return [
           {
@@ -106,14 +106,14 @@ export const sendShippingConfirmationWorkflow = createWorkflow(
             resource_id: data.orderId,
             resource_type: "order",
           },
-        ]
-      }
-    )
+        ];
+      },
+    );
 
-    sendNotificationsStep(notifications)
+    sendNotificationsStep(notifications);
 
     return new WorkflowResponse({
       fulfillmentId: input.fulfillmentId,
-    })
-  }
-)
+    });
+  },
+);

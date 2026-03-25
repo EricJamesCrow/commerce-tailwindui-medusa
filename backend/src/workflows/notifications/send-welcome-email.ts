@@ -2,17 +2,17 @@ import {
   createWorkflow,
   transform,
   WorkflowResponse,
-} from "@medusajs/framework/workflows-sdk"
+} from "@medusajs/framework/workflows-sdk";
 import {
   useQueryGraphStep,
   sendNotificationsStep,
-} from "@medusajs/medusa/core-flows"
-import { EmailTemplates } from "../../modules/resend/templates/template-registry"
-import { defaultEmailConfig } from "../../modules/resend/templates/_config/email-config"
+} from "@medusajs/medusa/core-flows";
+import { EmailTemplates } from "../../modules/resend/templates/template-registry";
+import { defaultEmailConfig } from "../../modules/resend/templates/_config/email-config";
 
 type SendWelcomeEmailInput = {
-  id: string
-}
+  id: string;
+};
 
 export const sendWelcomeEmailWorkflow = createWorkflow(
   "send-welcome-email",
@@ -21,26 +21,25 @@ export const sendWelcomeEmailWorkflow = createWorkflow(
       entity: "customer",
       fields: ["id", "email", "first_name", "last_name"],
       filters: { id: input.id },
-    })
+    });
 
     const notifications = transform({ customers }, ({ customers: result }) => {
-      const customer = result[0] as Record<string, any> | undefined
+      const customer = result[0] as Record<string, any> | undefined;
       if (!customer?.email) {
-        return []
+        return [];
       }
 
-      const storefrontUrl = process.env.STOREFRONT_URL
+      const storefrontUrl = process.env.STOREFRONT_URL;
       if (!storefrontUrl) {
-        return []
+        return [];
       }
 
-      const baseUrl = storefrontUrl.replace(/\/$/, "")
+      const baseUrl = storefrontUrl.replace(/\/$/, "");
       const customerName =
-        [customer.first_name, customer.last_name]
-          .filter(Boolean)
-          .join(" ") || null
+        [customer.first_name, customer.last_name].filter(Boolean).join(" ") ||
+        null;
 
-      const storeName = defaultEmailConfig.companyName
+      const storeName = defaultEmailConfig.companyName;
 
       return [
         {
@@ -58,11 +57,11 @@ export const sendWelcomeEmailWorkflow = createWorkflow(
           resource_id: customer.id as string,
           resource_type: "customer",
         },
-      ]
-    })
+      ];
+    });
 
-    sendNotificationsStep(notifications)
+    sendNotificationsStep(notifications);
 
-    return new WorkflowResponse({ customerId: input.id })
-  }
-)
+    return new WorkflowResponse({ customerId: input.id });
+  },
+);

@@ -1,5 +1,12 @@
 // backend/src/modules/resend/templates/admin-order-alert.tsx
-import { Container, Html, Preview, Row, Section, Column } from "@react-email/components";
+import {
+  Container,
+  Html,
+  Preview,
+  Row,
+  Section,
+  Column,
+} from "@react-email/components";
 import { Body } from "./_components/body";
 import { Button } from "./_components/button";
 import { Head } from "./_components/head";
@@ -28,8 +35,10 @@ export interface AdminOrderAlertProps extends BaseTemplateProps {
   adminOrderUrl?: string;
 }
 
-export function isValidAdminOrderAlertData(data: unknown): data is AdminOrderAlertProps {
-  const d = data as Record<string, any>
+export function isValidAdminOrderAlertData(
+  data: unknown,
+): data is AdminOrderAlertProps {
+  const d = data as Record<string, any>;
   return (
     typeof d?.orderNumber === "string" &&
     typeof d?.orderDate === "string" &&
@@ -40,7 +49,7 @@ export function isValidAdminOrderAlertData(data: unknown): data is AdminOrderAle
     typeof d?.total === "string" &&
     typeof d?.shippingAddress === "object" &&
     d?.shippingAddress !== null
-  )
+  );
 }
 
 export const AdminOrderAlert = ({
@@ -66,9 +75,14 @@ export const AdminOrderAlert = ({
     <Html>
       <Tailwind theme={theme}>
         <Head />
-        <Preview>New order #{orderNumber} — {total}</Preview>
+        <Preview>
+          New order #{orderNumber} — {total}
+        </Preview>
         <Body>
-          <Container align="center" className="w-full max-w-160 bg-primary md:p-8">
+          <Container
+            align="center"
+            className="w-full max-w-160 bg-primary md:p-8"
+          >
             <Header logoUrl={config.logoUrl} logoAlt={config.logoAlt} />
             <Section align="left" className="max-w-full px-6 py-8">
               <Row className="mb-6">
@@ -155,18 +169,26 @@ export const AdminOrderAlert = ({
 
               <Row>
                 <Column className="w-1/2">
-                  <AddressBlock label="Shipping Address" address={shippingAddress} />
+                  <AddressBlock
+                    label="Shipping Address"
+                    address={shippingAddress}
+                  />
                 </Column>
                 {billingAddress && (
                   <Column className="w-1/2">
-                    <AddressBlock label="Billing Address" address={billingAddress} />
+                    <AddressBlock
+                      label="Billing Address"
+                      address={billingAddress}
+                    />
                   </Column>
                 )}
               </Row>
 
               {(adminOrderUrl || config.appUrl) && (
                 <Row className="mt-6 mb-6">
-                  <Button href={adminOrderUrl || config.appUrl || config.websiteUrl}>
+                  <Button
+                    href={adminOrderUrl || config.appUrl || config.websiteUrl}
+                  >
                     <Text className="text-md font-semibold">View in admin</Text>
                   </Button>
                 </Row>
@@ -194,8 +216,20 @@ AdminOrderAlert.PreviewProps = {
   customerName: "Sarah Chen",
   customerEmail: "sarah.chen@example.com",
   items: [
-    { name: "Leather Crossbody Bag", variant: "Tan / One Size", quantity: 1, price: "$128.00", imageUrl: "https://placehold.co/128x128?text=Product" },
-    { name: "Merino Wool Scarf", variant: "Charcoal", quantity: 2, price: "$98.00", imageUrl: "https://placehold.co/128x128?text=Product" },
+    {
+      name: "Leather Crossbody Bag",
+      variant: "Tan / One Size",
+      quantity: 1,
+      price: "$128.00",
+      imageUrl: "https://placehold.co/128x128?text=Product",
+    },
+    {
+      name: "Merino Wool Scarf",
+      variant: "Charcoal",
+      quantity: 2,
+      price: "$98.00",
+      imageUrl: "https://placehold.co/128x128?text=Product",
+    },
   ],
   subtotal: "$226.00",
   shipping: "$8.00",

@@ -1,4 +1,4 @@
-import { model } from "@medusajs/framework/utils"
+import { model } from "@medusajs/framework/utils";
 
 const Invoice = model
   .define("invoice", {
@@ -13,6 +13,6 @@ const Invoice = model
       on: ["year", "display_id"],
       unique: true,
     },
-  ])
+  ]);
 
-export default Invoice
+export default Invoice;

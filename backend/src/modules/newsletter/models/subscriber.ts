@@ -1,4 +1,4 @@
-import { model } from "@medusajs/framework/utils"
+import { model } from "@medusajs/framework/utils";
 
 export const Subscriber = model
   .define("newsletter_subscriber", {
@@ -15,4 +15,4 @@ export const Subscriber = model
       on: ["email"],
       unique: true,
     },
-  ])
+  ]);

@@ -46,7 +46,7 @@ const updateStoreCurrencies = createWorkflow(
                 currency_code: currency.currency_code,
                 is_default: currency.is_default ?? false,
               };
-            }
+            },
           ),
         },
       };
@@ -55,7 +55,7 @@ const updateStoreCurrencies = createWorkflow(
     const stores = updateStoresStep(normalizedInput);
 
     return new WorkflowResponse(stores);
-  }
+  },
 );
 
 export default async function seedDemoData({ container }: ExecArgs) {
@@ -77,7 +77,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
 
   if (!defaultSalesChannel.length) {
     const { result: salesChannelResult } = await createSalesChannelsWorkflow(
-      container
+      container,
     ).run({
       input: {
         salesChannelsData: [
@@ -157,7 +157,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   // ---------------------------------------------------------------------------
   logger.info("Seeding stock location data...");
   const { result: stockLocationResult } = await createStockLocationsWorkflow(
-    container
+    container,
   ).run({
     input: {
       locations: [
@@ -377,7 +377,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   // ---------------------------------------------------------------------------
   logger.info("Seeding collections...");
   const { result: collectionResult } = await createCollectionsWorkflow(
-    container
+    container,
   ).run({
     input: {
       collections: seedData.collections.map((c) => ({
@@ -396,9 +396,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   for (const col of collectionResult) {
     collectionMap.set(col.title, col.id);
   }
-  logger.info(
-    `Finished seeding ${collectionResult.length} collections.`
-  );
+  logger.info(`Finished seeding ${collectionResult.length} collections.`);
 
   // ---------------------------------------------------------------------------
   // Products (from seed JSON, in batches of 10)
@@ -411,7 +409,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
     const totalBatches = Math.ceil(seedData.products.length / BATCH_SIZE);
 
     logger.info(
-      `  Creating product batch ${batchNum}/${totalBatches} (${batch.length} products)...`
+      `  Creating product batch ${batchNum}/${totalBatches} (${batch.length} products)...`,
     );
 
     const products = batch.map((product) => {

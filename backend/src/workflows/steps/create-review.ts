@@ -1,43 +1,40 @@
-import {
-  createStep,
-  StepResponse,
-} from "@medusajs/framework/workflows-sdk"
-import { PRODUCT_REVIEW_MODULE } from "../../modules/product-review"
-import ProductReviewModuleService from "../../modules/product-review/service"
+import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk";
+import { PRODUCT_REVIEW_MODULE } from "../../modules/product-review";
+import ProductReviewModuleService from "../../modules/product-review/service";
 
 export type CreateReviewStepInput = {
-  title?: string
-  content: string
-  rating: number
-  product_id: string
-  customer_id?: string
-  first_name: string
-  last_name: string
-  status?: "pending" | "approved" | "flagged"
-  images?: { url: string; sort_order: number }[]
-}
+  title?: string;
+  content: string;
+  rating: number;
+  product_id: string;
+  customer_id?: string;
+  first_name: string;
+  last_name: string;
+  status?: "pending" | "approved" | "flagged";
+  images?: { url: string; sort_order: number }[];
+};
 
 export const createReviewStep = createStep(
   "create-review",
   async (input: CreateReviewStepInput, { container }) => {
     const reviewModuleService: ProductReviewModuleService = container.resolve(
-      PRODUCT_REVIEW_MODULE
-    )
+      PRODUCT_REVIEW_MODULE,
+    );
 
-    const { images: _images, ...reviewData } = input
-    const review = await reviewModuleService.createReviews(reviewData)
+    const { images: _images, ...reviewData } = input;
+    const review = await reviewModuleService.createReviews(reviewData);
 
-    return new StepResponse(review, review.id)
+    return new StepResponse(review, review.id);
   },
   async (reviewId, { container }) => {
     if (!reviewId) {
-      return
+      return;
     }
 
     const reviewModuleService: ProductReviewModuleService = container.resolve(
-      PRODUCT_REVIEW_MODULE
-    )
+      PRODUCT_REVIEW_MODULE,
+    );
 
-    await reviewModuleService.softDeleteReviews(reviewId)
-  }
-)
+    await reviewModuleService.softDeleteReviews(reviewId);
+  },
+);
