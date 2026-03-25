@@ -12,7 +12,6 @@ import { getProductReviews } from "lib/medusa/reviews";
 import {
   buildBreadcrumbJsonLd,
   buildProductJsonLd,
-  getSiteSchemaConfig,
   JsonLdScript,
 } from "lib/structured-data";
 import type { Product } from "lib/types";
@@ -71,28 +70,30 @@ export default async function ProductPage(props: {
   params: Promise<{ handle: string }>;
 }) {
   const params = await props.params;
-  const product = await getProduct(params.handle);
+  const productPromise = getProduct(params.handle);
+  const product = await productPromise;
 
   if (!product) return notFound();
 
   const reviewsPromise = getProductReviews(product.id);
-  const reviews = await reviewsPromise;
-  const siteConfig = getSiteSchemaConfig();
-  const productJsonLd = buildProductJsonLd(product, reviews, siteConfig);
   const breadcrumbJsonLd = buildBreadcrumbJsonLd([
     { name: "Home", path: "/" },
     { name: "Products", path: "/products" },
     { name: product.title, path: `/product/${product.handle}` },
   ]);
-  const productPromise = Promise.resolve(product);
 
   return (
     <>
-      <JsonLdScript data={productJsonLd} />
       <JsonLdScript data={breadcrumbJsonLd} />
+      <Suspense fallback={null}>
+        <ProductStructuredData
+          product={product}
+          reviewsPromise={reviewsPromise}
+        />
+      </Suspense>
       <ProductPageContent
         productPromise={productPromise}
-        reviewsPromise={Promise.resolve(reviews)}
+        reviewsPromise={reviewsPromise}
         reviewsSlot={
           <Suspense
             fallback={
@@ -121,6 +122,19 @@ export default async function ProductPage(props: {
       />
     </>
   );
+}
+
+async function ProductStructuredData({
+  product,
+  reviewsPromise,
+}: {
+  product: Product;
+  reviewsPromise: Promise<Awaited<ReturnType<typeof getProductReviews>>>;
+}) {
+  const reviews = await reviewsPromise;
+  const productJsonLd = buildProductJsonLd(product, reviews);
+
+  return <JsonLdScript data={productJsonLd} />;
 }
 
 async function RelatedProducts({

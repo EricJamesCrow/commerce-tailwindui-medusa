@@ -20,31 +20,14 @@ export function ProductPageContent({
   relatedProductsSlot: ReactNode;
 }) {
   const product = use(productPromise);
-  const reviewsData = use(reviewsPromise);
 
   if (!product) return notFound();
 
-  // Track product view on mount (client-side, avoids "use cache" restriction)
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffect(() => {
-    trackClient("product_viewed", {
-      product_id: product.id,
-      product_name: product.title,
-      price: Number(product.priceRange.minVariantPrice.amount) || 0,
-      category: product.tags?.[0] ?? "",
-      variant_count: product.variants?.length ?? 0,
-      has_reviews: (reviewsData?.count ?? 0) > 0,
-      avg_rating: reviewsData?.averageRating ?? 0,
-    });
-  }, [product.id]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const transformedProduct = transformProductToTailwindDetail(
-    product,
-    reviewsData?.averageRating,
-  );
+  const transformedProduct = transformProductToTailwindDetail(product);
 
   return (
     <div className="bg-white pb-24">
+      <TrackProductView product={product} reviewsPromise={reviewsPromise} />
       <Suspense fallback={null}>
         <ProductProvider>
           <ProductWrapper
@@ -57,4 +40,39 @@ export function ProductPageContent({
       {relatedProductsSlot}
     </div>
   );
+}
+
+function TrackProductView({
+  product,
+  reviewsPromise,
+}: {
+  product: Product;
+  reviewsPromise: Promise<ProductReviews | null>;
+}) {
+  useEffect(() => {
+    let isActive = true;
+
+    async function trackProductView(): Promise<void> {
+      const reviewsData = await reviewsPromise.catch(() => null);
+      if (!isActive) return;
+
+      trackClient("product_viewed", {
+        product_id: product.id,
+        product_name: product.title,
+        price: Number(product.priceRange.minVariantPrice.amount) || 0,
+        category: product.tags?.[0] ?? "",
+        variant_count: product.variants?.length ?? 0,
+        has_reviews: (reviewsData?.count ?? 0) > 0,
+        avg_rating: reviewsData?.averageRating ?? 0,
+      });
+    }
+
+    void trackProductView();
+
+    return () => {
+      isActive = false;
+    };
+  }, [product, reviewsPromise]);
+
+  return null;
 }

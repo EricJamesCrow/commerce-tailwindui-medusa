@@ -3,12 +3,10 @@ import type {
   BreadcrumbList,
   ItemList,
   ListItem,
-  Offer,
   Organization,
   Product as SchemaProduct,
   Review as SchemaReview,
   Thing,
-  WebSite,
   WithContext,
 } from "schema-dts";
 import { safeJsonLd } from "lib/json-ld";
@@ -41,7 +39,7 @@ export type SiteSchemaConfig = {
 const SCHEMA_CONTEXT = "https://schema.org" as const;
 
 function toAbsoluteUrl(url: string): string {
-  return new URL(url, `${createAbsoluteUrl("/")}`).toString();
+  return new URL(url, createAbsoluteUrl("/")).toString();
 }
 
 function getPriceValidUntil(daysInFuture = 30): string {
@@ -111,7 +109,6 @@ export function getSiteSchemaConfig(
 export function buildProductJsonLd(
   product: Product,
   reviews: ProductReviews | null,
-  _siteConfig: SiteSchemaConfig,
 ): WithContext<SchemaProduct> {
   const reviewEntries = reviews ? buildReviewJsonLd(reviews) : undefined;
   const sku = getProductSku(product);
@@ -217,25 +214,10 @@ export function buildOrganizationJsonLd(
   };
 }
 
-export function buildWebSiteJsonLd(
-  siteConfig: SiteSchemaConfig,
-): WithContext<WebSite> {
-  return {
-    "@context": SCHEMA_CONTEXT,
-    "@type": "WebSite",
-    name: siteConfig.name,
-    url: siteConfig.url,
-  };
-}
-
 export function JsonLdScript({
   data,
 }: {
-  data:
-    | WithContext<Thing>
-    | WithContext<ItemList>
-    | WithContext<Organization>
-    | WithContext<WebSite>;
+  data: WithContext<Thing> | WithContext<ItemList> | WithContext<Organization>;
 }) {
   return (
     <script

@@ -92,10 +92,7 @@ function makeReviews(overrides: Partial<ProductReviews> = {}): ProductReviews {
 
 describe("structured data builders", () => {
   it("emits product schema without reviews when none exist", () => {
-    const productJsonLd = buildProductJsonLd(makeProduct(), null, {
-      name: "Example Store",
-      url: "https://store.example.com",
-    });
+    const productJsonLd = buildProductJsonLd(makeProduct(), null);
 
     expect(productJsonLd["@type"]).toBe("Product");
     expect(productJsonLd.offers).toMatchObject({
@@ -111,10 +108,7 @@ describe("structured data builders", () => {
   });
 
   it("emits aggregate rating and review entries when reviews exist", () => {
-    const productJsonLd = buildProductJsonLd(makeProduct(), makeReviews(), {
-      name: "Example Store",
-      url: "https://store.example.com",
-    });
+    const productJsonLd = buildProductJsonLd(makeProduct(), makeReviews());
 
     expect(productJsonLd.aggregateRating).toMatchObject({
       "@type": "AggregateRating",
@@ -136,7 +130,6 @@ describe("structured data builders", () => {
     const productJsonLd = buildProductJsonLd(
       makeProduct({ availableForSale: false }),
       null,
-      { name: "Example Store", url: "https://store.example.com" },
     );
 
     expect(productJsonLd.offers).toMatchObject({
