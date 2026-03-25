@@ -115,6 +115,27 @@ describe("deriveCustomerOrderProgress", () => {
     });
   });
 
+  test("does not promote partially_delivered orders to delivered from timestamps", () => {
+    expect(
+      deriveCustomerOrderProgress(
+        buildOrder({
+          fulfillment_status: "partially_delivered",
+          fulfillments: [
+            {
+              shipped_at: "2026-03-24T12:15:00.000Z",
+              delivered_at: "2026-03-24T12:20:00.000Z",
+            },
+          ],
+        }),
+      ),
+    ).toMatchObject({
+      state: "shipped",
+      label: "Shipped",
+      step: 2,
+      timestamp: "2026-03-24T12:15:00.000Z",
+    });
+  });
+
   test("maps delivered to delivered", () => {
     expect(
       deriveCustomerOrderProgress(

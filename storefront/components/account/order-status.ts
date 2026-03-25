@@ -122,6 +122,7 @@ export function deriveCustomerOrderProgress(
   order: CustomerOrderStatusSource,
 ): CustomerOrderProgressSummary {
   const createdAt = order.created_at ? String(order.created_at) : null;
+  const fulfillmentStatus = order.fulfillment_status || "";
 
   if (order.status === "canceled") {
     return {
@@ -138,7 +139,7 @@ export function deriveCustomerOrderProgress(
     "delivered_at",
   );
 
-  if (order.fulfillment_status === "delivered" || deliveredAt) {
+  if (fulfillmentStatus === "delivered") {
     return {
       state: "delivered",
       label: CUSTOMER_ORDER_PROGRESS_LABELS.delivered,
@@ -150,10 +151,7 @@ export function deriveCustomerOrderProgress(
 
   const shippedAt = getLatestFulfillmentDate(order.fulfillments, "shipped_at");
 
-  if (
-    SHIPPED_FULFILLMENT_STATUSES.has(order.fulfillment_status || "") ||
-    (shippedAt && !deliveredAt)
-  ) {
+  if (SHIPPED_FULFILLMENT_STATUSES.has(fulfillmentStatus)) {
     return {
       state: "shipped",
       label: CUSTOMER_ORDER_PROGRESS_LABELS.shipped,
@@ -165,12 +163,32 @@ export function deriveCustomerOrderProgress(
 
   const fulfilledAt = getLatestFulfillmentDate(order.fulfillments, "created_at");
 
-  if (PROCESSING_FULFILLMENT_STATUSES.has(order.fulfillment_status || "")) {
+  if (PROCESSING_FULFILLMENT_STATUSES.has(fulfillmentStatus)) {
     return {
       state: "processing",
       label: CUSTOMER_ORDER_PROGRESS_LABELS.processing,
       step: 1,
       timestamp: fulfilledAt || createdAt,
+      canceled: false,
+    };
+  }
+
+  if (deliveredAt) {
+    return {
+      state: "delivered",
+      label: CUSTOMER_ORDER_PROGRESS_LABELS.delivered,
+      step: 3,
+      timestamp: deliveredAt,
+      canceled: false,
+    };
+  }
+
+  if (shippedAt) {
+    return {
+      state: "shipped",
+      label: CUSTOMER_ORDER_PROGRESS_LABELS.shipped,
+      step: 2,
+      timestamp: shippedAt,
       canceled: false,
     };
   }
