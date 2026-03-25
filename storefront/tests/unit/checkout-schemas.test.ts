@@ -25,7 +25,9 @@ describe("emailSchema", () => {
   });
   it("rejects email over 254 chars", () => {
     // 249 a's + "@b.com" = 255 chars (exceeds 254 max)
-    expect(emailSchema.safeParse("a".repeat(249) + "@b.com").success).toBe(false);
+    expect(emailSchema.safeParse("a".repeat(249) + "@b.com").success).toBe(
+      false,
+    );
   });
 });
 
@@ -47,10 +49,14 @@ describe("addressSchema", () => {
     if (result.success) expect(result.data.country_code).toBe("us");
   });
   it("rejects missing required fields", () => {
-    expect(addressSchema.safeParse({ ...valid, address_1: "" }).success).toBe(false);
+    expect(addressSchema.safeParse({ ...valid, address_1: "" }).success).toBe(
+      false,
+    );
   });
   it("rejects invalid country_code", () => {
-    expect(addressSchema.safeParse({ ...valid, country_code: "USA" }).success).toBe(false);
+    expect(
+      addressSchema.safeParse({ ...valid, country_code: "USA" }).success,
+    ).toBe(false);
   });
 });
 
@@ -65,7 +71,9 @@ describe("providerIdSchema", () => {
     expect(providerIdSchema.safeParse("").success).toBe(false);
   });
   it("rejects provider ID with special chars", () => {
-    expect(providerIdSchema.safeParse("pp_stripe; DROP TABLE").success).toBe(false);
+    expect(providerIdSchema.safeParse("pp_stripe; DROP TABLE").success).toBe(
+      false,
+    );
   });
 });
 
@@ -75,7 +83,8 @@ describe("paymentDataSchema", () => {
   });
   it("accepts plain object", () => {
     expect(
-      paymentDataSchema.safeParse({ setup_future_usage: "off_session" }).success,
+      paymentDataSchema.safeParse({ setup_future_usage: "off_session" })
+        .success,
     ).toBe(true);
   });
   it("rejects array", () => {

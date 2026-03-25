@@ -17,14 +17,14 @@ if (process.env.CI) {
     STOREFRONT_URL: "Storefront URL for cache revalidation",
     NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: "Medusa publishable API key",
     REVALIDATE_SECRET: "Cache revalidation secret",
-  }
+  };
   const missing = Object.entries(required)
     .filter(([key]) => !process.env[key])
-    .map(([key, desc]) => `  ${key} — ${desc}`)
+    .map(([key, desc]) => `  ${key} — ${desc}`);
   if (missing.length > 0) {
     throw new Error(
-      `[review.fixture] Missing required env vars in CI:\n${missing.join("\n")}\n\nSet these in your CI environment or .env.test file.`
-    )
+      `[review.fixture] Missing required env vars in CI:\n${missing.join("\n")}\n\nSet these in your CI environment or .env.test file.`,
+    );
   }
 }
 
@@ -45,11 +45,11 @@ function runSql(sql: string): string {
  * reaching the database.
  */
 function assertMedusaId(id: string, prefix: string): void {
-  const pattern = new RegExp(`^${prefix}[a-zA-Z0-9]+$`)
+  const pattern = new RegExp(`^${prefix}[a-zA-Z0-9]+$`);
   if (!pattern.test(id)) {
     throw new Error(
-      `Invalid Medusa ID format: expected "${prefix}..." but got "${id}"`
-    )
+      `Invalid Medusa ID format: expected "${prefix}..." but got "${id}"`,
+    );
   }
 }
 
@@ -58,7 +58,7 @@ function assertMedusaId(id: string, prefix: string): void {
  * Also refreshes the review_stats aggregate table.
  */
 function approveReview(reviewId: string): void {
-  assertMedusaId(reviewId, "")
+  assertMedusaId(reviewId, "");
   runSql(`UPDATE review SET status = 'approved' WHERE id = '${reviewId}'`);
 
   // Refresh the review_stats aggregate for this product
@@ -74,7 +74,7 @@ function approveReview(reviewId: string): void {
  * Recalculate and upsert review_stats for a product.
  */
 function refreshReviewStats(productId: string): void {
-  assertMedusaId(productId, "prod_")
+  assertMedusaId(productId, "prod_");
   runSql(`
     INSERT INTO review_stats (id, product_id, average_rating, review_count,
       rating_count_1, rating_count_2, rating_count_3, rating_count_4, rating_count_5,
@@ -113,7 +113,7 @@ function refreshReviewStats(productId: string): void {
  * Returns the response ID.
  */
 function createReviewResponse(reviewId: string, content: string): string {
-  assertMedusaId(reviewId, "")
+  assertMedusaId(reviewId, "");
   const id = runSql(
     `INSERT INTO review_response (id, content, review_id, created_at, updated_at)
      VALUES (
@@ -136,7 +136,7 @@ function createReviewImages(
   reviewId: string,
   images: { url: string; sort_order: number }[],
 ): void {
-  assertMedusaId(reviewId, "")
+  assertMedusaId(reviewId, "");
   for (const img of images) {
     runSql(
       `INSERT INTO review_image (id, url, sort_order, review_id, created_at, updated_at)
@@ -147,7 +147,7 @@ function createReviewImages(
          '${reviewId}',
          NOW(), NOW()
        )`,
-    )
+    );
   }
 }
 
@@ -170,7 +170,7 @@ async function revalidateReviewsCache(): Promise<void> {
  * Delete a specific test review by ID (safe for parallel workers).
  */
 function cleanupReview(reviewId: string): void {
-  assertMedusaId(reviewId, "")
+  assertMedusaId(reviewId, "");
   try {
     runSql(`DELETE FROM review_response WHERE review_id = '${reviewId}'`);
     runSql(`DELETE FROM review_image WHERE review_id = '${reviewId}'`);

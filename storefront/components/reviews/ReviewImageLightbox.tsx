@@ -29,7 +29,10 @@ export function ReviewImageLightbox({
     <Dialog open={open} onClose={onClose} className="relative z-50">
       <DialogBackdrop className="fixed inset-0 bg-black/80" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel className="relative max-h-[90vh] max-w-3xl" data-testid="review-lightbox">
+        <DialogPanel
+          className="relative max-h-[90vh] max-w-3xl"
+          data-testid="review-lightbox"
+        >
           <button
             type="button"
             onClick={onClose}

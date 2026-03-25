@@ -27,9 +27,18 @@ async function createReviewWithImages(
   });
 
   createReviewImages(reviewId, [
-    { url: "https://placehold.co/400x300/orange/white?text=Review+Image+1", sort_order: 0 },
-    { url: "https://placehold.co/400x300/blue/white?text=Review+Image+2", sort_order: 1 },
-    { url: "https://placehold.co/400x300/green/white?text=Review+Image+3", sort_order: 2 },
+    {
+      url: "https://placehold.co/400x300/orange/white?text=Review+Image+1",
+      sort_order: 0,
+    },
+    {
+      url: "https://placehold.co/400x300/blue/white?text=Review+Image+2",
+      sort_order: 1,
+    },
+    {
+      url: "https://placehold.co/400x300/green/white?text=Review+Image+3",
+      sort_order: 2,
+    },
   ]);
 
   approveReview(reviewId);

@@ -7,9 +7,7 @@ import type { Collection, Product } from "./types";
 
 function normalizeBaseUrl(url: string): string {
   const sanitizedUrl = url.replace(/[\r\n]+/g, "").trim();
-  return sanitizedUrl.endsWith("/")
-    ? sanitizedUrl.slice(0, -1)
-    : sanitizedUrl;
+  return sanitizedUrl.endsWith("/") ? sanitizedUrl.slice(0, -1) : sanitizedUrl;
 }
 
 export const baseUrl = normalizeBaseUrl(

@@ -43,7 +43,7 @@ const STATIC_PAGES = new Map(
 );
 
 function sanitizeEnvUrl(value: string | undefined, fallback: string): string {
-  return value?.replace(/[\r\n]+/g, "").trim() || fallback
+  return value?.replace(/[\r\n]+/g, "").trim() || fallback;
 }
 
 type ProductFetchQuery = {
@@ -59,7 +59,7 @@ type ProductFetchQuery = {
 
 const MEDUSA_BACKEND_URL = sanitizeEnvUrl(
   process.env.MEDUSA_BACKEND_URL,
-  "http://localhost:9000"
+  "http://localhost:9000",
 );
 
 export const sdk = new Medusa({

@@ -66,7 +66,9 @@ test.describe("Review Display", () => {
     await gotoProductWithReviews(page, approvedReview.productHandle);
 
     // The fixture's review may appear after cache revalidation — retry until visible
-    const reviewContentLocator = page.getByText("E2E test review", { exact: false }).first();
+    const reviewContentLocator = page
+      .getByText("E2E test review", { exact: false })
+      .first();
     await waitUntilVisible(page, reviewContentLocator);
 
     await expect(reviewContentLocator).toBeVisible({ timeout: 10_000 });

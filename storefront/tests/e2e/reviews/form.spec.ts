@@ -101,9 +101,12 @@ test.describe("Review Form", () => {
 
     // Review appears in the list (use .first() since prior runs may leave matching reviews)
     await expect(
-      page.locator(sel.REVIEW_CONTENT_TEXT).filter({
-        hasText: "This product exceeded my expectations",
-      }).first(),
+      page
+        .locator(sel.REVIEW_CONTENT_TEXT)
+        .filter({
+          hasText: "This product exceeded my expectations",
+        })
+        .first(),
     ).toBeVisible({ timeout: 5_000 });
   });
 
