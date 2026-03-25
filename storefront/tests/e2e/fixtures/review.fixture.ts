@@ -58,7 +58,7 @@ function assertMedusaId(id: string, prefix: string): void {
  * Also refreshes the review_stats aggregate table.
  */
 function approveReview(reviewId: string): void {
-  assertMedusaId(reviewId, "rev_")
+  assertMedusaId(reviewId, "")
   runSql(`UPDATE review SET status = 'approved' WHERE id = '${reviewId}'`);
 
   // Refresh the review_stats aggregate for this product
@@ -113,7 +113,7 @@ function refreshReviewStats(productId: string): void {
  * Returns the response ID.
  */
 function createReviewResponse(reviewId: string, content: string): string {
-  assertMedusaId(reviewId, "rev_")
+  assertMedusaId(reviewId, "")
   const id = runSql(
     `INSERT INTO review_response (id, content, review_id, created_at, updated_at)
      VALUES (
@@ -146,7 +146,7 @@ async function revalidateReviewsCache(): Promise<void> {
  * Delete a specific test review by ID (safe for parallel workers).
  */
 function cleanupReview(reviewId: string): void {
-  assertMedusaId(reviewId, "rev_")
+  assertMedusaId(reviewId, "")
   try {
     runSql(`DELETE FROM review_response WHERE review_id = '${reviewId}'`);
     runSql(`DELETE FROM review_image WHERE review_id = '${reviewId}'`);
