@@ -52,9 +52,8 @@
 - [ ] Testing discounts (apply promo codes, verify discount display in checkout + order confirmation)
 - [ ] Compare checkout page UI to TailwindUI components (ensure all checkout/order pages match TailwindUI patterns)
 - [ ] Order details page — build using TailwindPlus Ecommerce > Page Examples > Order Detail Pages > "With large images and progress bars" component. Features: product images, order progress bar (Order placed → Processing → Shipped → Delivered), delivery address, shipping updates, billing summary with payment info. Wire to Medusa order data (`/account/orders/[id]`). The TailwindPlus component includes a full navbar with mega menus, footer, and billing section — adapt to use existing layout components.
-- [ ] Create `vitest.config.ts`
 - [x] Create `playwright.config.ts`
-- [ ] Unit tests for `lib/medusa/transforms.ts`
+- [ ] Expand storefront Vitest coverage — add deterministic unit tests for `lib/medusa/transforms.ts`, `lib/analytics.ts` PII redaction, and `lib/validation.ts`
 - [ ] E2E test: browse products → add to cart flow
 - [x] Wishlist E2E test suite (40 tests across 10 spec files — guest, authenticated, heart-button, heart-state, sharing, import, transfer, nav-badge, rename-delete, social-proof; 80 total with Firefox)
 - [x] Review E2E test suite (27 tests across 4 spec files — form, display, image-upload, lightbox; 54 total with Firefox)
@@ -67,7 +66,7 @@
 - [x] Shared TypeScript tooling (`@repo/typescript`)
 - [x] Enable React Compiler
 - [ ] React Compiler optimization (audit component boundaries, measure compile rate, fix bailouts)
-- [ ] **[PRIORITY] Set up CI/CD (GitHub Actions)** — add a pipeline that runs typecheck, lint, and e2e tests before merging to main. Should catch issues like the auth 500 before they reach production. At minimum: `bun run typecheck`, `bun run build` (storefront), and Playwright smoke tests against a test environment. Consider adding a staging/preview deployment health check step.
+- [ ] **[PRIORITY] Expand CI/CD with Playwright smoke tests and preview/health checks** — keep the existing storefront/backend quality gates, then add a separate PR smoke job for critical user flows plus deployment/preview health validation before merge.
 - [x] **[PRIORITY] Sentry deep integration audit** — comprehensive error capture across 44 files: checkout/cart/payment/auth storefront catches, all 13 backend subscribers, jobs, workflow steps, rate-limit infrastructure, user context enrichment (client + server), environment separation, 5xx-only proxy policy. Remaining: source maps/releases (Phase 3a), OTEL bridge research (Phase 3b), Sentry Logs/replay tuning/profiling (Phase 4).
 - [ ] **[PRIORITY] PostHog deep integration audit** — verify all PostHog features are working in production: pageview autocapture, custom events (check all `AnalyticsEvents` are firing), session replay (verify recordings appear), feature flags (set up at least one flag to verify the pipeline), web analytics dashboard, funnels (checkout funnel, search-to-purchase funnel). Test the PostHog reverse proxy is working (events should appear even with ad blockers). Verify server-side events from the backend (order placed, review created, etc.) appear in PostHog.
 - [ ] **[PRIORITY] Fix Vercel Sentry env config** — production build logs show `sentry-cli` failing because `SENTRY_PROJECT` is stored as `crowcommerce-storefront\n` and the current `SENTRY_ORG` / `SENTRY_PROJECT` pairing does not resolve to a valid Sentry project. Confirm the correct Sentry org/project slugs for CrowCommerce, remove trailing newlines from both env vars in Vercel, then verify the next production build completes release creation and sourcemap upload without `Project not found` or `invalid value for --project` errors.
