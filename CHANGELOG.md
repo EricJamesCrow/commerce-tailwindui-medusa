@@ -12,6 +12,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [2026-03-25]
 
+### Fixed
+- PostHog `search_performed` event: PII redaction applied before truncation — email and phone patterns replaced with `[email]`/`[phone]` placeholders, then query truncated to 80 chars (prevents partial tokens from surviving the slice boundary)
+- PostHog `product_added_to_cart` event: `product_id` and `price` now populated from the cart line returned by `addToCart()` — no longer sends empty string / zero
+
 ### Security
 - Checkout payment session hardening: strip `payment_sessions[].data` (including Stripe `client_secret`) from RSC payload; dedicated `getPaymentClientSecret(cartId, providerId?)` server action returns only the secret over the secure server-action channel
 - Zod validation at checkout server action boundaries: `setCartEmail` (email normalization + format), `setCartAddresses` (full address schema for shipping + billing), `initializePaymentSession` (provider ID format, payment data shape)
