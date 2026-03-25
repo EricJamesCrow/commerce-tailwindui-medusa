@@ -5,9 +5,20 @@ import type {
 import { ReadonlyURLSearchParams } from "next/navigation";
 import type { Collection, Product } from "./types";
 
-export const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  : "http://localhost:3000";
+function normalizeBaseUrl(url: string): string {
+  return url.endsWith("/") ? url.slice(0, -1) : url;
+}
+
+export const baseUrl = normalizeBaseUrl(
+  process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "http://localhost:3000"),
+);
+
+export function createAbsoluteUrl(path: string): string {
+  return new URL(path, `${baseUrl}/`).toString();
+}
 
 export const createUrl = (
   pathname: string,
