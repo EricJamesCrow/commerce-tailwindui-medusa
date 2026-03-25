@@ -9,6 +9,25 @@ const DATABASE_URL =
 const PSQL =
   process.env.PSQL_PATH || "/opt/homebrew/opt/postgresql@17/bin/psql";
 
+// Fail fast in CI if required env vars are missing
+if (process.env.CI) {
+  const required: Record<string, string> = {
+    DATABASE_URL: "Postgres connection string for direct DB access",
+    MEDUSA_BACKEND_URL: "Backend URL for review API calls",
+    STOREFRONT_URL: "Storefront URL for cache revalidation",
+    NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: "Medusa publishable API key",
+    REVALIDATE_SECRET: "Cache revalidation secret",
+  }
+  const missing = Object.entries(required)
+    .filter(([key]) => !process.env[key])
+    .map(([key, desc]) => `  ${key} — ${desc}`)
+  if (missing.length > 0) {
+    throw new Error(
+      `[review.fixture] Missing required env vars in CI:\n${missing.join("\n")}\n\nSet these in your CI environment or .env.test file.`
+    )
+  }
+}
+
 /**
  * Run a SQL query against the Medusa database.
  * Uses execFileSync (no shell) to avoid command injection.
