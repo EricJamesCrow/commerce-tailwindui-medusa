@@ -5,6 +5,7 @@ import {
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk"
 import { PRODUCT_REVIEW_MODULE } from "../../modules/product-review"
+import ProductReviewModuleService from "../../modules/product-review/service"
 import { trackAnalyticsEventStep } from "../steps/track-analytics-event"
 
 type TrackReviewCreatedInput = {
@@ -23,7 +24,7 @@ const fetchReviewStep = createStep(
     actor_fallback: null
     properties: Record<string, unknown>
   } | null>> => {
-    const reviewService = container.resolve(PRODUCT_REVIEW_MODULE)
+    const reviewService: ProductReviewModuleService = container.resolve(PRODUCT_REVIEW_MODULE)
 
     try {
       const review = await reviewService.retrieveReview(input.review_id, {
