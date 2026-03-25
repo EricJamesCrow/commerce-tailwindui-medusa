@@ -1,17 +1,18 @@
-"use client";
-
 import { StarIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
 import type { Review } from "lib/types";
 import { DEFAULT_LOCALE } from "lib/constants";
-import { useState } from "react";
-import { ReviewImageLightbox } from "./ReviewImageLightbox";
 
-export function ReviewList({ reviews }: { reviews: Review[] }) {
-  const [lightbox, setLightbox] = useState<{
-    images: { url: string }[];
-    index: number;
-  } | null>(null);
+export function ReviewList({
+  reviews,
+  onImageClick,
+}: {
+  reviews: Review[];
+  onImageClick: (
+    images: { url: string; id: string; sort_order: number }[],
+    index: number,
+  ) => void;
+}) {
 
   if (reviews.length === 0) {
     return (
@@ -74,9 +75,7 @@ export function ReviewList({ reviews }: { reviews: Review[] }) {
                       <button
                         key={img.id}
                         type="button"
-                        onClick={() =>
-                          setLightbox({ images: sortedImages, index: i })
-                        }
+                        onClick={() => onImageClick(sortedImages, i)}
                         className="overflow-hidden rounded-md"
                       >
                         <img
@@ -135,14 +134,6 @@ export function ReviewList({ reviews }: { reviews: Review[] }) {
         </div>
       </div>
 
-      {lightbox && (
-        <ReviewImageLightbox
-          images={lightbox.images}
-          initialIndex={lightbox.index}
-          open={true}
-          onClose={() => setLightbox(null)}
-        />
-      )}
     </>
   );
 }

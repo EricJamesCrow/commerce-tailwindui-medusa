@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { ReviewSummary } from "components/reviews/ReviewSummary";
-import { ReviewList } from "components/reviews/ReviewList";
+import { ReviewListClient } from "components/reviews/ReviewListClient";
 import { ReviewForm } from "components/reviews/ReviewForm";
 import { trackClient } from "lib/analytics";
 import type { ProductReviews as ProductReviewsType, Review } from "lib/types";
@@ -104,7 +104,7 @@ export function ProductReviews({
 
       <div className="mt-16 lg:col-span-7 lg:col-start-6 lg:mt-0">
         <h3 className="sr-only">Recent reviews</h3>
-        <ReviewList reviews={reviews} />
+        <ReviewListClient reviews={reviews} />
 
         {hasMore && (
           <div className="mt-8 text-center">
