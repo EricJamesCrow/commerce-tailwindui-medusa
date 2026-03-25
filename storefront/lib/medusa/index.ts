@@ -494,10 +494,12 @@ export async function getCart(): Promise<Cart | undefined> {
 
 export type StoreOrderDetail = HttpTypes.StoreOrder & {
   status?: string;
+  payment_status?: string;
   fulfillment_status?: string;
   payment_collections?: Array<{
     payments?: Array<{
       provider_id?: string;
+      created_at?: string | Date;
       data?: {
         payment_method?: { card?: { brand?: string; last4?: string; exp_month?: number; exp_year?: number } };
         card?: { brand?: string; last4?: string; exp_month?: number; exp_year?: number };
@@ -543,7 +545,7 @@ export async function getOrders(): Promise<HttpTypes.StoreOrder[]> {
       query: {
         limit: 50,
         order: "-created_at",
-        fields: "+status,+fulfillment_status",
+        fields: "+status,+payment_status,+fulfillment_status",
       },
     });
     return orders;
@@ -570,7 +572,7 @@ export async function getOrder(orderId: string): Promise<StoreOrderDetail | null
         headers,
         query: {
           fields:
-            "*items,*items.variant,*items.product,*shipping_address,*billing_address,*shipping_methods,*payment_collections,*payment_collections.payments,*payment_collections.payment_sessions,*fulfillments,+status,+fulfillment_status,+promotions",
+            "*items,*items.variant,*items.product,*shipping_address,*billing_address,*shipping_methods,*payment_collections,*payment_collections.payments,*payment_collections.payment_sessions,*fulfillments,+status,+payment_status,+fulfillment_status,+promotions",
         },
       },
     ).catch(medusaError);

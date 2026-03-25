@@ -9,9 +9,9 @@ import { test, expect } from "../fixtures/auth.fixture";
  *
  * Stages:
  *  step 0 — Order placed (not_fulfilled / null)
- *  step 1 — Processing (partially_shipped)
- *  step 2 — Shipped (shipped / partially_delivered)
- *  step 3 — Delivered (delivered / fulfilled)
+ *  step 1 — Processing (captured / fulfilled / partially_fulfilled)
+ *  step 2 — Shipped (partially_shipped / shipped / partially_delivered)
+ *  step 3 — Delivered (delivered)
  *
  * Progress bar width formula for in-flight states: calc((step * 2 + 1) / 8 * 100%)
  *  step 0 → 12.5%
@@ -26,6 +26,7 @@ const MOCK_ORDER_ID = "order_e2e_progress";
 
 function buildMockOrder(
   fulfillmentStatus: string | null,
+  paymentStatus = "not_paid",
   orderStatus = "pending",
 ) {
   const createdAt = "2026-03-24T12:00:00.000Z";
@@ -36,6 +37,7 @@ function buildMockOrder(
     created_at: createdAt,
     currency_code: "usd",
     status: orderStatus,
+    payment_status: paymentStatus,
     fulfillment_status: fulfillmentStatus,
     item_subtotal: 36,
     discount_total: 0,
@@ -63,6 +65,7 @@ function buildMockOrder(
       {
         payments: [
           {
+            created_at: "2026-03-24T12:05:00.000Z",
             data: {
               payment_method: {
                 card: {
@@ -90,16 +93,34 @@ function buildMockOrder(
         product: { title: "Basic Tee" },
       },
     ],
+    fulfillments: fulfillmentStatus
+      ? [
+          {
+            created_at: "2026-03-24T12:10:00.000Z",
+            shipped_at:
+              fulfillmentStatus === "partially_shipped" ||
+              fulfillmentStatus === "shipped" ||
+              fulfillmentStatus === "partially_delivered"
+                ? "2026-03-24T12:15:00.000Z"
+                : null,
+            delivered_at:
+              fulfillmentStatus === "delivered"
+                ? "2026-03-24T12:20:00.000Z"
+                : null,
+          },
+        ]
+      : [],
   };
 }
 
 async function installMockOrders(
   page: import("@playwright/test").Page,
   fulfillmentStatus: string | null,
+  paymentStatus = "not_paid",
   orderStatus = "pending",
 ) {
   const fixture = {
-    orders: [buildMockOrder(fulfillmentStatus, orderStatus)],
+    orders: [buildMockOrder(fulfillmentStatus, paymentStatus, orderStatus)],
   };
 
   await page.context().addCookies([
@@ -115,10 +136,11 @@ async function installMockOrders(
 async function loginAndGoToOrders(
   page: import("@playwright/test").Page,
   fulfillmentStatus: string | null,
+  paymentStatus = "not_paid",
   orderStatus = "pending",
 ) {
-  await installMockOrders(page, fulfillmentStatus, orderStatus);
-  await page.goto("/account/orders");
+  await installMockOrders(page, fulfillmentStatus, paymentStatus, orderStatus);
+  await page.goto(`/account/orders?fixture=${Date.now()}`);
   await page.waitForLoadState("networkidle");
   await expect(
     page.getByRole("heading", { name: "Order History" }),
@@ -175,10 +197,10 @@ test.describe("Progress Bar — Fulfillment Stages", () => {
     await expect(page.locator('p:has-text("Order placed")')).toBeVisible();
   });
 
-  test("step 1 — Processing (partially_shipped)", async ({
+  test("step 1 — Processing (fulfilled)", async ({
     authedPage: page,
   }) => {
-    await loginAndGoToOrders(page, "partially_shipped");
+    await loginAndGoToOrders(page, "fulfilled", "captured");
     await goToFirstOrderDetail(page);
 
     const progressBar = page.locator(
@@ -202,8 +224,23 @@ test.describe("Progress Bar — Fulfillment Stages", () => {
     await expect(page.locator('p:has-text("Processing")')).toBeVisible();
   });
 
+  test("step 1 — Processing (captured before shipment)", async ({
+    authedPage: page,
+  }) => {
+    await loginAndGoToOrders(page, "not_fulfilled", "captured");
+    await goToFirstOrderDetail(page);
+
+    const labels = page.locator(".hidden.grid-cols-4 div");
+    await expect(labels.nth(0)).toHaveClass(/text-primary-600/);
+    await expect(labels.nth(1)).toHaveClass(/text-primary-600/);
+    await expect(labels.nth(2)).not.toHaveClass(/text-primary-600/);
+    await expect(labels.nth(3)).not.toHaveClass(/text-primary-600/);
+
+    await expect(page.locator('p:has-text("Processing")')).toBeVisible();
+  });
+
   test("step 2 — Shipped", async ({ authedPage: page }) => {
-    await loginAndGoToOrders(page, "shipped");
+    await loginAndGoToOrders(page, "shipped", "captured");
     await goToFirstOrderDetail(page);
 
     const progressBar = page.locator(
@@ -227,10 +264,25 @@ test.describe("Progress Bar — Fulfillment Stages", () => {
     await expect(page.locator('p:has-text("Shipped")')).toBeVisible();
   });
 
+  test("step 2 — partially_shipped maps to Shipped", async ({
+    authedPage: page,
+  }) => {
+    await loginAndGoToOrders(page, "partially_shipped", "captured");
+    await goToFirstOrderDetail(page);
+
+    const labels = page.locator(".hidden.grid-cols-4 div");
+    await expect(labels.nth(0)).toHaveClass(/text-primary-600/);
+    await expect(labels.nth(1)).toHaveClass(/text-primary-600/);
+    await expect(labels.nth(2)).toHaveClass(/text-primary-600/);
+    await expect(labels.nth(3)).not.toHaveClass(/text-primary-600/);
+
+    await expect(page.locator('p:has-text("Shipped")')).toBeVisible();
+  });
+
   test("step 2 — partially_delivered maps to Shipped", async ({
     authedPage: page,
   }) => {
-    await loginAndGoToOrders(page, "partially_delivered");
+    await loginAndGoToOrders(page, "partially_delivered", "captured");
     await goToFirstOrderDetail(page);
 
     const labels = page.locator(".hidden.grid-cols-4 div");
@@ -243,7 +295,7 @@ test.describe("Progress Bar — Fulfillment Stages", () => {
   });
 
   test("step 3 — Delivered", async ({ authedPage: page }) => {
-    await loginAndGoToOrders(page, "delivered");
+    await loginAndGoToOrders(page, "delivered", "captured");
     await goToFirstOrderDetail(page);
 
     const progressBar = page.locator(
@@ -267,19 +319,19 @@ test.describe("Progress Bar — Fulfillment Stages", () => {
     await expect(page.locator('p:has-text("Delivered")')).toBeVisible();
   });
 
-  test("step 3 — fulfilled maps to Delivered", async ({
+  test("fulfilled no longer maps to Delivered", async ({
     authedPage: page,
   }) => {
-    await loginAndGoToOrders(page, "fulfilled");
+    await loginAndGoToOrders(page, "fulfilled", "captured");
     await goToFirstOrderDetail(page);
 
     const labels = page.locator(".hidden.grid-cols-4 div");
     await expect(labels.nth(0)).toHaveClass(/text-primary-600/);
     await expect(labels.nth(1)).toHaveClass(/text-primary-600/);
-    await expect(labels.nth(2)).toHaveClass(/text-primary-600/);
-    await expect(labels.nth(3)).toHaveClass(/text-primary-600/);
+    await expect(labels.nth(2)).not.toHaveClass(/text-primary-600/);
+    await expect(labels.nth(3)).not.toHaveClass(/text-primary-600/);
 
-    await expect(page.locator('p:has-text("Delivered")')).toBeVisible();
+    await expect(page.locator('p:has-text("Processing")')).toBeVisible();
   });
 });
 
@@ -287,7 +339,7 @@ test.describe("Progress Bar — Edge Cases", () => {
   test("canceled order hides progress bar and shows banner", async ({
     authedPage: page,
   }) => {
-    await loginAndGoToOrders(page, "not_fulfilled", "canceled");
+    await loginAndGoToOrders(page, "not_fulfilled", "not_paid", "canceled");
     await goToFirstOrderDetail(page);
 
     // Progress bar should NOT be visible
@@ -318,7 +370,7 @@ test.describe("Progress Bar — Edge Cases", () => {
   test("invoice button shows for shipped orders", async ({
     authedPage: page,
   }) => {
-    await loginAndGoToOrders(page, "shipped");
+    await loginAndGoToOrders(page, "shipped", "captured");
     await goToFirstOrderDetail(page);
 
     // Invoice download button should be visible

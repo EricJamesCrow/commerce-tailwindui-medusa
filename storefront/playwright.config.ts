@@ -52,7 +52,10 @@ export default defineConfig({
       E2E_ORDER_FIXTURES: "1",
     },
     url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
+    // E2E order-progress fixtures are enabled via webServer env vars.
+    // Reusing an already-running dev server bypasses those env vars and
+    // makes the mocked order tests hit the real API instead.
+    reuseExistingServer: false,
     timeout: 120_000,
   },
 });

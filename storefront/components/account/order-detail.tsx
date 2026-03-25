@@ -4,6 +4,10 @@ import { formatMoney } from "lib/medusa/format";
 import Image from "next/image";
 import Link from "next/link";
 import clsx from "clsx";
+import {
+  CUSTOMER_ORDER_PROGRESS_STEPS,
+  deriveCustomerOrderProgress,
+} from "./order-status";
 import { DownloadInvoiceButton } from "./download-invoice-button";
 import { isInvoiceEligible } from "./order-utils";
 
@@ -19,66 +23,9 @@ function formatDate(dateString: string): string {
   });
 }
 
-/**
- * Maps Medusa fulfillment_status to a 0-3 progress step.
- *  0 = Order placed (not_fulfilled / null)
- *  1 = Processing (partially_shipped)
- *  2 = Shipped (shipped)
- *  3 = Delivered (delivered / fulfilled)
- */
-function getFulfillmentStep(
-  fulfillmentStatus: string | undefined | null,
-): number {
-  switch (fulfillmentStatus) {
-    case "partially_shipped":
-      return 1;
-    case "shipped":
-    case "partially_delivered":
-      return 2;
-    case "delivered":
-    case "fulfilled":
-      return 3;
-    default:
-      return 0;
-  }
-}
-
-function isCanceled(order: StoreOrderDetail): boolean {
-  return order.status === "canceled";
-}
-
 function capitalizeBrand(brand: string | undefined): string {
   const b = brand || "card";
   return b.charAt(0).toUpperCase() + b.slice(1);
-}
-
-function getStatusTimestamp(
-  order: StoreOrderDetail,
-  step: number,
-): string | null {
-  const fulfillments = [...(order.fulfillments || [])]
-    .filter(Boolean)
-    .sort((a, b) => {
-      const aTime = Date.parse(String(a?.created_at || 0));
-      const bTime = Date.parse(String(b?.created_at || 0));
-      return bTime - aTime;
-    });
-
-  if (step >= 3) {
-    return (
-      fulfillments.find((fulfillment) => fulfillment.delivered_at)
-        ?.delivered_at?.toString() || null
-    );
-  }
-
-  if (step >= 2) {
-    return (
-      fulfillments.find((fulfillment) => fulfillment.shipped_at)
-        ?.shipped_at?.toString() || null
-    );
-  }
-
-  return order.created_at ? String(order.created_at) : null;
 }
 
 function getPaymentCard(order: StoreOrderDetail) {
@@ -98,8 +45,13 @@ function getPaymentCard(order: StoreOrderDetail) {
 // Sub-components
 // ---------------------------------------------------------------------------
 
-const PROGRESS_STEPS = ["Order placed", "Processing", "Shipped", "Delivered"];
-const LAST_PROGRESS_STEP_INDEX = PROGRESS_STEPS.length - 1;
+const LAST_PROGRESS_STEP_INDEX = CUSTOMER_ORDER_PROGRESS_STEPS.length - 1;
+
+function getProgressLabelAlignment(stepIndex: number): string {
+  if (stepIndex === 0) return "text-left";
+  if (stepIndex === LAST_PROGRESS_STEP_INDEX) return "text-right";
+  return "text-center";
+}
 
 function getProgressWidth(step: number): string {
   const clampedStep = Math.max(
@@ -113,7 +65,7 @@ function getProgressWidth(step: number): string {
     return "100%";
   }
 
-  return `calc((${clampedStep} * 2 + 1) / ${PROGRESS_STEPS.length * 2} * 100%)`;
+  return `calc((${clampedStep} * 2 + 1) / ${CUSTOMER_ORDER_PROGRESS_STEPS.length * 2} * 100%)`;
 }
 
 function ProgressBar({ step }: { step: number }) {
@@ -126,16 +78,12 @@ function ProgressBar({ step }: { step: number }) {
         />
       </div>
       <div className="mt-6 hidden grid-cols-4 text-sm font-medium text-gray-600 sm:grid">
-        {PROGRESS_STEPS.map((label, i) => (
+        {CUSTOMER_ORDER_PROGRESS_STEPS.map((label, i) => (
           <div
             key={label}
             className={clsx(
               step >= i ? "text-primary-600" : "",
-              i === 0
-                ? "text-left"
-                : i === LAST_PROGRESS_STEP_INDEX
-                  ? "text-right"
-                  : "text-center",
+              getProgressLabelAlignment(i),
             )}
           >
             {label}
@@ -220,11 +168,12 @@ function CardSvg() {
 
 export function OrderDetail({ order }: { order: StoreOrderDetail }) {
   const currencyCode = order.currency_code || "usd";
-  const step = getFulfillmentStep(order.fulfillment_status);
-  const canceled = isCanceled(order);
+  const progress = deriveCustomerOrderProgress(order);
+  const step = progress.step ?? 0;
+  const canceled = progress.canceled;
   const showInvoice = isInvoiceEligible(order);
   const card = getPaymentCard(order);
-  const statusTimestamp = getStatusTimestamp(order, step);
+  const statusTimestamp = progress.timestamp;
 
   return (
     <div>
@@ -345,7 +294,7 @@ export function OrderDetail({ order }: { order: StoreOrderDetail }) {
                 {!canceled && (
                   <>
                     <p className="mt-6 font-medium text-gray-900 md:mt-10">
-                      {PROGRESS_STEPS[step]}{" "}
+                      {progress.label}{" "}
                       {statusTimestamp && (
                         <span className="font-normal text-gray-500">
                           on{" "}
