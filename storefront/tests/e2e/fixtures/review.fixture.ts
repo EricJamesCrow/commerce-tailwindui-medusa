@@ -45,7 +45,7 @@ function runSql(sql: string): string {
  * reaching the database.
  */
 function assertMedusaId(id: string, prefix: string): void {
-  const pattern = new RegExp(`^${prefix}[a-z0-9]+$`)
+  const pattern = new RegExp(`^${prefix}[a-zA-Z0-9]+$`)
   if (!pattern.test(id)) {
     throw new Error(
       `Invalid Medusa ID format: expected "${prefix}..." but got "${id}"`
