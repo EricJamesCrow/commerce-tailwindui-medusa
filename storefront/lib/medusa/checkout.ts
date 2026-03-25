@@ -381,12 +381,9 @@ export async function applyExpressCheckoutData(
   );
   if (paymentError) throw new Error(paymentError);
 
-  // Fetch updated cart and find the Stripe session by provider_id
-  const updatedCart = await getCheckoutCart();
-  const stripeSession = updatedCart?.payment_collection?.payment_sessions?.find(
-    (s) => s.provider_id === STRIPE_PROVIDER_ID,
-  );
-  const secret = stripeSession?.data?.client_secret as string | undefined;
+  // Fetch only the client_secret via the dedicated server action —
+  // getCheckoutCart() strips session data, so we can't read it from there.
+  const secret = await getPaymentClientSecret(cartId);
   if (!secret) throw new Error("Payment session created but no client secret found");
   return secret;
 }

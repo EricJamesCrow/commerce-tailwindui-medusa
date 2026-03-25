@@ -18,6 +18,11 @@ describe("emailSchema", () => {
   it("rejects invalid email format", () => {
     expect(emailSchema.safeParse("notanemail").success).toBe(false);
   });
+  it("trims leading and trailing whitespace", () => {
+    const result = emailSchema.safeParse("  user@example.com  ");
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data).toBe("user@example.com");
+  });
   it("rejects email over 254 chars", () => {
     // 249 a's + "@b.com" = 255 chars (exceeds 254 max)
     expect(emailSchema.safeParse("a".repeat(249) + "@b.com").success).toBe(false);
