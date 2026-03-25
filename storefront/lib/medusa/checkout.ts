@@ -46,10 +46,50 @@ export async function getCheckoutCart(): Promise<HttpTypes.StoreCart | null> {
           "*items,*items.product,*items.variant,*items.thumbnail,+items.total,*promotions,+shipping_methods.name,*payment_collection.payment_sessions",
       },
     }).catch(medusaError);
+    // Strip sensitive payment provider data (e.g. Stripe client_secret) before
+    // serializing the cart into RSC props. Clients must call getPaymentClientSecret()
+    // via a dedicated server action to obtain the secret securely.
+    if (cart.payment_collection?.payment_sessions) {
+      cart.payment_collection.payment_sessions =
+        cart.payment_collection.payment_sessions.map((session) => {
+          const { data: _data, ...safeSession } = session;
+          return safeSession as HttpTypes.StorePaymentSession;
+        });
+    }
     return cart;
   } catch (error) {
     Sentry.captureException(error, { tags: { action: "get_checkout_cart" } })
     console.error("[checkout] Failed to fetch cart:", error);
+    return null;
+  }
+}
+
+/**
+ * Returns only the Stripe client_secret for the active payment session.
+ * Keeps sensitive payment data server-side — never serialized in RSC payload.
+ */
+export async function getPaymentClientSecret(
+  cartId: string,
+): Promise<string | null> {
+  const sessionCartId = await getCartId();
+  if (!sessionCartId || sessionCartId !== cartId) return null;
+
+  const headers = await getAuthHeaders();
+  try {
+    const { cart } = await sdk.client.fetch<{
+      cart: HttpTypes.StoreCart;
+    }>(`/store/carts/${cartId}`, {
+      method: "GET",
+      headers,
+      query: { fields: "*payment_collection.payment_sessions" },
+    }).catch(medusaError);
+
+    const session = cart.payment_collection?.payment_sessions?.[0] ?? null;
+    return (session?.data?.client_secret as string) ?? null;
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: { action: "get_payment_client_secret", cart_id: cartId },
+    });
     return null;
   }
 }
