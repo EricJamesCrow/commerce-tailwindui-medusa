@@ -1,6 +1,6 @@
 "use client";
 
-import { trackClient } from "lib/analytics";
+import { trackClient, redactPiiFromQuery } from "lib/analytics";
 import {
   MEILISEARCH_ENABLED,
   MEILISEARCH_INDEX_NAME,
@@ -82,7 +82,7 @@ export function useSearch(query: string, enabled: boolean) {
             searchResult.estimatedTotalHits ?? searchResult.hits.length,
           );
           trackClient("search_performed", {
-            query,
+            query: redactPiiFromQuery(query),
             result_count: searchResult.hits.length,
             source: "meilisearch",
           });

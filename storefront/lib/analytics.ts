@@ -153,6 +153,26 @@ export type AnalyticsEvents = {
 };
 
 // ---------------------------------------------------------------------------
+// PII redaction for analytics properties
+// ---------------------------------------------------------------------------
+
+const EMAIL_PATTERN = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g
+const PHONE_PATTERN = /(?:\+?1[\s\-.]?)?(?:\(?\d{3}\)?[\s\-.]?)\d{3}[\s\-.]?\d{4}/g
+
+/**
+ * Normalize, truncate, and strip email/phone patterns from a search query
+ * before sending to analytics. Prevents accidental PII capture when users
+ * type their email or phone into the search box.
+ */
+export function redactPiiFromQuery(query: string): string {
+  return query
+    .trim()
+    .replace(EMAIL_PATTERN, "[email]")
+    .replace(PHONE_PATTERN, "[phone]")
+    .slice(0, 80)
+}
+
+// ---------------------------------------------------------------------------
 // Client-side tracking (safe to import from client components)
 // ---------------------------------------------------------------------------
 

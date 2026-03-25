@@ -29,13 +29,14 @@ export async function addItem(
   }
 
   try {
-    await addToCart([{ merchandiseId: selectedVariantId, quantity: 1 }]);
+    const cart = await addToCart([{ merchandiseId: selectedVariantId, quantity: 1 }]);
+    const addedLine = cart.lines.find((line) => line.merchandise.id === selectedVariantId);
     try {
       await trackServer("product_added_to_cart", {
-        product_id: "",
+        product_id: addedLine?.merchandise.product.id ?? "",
         variant_id: selectedVariantId,
         quantity: 1,
-        price: 0,
+        price: Number(addedLine?.cost.totalAmount.amount ?? 0) / (addedLine?.quantity ?? 1),
       });
     } catch {}
     return null;
