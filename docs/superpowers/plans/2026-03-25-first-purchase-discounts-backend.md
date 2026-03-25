@@ -4,7 +4,7 @@
 
 **Goal:** Auto-apply a `FIRST_PURCHASE` promotion to any cart created by a registered customer with zero prior orders, and block ineligible use via validation hooks.
 
-**Architecture:** A Medusa workflow queries cart + customer + order history, checks eligibility, and applies the promotion via `updateCartPromotionsStep`. Two subscribers fire the workflow on `cart.created` and `cart.customer_transferred`. Validation hooks on `updateCartPromotionsWorkflow` and `completeCartWorkflow` enforce eligibility for manual applications.
+**Architecture:** A Medusa workflow queries cart + customer + order history, checks eligibility, and applies the promotion via `updateCartPromotionsStep`. Two subscribers fire the workflow on `cart.created` and the customer-transfer cart event. Validation hooks on `updateCartPromotionsWorkflow` and `completeCartWorkflow` enforce eligibility for manual applications. The hooks file is loaded via a side-effect import in the subscriber so Medusa discovers it at startup.
 
 **Tech Stack:** Medusa v2, `@medusajs/framework/workflows-sdk` (`createWorkflow`, `createStep`, `transform`, `when`), `@medusajs/medusa/core-flows` (`useQueryGraphStep`, `updateCartPromotionsStep`), `@medusajs/framework/types` (`SubscriberArgs`, `SubscriberConfig`), TypeScript
 
@@ -149,8 +149,9 @@ export const applyFirstPurchasePromoWorkflow = createWorkflow(
       }))
     )
 
-    // Only apply when eligible
-    when({ eligibility }, ({ eligibility }) => eligibility.eligible).then(
+    // Only apply when eligible — use (data) => data.eligibility.eligible pattern,
+    // NOT destructuring, to match how `when` is used elsewhere in this codebase
+    when({ eligibility }, (data) => data.eligibility.eligible).then(
       () => {
         updateCartPromotionsStep({
           id: eligibility.cart_id!,
@@ -220,8 +221,16 @@ export default async function applyFirstPurchaseHandler({
 }
 
 export const config: SubscriberConfig = {
+  // "cart.created" fires when any cart is created.
+  // The second event fires when a guest cart is transferred to a logged-in customer.
+  // Verify the exact event name against the Medusa v2 source or the tutorial —
+  // it may be "cart.customer_transferred" or "cart.customer_updated".
   event: ["cart.created", "cart.customer_transferred"],
 }
+
+// Load the validation hooks so Medusa registers them at startup.
+// This side-effect import is required — Medusa does not auto-scan workflows/hooks/.
+import "../workflows/hooks/validate-promotion"
 ```
 
 - [ ] **Step 2: Verify TypeScript compiles**
@@ -267,22 +276,19 @@ async function validateFirstPurchaseEligibility(
 ): Promise<void> {
   const query = container.resolve(ContainerRegistrationKeys.QUERY)
 
+  // Note: only query fields confirmed valid for the "cart" entity in Medusa v2.
+  // "customer.has_account" is intentionally omitted — the field name is unverified
+  // and the customer.id check (guests have no customer record) is sufficient.
   const { data: carts } = await query.graph({
     entity: "cart",
-    fields: ["customer.id", "customer.has_account", "customer.orders.id"],
+    fields: ["customer.id", "customer.orders.id"],
     filters: { id: cartId },
   })
 
   const cart = carts[0]
 
+  // No customer on cart means guest — not eligible
   if (!cart?.customer?.id) {
-    throw new MedusaError(
-      MedusaError.Types.NOT_ALLOWED,
-      "FIRST_PURCHASE promotion is only available to registered customers"
-    )
-  }
-
-  if (!(cart.customer as any).has_account) {
     throw new MedusaError(
       MedusaError.Types.NOT_ALLOWED,
       "FIRST_PURCHASE promotion is only available to registered customers"
@@ -338,9 +344,11 @@ cd backend && bunx tsc --noEmit
 
 Expected: no errors. If the hook registration API differs from what the tutorial shows, adjust to match the tutorial exactly.
 
-- [ ] **Step 3: Import the hooks file in the backend entry point**
+- [ ] **Step 3: Verify the side-effect import in the subscriber loads the hooks**
 
-Medusa loads hook files via module registration. Check the Medusa tutorial to confirm whether hooks are auto-loaded from the `workflows/hooks/` directory or need explicit import. If explicit import is needed, add it to the relevant entry point (e.g., `src/workflows/index.ts` or `medusa-config.ts`). Follow the pattern the tutorial uses.
+Medusa does NOT auto-scan `workflows/hooks/`. The hooks file is loaded via the side-effect import already added to `backend/src/subscribers/apply-first-purchase.ts` in Task 3 (`import "../workflows/hooks/validate-promotion"`). Since Medusa auto-loads all files in `src/subscribers/`, this guarantees the hook consumers are registered at startup.
+
+Confirm that `apply-first-purchase.ts` contains the import at the bottom (it was added in Task 3). No changes needed in `medusa-config.ts`.
 
 - [ ] **Step 4: Commit**
 

@@ -115,9 +115,12 @@ export async function applyPromoCode(
 
   try {
     await assertSessionCart(cartId);
-    await sdk.store.cart
-      .update(cartId, { promo_codes: { add: [normalizedCode] } } as any, {}, headers)
-      .catch(medusaError);
+    // Medusa v2 has dedicated endpoints for cart promotions — do NOT use
+    // sdk.store.cart.update for this (its promo_codes field is string[], not {add/remove}).
+    await sdk.client.fetch<{ cart: HttpTypes.StoreCart }>(
+      `/store/carts/${cartId}/promotions`,
+      { method: "POST", headers, body: { promo_codes: [normalizedCode] } }
+    ).catch(medusaError);
     try {
       await trackServer("promo_code_applied", { cart_id: cartId, code: normalizedCode });
     } catch {}
@@ -149,9 +152,10 @@ export async function removePromoCode(
 
   try {
     await assertSessionCart(cartId);
-    await sdk.store.cart
-      .update(cartId, { promo_codes: { remove: [normalizedCode] } } as any, {}, headers)
-      .catch(medusaError);
+    await sdk.client.fetch<{ cart: HttpTypes.StoreCart }>(
+      `/store/carts/${cartId}/promotions`,
+      { method: "DELETE", headers, body: { promo_codes: [normalizedCode] } }
+    ).catch(medusaError);
     try {
       await trackServer("promo_code_removed", { cart_id: cartId, code: normalizedCode });
     } catch {}
@@ -166,7 +170,7 @@ export async function removePromoCode(
 }
 ```
 
-> **Note on `sdk.store.cart.update` shape:** Medusa v2's `PATCH /store/carts/:id` accepts `promo_codes: { add?: string[], remove?: string[] }`. If the Medusa JS SDK type doesn't expose this directly, use `sdk.client.fetch<{ cart: HttpTypes.StoreCart }>(\`/store/carts/${cartId}\`, { method: "POST", headers, body: { promo_codes: { add: [normalizedCode] } } }).catch(medusaError)` instead and remove the `as any` cast. Verify against the Medusa v2 store cart API docs.
+> **API note:** Medusa v2 exposes dedicated promotion endpoints (`POST` to add, `DELETE` to remove) at `/store/carts/:id/promotions`. Do not use `sdk.store.cart.update` for promotions — its `promo_codes` field is a flat `string[]` replacement, not an add/remove delta, and would clobber other promotions on the cart.
 
 - [ ] **Step 3: Verify TypeScript compiles**
 
@@ -897,7 +901,9 @@ test.describe("Discount Popup", () => {
 cd storefront && bunx playwright test tests/e2e/checkout/discount-popup.spec.ts --project=chromium
 ```
 
-Expected: all tests pass. The "authenticated visitor" case is not tested here because the fixture-based approach for auth is in `auth.fixture.ts` — these tests cover guest behavior which is all that's needed for the popup feature.
+Expected: all tests pass.
+
+> **Fixture note:** This spec imports `{ test, expect }` directly from `@playwright/test` (the base, not a custom fixture). The popup tests navigate to `/` as a plain guest — no cart needed. The `addInitScript` clears `sessionStorage` before each test so the popup fires. Do NOT import from `checkout.fixture.ts` (that fixture navigates to `/checkout`, not `/`).
 
 - [ ] **Step 3: Commit**
 
