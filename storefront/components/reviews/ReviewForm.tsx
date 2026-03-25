@@ -9,7 +9,7 @@ import {
 import { XMarkIcon, StarIcon } from "@heroicons/react/24/outline";
 import { StarIcon as StarIconSolid } from "@heroicons/react/20/solid";
 import clsx from "clsx";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { Review } from "lib/types";
 
 export function ReviewForm({
@@ -33,6 +33,30 @@ export function ReviewForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const blobUrls = useRef<Map<File, string>>(new Map())
+
+  function getBlobUrl(file: File): string {
+    if (!blobUrls.current.has(file)) {
+      blobUrls.current.set(file, URL.createObjectURL(file))
+    }
+    return blobUrls.current.get(file)!
+  }
+
+  function revokeBlobUrl(file: File): void {
+    const url = blobUrls.current.get(file)
+    if (url) {
+      URL.revokeObjectURL(url)
+      blobUrls.current.delete(file)
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      blobUrls.current.forEach((url) => URL.revokeObjectURL(url))
+      blobUrls.current.clear()
+    }
+  }, [])
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     setSelectedFiles((prev) => [...prev, ...files].slice(0, 3));
@@ -40,6 +64,8 @@ export function ReviewForm({
   };
 
   const removeFile = (index: number) => {
+    const file = selectedFiles[index]
+    if (file) revokeBlobUrl(file)
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -100,6 +126,8 @@ export function ReviewForm({
 
     // Reset form state for next time
     setRating(0);
+    blobUrls.current.forEach((url) => URL.revokeObjectURL(url))
+    blobUrls.current.clear()
     setSelectedFiles([]);
     setError(null);
 
@@ -209,7 +237,7 @@ export function ReviewForm({
                   {selectedFiles.map((file, i) => (
                     <div key={i} className="relative">
                       <img
-                        src={URL.createObjectURL(file)}
+                        src={getBlobUrl(file)}
                         alt=""
                         className="size-16 rounded-md object-cover"
                       />
