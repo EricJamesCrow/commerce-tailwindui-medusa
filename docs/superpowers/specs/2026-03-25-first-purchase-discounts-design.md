@@ -141,7 +141,7 @@ Props: `isAuthenticated: boolean`
 Behavior:
 - Only renders when `isAuthenticated` is `false`
 - Auto-opens on mount after a 800ms delay (prevents flash on initial render)
-- Checks `localStorage` for key `discount_popup_shown`; if set, does not open
+- Checks `localStorage` for key `discount_popup_shown`; if set, does not open (persists across sessions — shown once ever per browser, not once per session)
 - On open: sets `discount_popup_shown = "1"` in localStorage
 - Dismissed by clicking the × button or clicking the backdrop
 
@@ -167,7 +167,7 @@ UI:
 
 **`storefront/e2e/discount-popup.spec.ts`**
 - Unauthenticated visit → popup appears
-- Dismiss → does not reappear in same session
+- Dismiss → does not reappear in same or future sessions (localStorage persists)
 - Authenticated visit → popup never shown
 - "Create an account" CTA navigates to `/account?view=register`
 
