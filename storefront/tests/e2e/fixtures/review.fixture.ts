@@ -21,10 +21,25 @@ function runSql(sql: string): string {
 }
 
 /**
+ * Validates that a Medusa ID matches the expected prefix pattern.
+ * Throws before any SQL interpolation to prevent malformed IDs from
+ * reaching the database.
+ */
+function assertMedusaId(id: string, prefix: string): void {
+  const pattern = new RegExp(`^${prefix}[a-z0-9]+$`)
+  if (!pattern.test(id)) {
+    throw new Error(
+      `Invalid Medusa ID format: expected "${prefix}..." but got "${id}"`
+    )
+  }
+}
+
+/**
  * Approve a review by updating its status directly in the database.
  * Also refreshes the review_stats aggregate table.
  */
 function approveReview(reviewId: string): void {
+  assertMedusaId(reviewId, "rev_")
   runSql(`UPDATE review SET status = 'approved' WHERE id = '${reviewId}'`);
 
   // Refresh the review_stats aggregate for this product
@@ -40,6 +55,7 @@ function approveReview(reviewId: string): void {
  * Recalculate and upsert review_stats for a product.
  */
 function refreshReviewStats(productId: string): void {
+  assertMedusaId(productId, "prod_")
   runSql(`
     INSERT INTO review_stats (id, product_id, average_rating, review_count,
       rating_count_1, rating_count_2, rating_count_3, rating_count_4, rating_count_5,
@@ -78,6 +94,7 @@ function refreshReviewStats(productId: string): void {
  * Returns the response ID.
  */
 function createReviewResponse(reviewId: string, content: string): string {
+  assertMedusaId(reviewId, "rev_")
   const id = runSql(
     `INSERT INTO review_response (id, content, review_id, created_at, updated_at)
      VALUES (
@@ -110,6 +127,7 @@ async function revalidateReviewsCache(): Promise<void> {
  * Delete a specific test review by ID (safe for parallel workers).
  */
 function cleanupReview(reviewId: string): void {
+  assertMedusaId(reviewId, "rev_")
   try {
     runSql(`DELETE FROM review_response WHERE review_id = '${reviewId}'`);
     runSql(`DELETE FROM review_image WHERE review_id = '${reviewId}'`);
