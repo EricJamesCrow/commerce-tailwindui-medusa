@@ -131,8 +131,6 @@ test.describe("Rename/Delete Wishlist", () => {
     });
 
     // Confirmation text should mention the wishlist name
-    await expect(
-      page.getByText(/Test Wishlist/).first(),
-    ).toBeVisible();
+    await expect(page.getByText(/Test Wishlist/).first()).toBeVisible();
   });
 });

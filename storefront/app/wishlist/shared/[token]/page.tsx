@@ -41,7 +41,7 @@ export default async function SharedWishlistPage({
           <div className="mt-8">
             <Link
               href="/products"
-              className="inline-flex items-center rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+              className="bg-primary-600 hover:bg-primary-500 focus-visible:outline-primary-600 inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               Browse Products
             </Link>
@@ -59,7 +59,7 @@ export default async function SharedWishlistPage({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <HeartIcon className="size-6 text-primary-600" />
+            <HeartIcon className="text-primary-600 size-6" />
             <h1 className="text-2xl font-bold tracking-tight text-gray-900">
               {wishlist.name || "Shared Wishlist"}
             </h1>
@@ -81,9 +81,7 @@ export default async function SharedWishlistPage({
       ) : (
         <div className="mt-16 text-center">
           <ShoppingBagIcon className="mx-auto size-12 text-gray-400" />
-          <p className="mt-4 text-sm text-gray-500">
-            This wishlist is empty.
-          </p>
+          <p className="mt-4 text-sm text-gray-500">This wishlist is empty.</p>
         </div>
       )}
 
@@ -100,7 +98,7 @@ export default async function SharedWishlistPage({
           <div className="mt-4">
             <Link
               href="/account/login"
-              className="inline-flex items-center rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+              className="bg-primary-600 hover:bg-primary-500 focus-visible:outline-primary-600 inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               Sign In
             </Link>

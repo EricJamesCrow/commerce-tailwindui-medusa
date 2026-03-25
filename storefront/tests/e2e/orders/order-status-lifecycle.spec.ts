@@ -97,7 +97,10 @@ async function adminFetch(
   return response;
 }
 
-async function getAdminOrder(orderId: string, token: string): Promise<AdminOrder> {
+async function getAdminOrder(
+  orderId: string,
+  token: string,
+): Promise<AdminOrder> {
   const response = await adminFetch(
     `/admin/orders/${orderId}?fields=id,display_id,status,payment_status,fulfillment_status,created_at,*items,*fulfillments,*payment_collections,*payment_collections.payments`,
     token,
@@ -107,17 +110,24 @@ async function getAdminOrder(orderId: string, token: string): Promise<AdminOrder
   return data.order;
 }
 
-async function createFulfillment(order: AdminOrder, token: string): Promise<AdminOrder> {
-  const response = await adminFetch(`/admin/orders/${order.id}/fulfillments`, token, {
-    method: "POST",
-    body: JSON.stringify({
-      items: (order.items || []).map((item) => ({
-        id: item.id,
-        quantity: item.quantity,
-      })),
-      no_notification: true,
-    }),
-  });
+async function createFulfillment(
+  order: AdminOrder,
+  token: string,
+): Promise<AdminOrder> {
+  const response = await adminFetch(
+    `/admin/orders/${order.id}/fulfillments`,
+    token,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        items: (order.items || []).map((item) => ({
+          id: item.id,
+          quantity: item.quantity,
+        })),
+        no_notification: true,
+      }),
+    },
+  );
 
   const data = (await response.json()) as { order: AdminOrder };
   return data.order;

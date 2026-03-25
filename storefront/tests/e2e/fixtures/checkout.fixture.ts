@@ -50,13 +50,16 @@ async function addToCartAndCheckout(page: Page): Promise<void> {
 
   // If product has variant options, the button shows "Please select an option" (disabled).
   // Select the first available variant option.
-  const disabledAdd = page.locator('button[aria-label="Please select an option"]');
+  const disabledAdd = page.locator(
+    'button[aria-label="Please select an option"]',
+  );
   if (await disabledAdd.isVisible({ timeout: 2_000 }).catch(() => false)) {
     // Variant option buttons are in a fieldset/group. Find any non-disabled,
     // non-aria-labelled button that looks like a size/color option.
-    const variantButton = page.locator(
-      'button:not([disabled]):not([aria-label]):not([type="submit"])',
-    ).filter({ hasText: /^[A-Z0-9/]{1,10}$/ }).first();
+    const variantButton = page
+      .locator('button:not([disabled]):not([aria-label]):not([type="submit"])')
+      .filter({ hasText: /^[A-Z0-9/]{1,10}$/ })
+      .first();
     if (await variantButton.isVisible({ timeout: 3_000 }).catch(() => false)) {
       await variantButton.click();
       // Wait for the Add to cart button to become enabled
@@ -117,7 +120,10 @@ async function fillStripeCard(page: Page): Promise<void> {
     for (const frame of page.frames()) {
       const cardText = frame.locator("text=Card");
       if (
-        await cardText.first().isVisible({ timeout: 1_000 }).catch(() => false)
+        await cardText
+          .first()
+          .isVisible({ timeout: 1_000 })
+          .catch(() => false)
       ) {
         paymentFrame = frame;
         break;
@@ -149,7 +155,10 @@ async function fillStripeCard(page: Page): Promise<void> {
       for (const frame of page.frames()) {
         const input = frame.locator(selectors);
         if (
-          await input.first().isVisible({ timeout: 500 }).catch(() => false)
+          await input
+            .first()
+            .isVisible({ timeout: 500 })
+            .catch(() => false)
         ) {
           await input.first().click();
           await input.first().pressSequentially(value, { delay: 50 });

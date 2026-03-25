@@ -39,7 +39,10 @@ async function wishlistMutation(
   try {
     await fn();
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "wishlist_mutation" }, level: "warning" });
+    Sentry.captureException(e, {
+      tags: { action: "wishlist_mutation" },
+      level: "warning",
+    });
     return { error: formatError(e, fallbackError) };
   } finally {
     revalidateWishlists();
@@ -67,7 +70,10 @@ async function fetchWishlists(): Promise<Wishlist[]> {
       );
       return result.wishlists;
     } catch (e) {
-      Sentry.captureException(e, { tags: { action: "fetch_wishlists" }, level: "warning" });
+      Sentry.captureException(e, {
+        tags: { action: "fetch_wishlists" },
+        level: "warning",
+      });
       return [];
     }
   }
@@ -82,7 +88,10 @@ async function fetchWishlists(): Promise<Wishlist[]> {
     );
     return [result.wishlist];
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "fetch_wishlists" }, level: "warning" });
+    Sentry.captureException(e, {
+      tags: { action: "fetch_wishlists" },
+      level: "warning",
+    });
     return [];
   }
 }
@@ -101,7 +110,9 @@ export async function getWishlistsDynamic(): Promise<Wishlist[]> {
   return fetchWishlists();
 }
 
-export async function getWishlist(wishlistId: string): Promise<Wishlist | null> {
+export async function getWishlist(
+  wishlistId: string,
+): Promise<Wishlist | null> {
   const headers = await getAuthHeaders();
 
   try {
@@ -111,12 +122,17 @@ export async function getWishlist(wishlistId: string): Promise<Wishlist | null> 
     );
     return result.wishlist;
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "get_wishlist" }, level: "warning" });
+    Sentry.captureException(e, {
+      tags: { action: "get_wishlist" },
+      level: "warning",
+    });
     return null;
   }
 }
 
-export async function getSharedWishlist(token: string): Promise<Wishlist | null> {
+export async function getSharedWishlist(
+  token: string,
+): Promise<Wishlist | null> {
   try {
     const result = await sdk.client.fetch<WishlistResponse>(
       `/store/wishlists/shared/${token}`,
@@ -124,7 +140,10 @@ export async function getSharedWishlist(token: string): Promise<Wishlist | null>
     );
     return result.wishlist;
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "get_shared_wishlist" }, level: "warning" });
+    Sentry.captureException(e, {
+      tags: { action: "get_shared_wishlist" },
+      level: "warning",
+    });
     return null;
   }
 }
@@ -144,7 +163,10 @@ export async function getProductWishlistCount(
     );
     return result.count;
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "get_wishlist_count" }, level: "info" });
+    Sentry.captureException(e, {
+      tags: { action: "get_wishlist_count" },
+      level: "info",
+    });
     return 0;
   }
 }
@@ -215,14 +237,25 @@ export async function createWishlist(
   let createdWishlist: Wishlist | undefined;
   const result = await wishlistMutation(
     () =>
-      sdk.client.fetch<WishlistResponse>(
-        "/store/customers/me/wishlists",
-        { method: "POST", headers, body: { name: name || undefined } },
-      ).then((res) => { createdWishlist = res.wishlist; }),
+      sdk.client
+        .fetch<WishlistResponse>("/store/customers/me/wishlists", {
+          method: "POST",
+          headers,
+          body: { name: name || undefined },
+        })
+        .then((res) => {
+          createdWishlist = res.wishlist;
+        }),
     "Error creating wishlist",
   );
   if (result?.success && createdWishlist) {
-    try { await trackServer("wishlist_created", { wishlist_id: createdWishlist.id, has_name: Boolean(createdWishlist.name || name), name_length: (createdWishlist.name || name || "").length }) } catch {}
+    try {
+      await trackServer("wishlist_created", {
+        wishlist_id: createdWishlist.id,
+        has_name: Boolean(createdWishlist.name || name),
+        name_length: (createdWishlist.name || name || "").length,
+      });
+    } catch {}
   }
   return result;
 }
@@ -263,14 +296,22 @@ export async function addToWishlist(
 
     const authResult = await wishlistMutation(
       () =>
-        sdk.client.fetch<WishlistResponse>(
-          `/store/customers/me/wishlists/${wishlistId}/items`,
-          { method: "POST", headers, body: { variant_id: variantId } },
-        ).then(() => undefined),
+        sdk.client
+          .fetch<WishlistResponse>(
+            `/store/customers/me/wishlists/${wishlistId}/items`,
+            { method: "POST", headers, body: { variant_id: variantId } },
+          )
+          .then(() => undefined),
       "Error adding to wishlist",
     );
     if (authResult?.success && productId) {
-      try { await trackServer("wishlist_item_added", { product_id: productId, variant_id: variantId, wishlist_id: wishlistId }) } catch {}
+      try {
+        await trackServer("wishlist_item_added", {
+          product_id: productId,
+          variant_id: variantId,
+          wishlist_id: wishlistId,
+        });
+      } catch {}
     }
     return authResult;
   }
@@ -293,14 +334,22 @@ export async function addToWishlist(
 
   const guestResult = await wishlistMutation(
     () =>
-      sdk.client.fetch<WishlistResponse>(
-        `/store/wishlists/${guestWishlistId}/items`,
-        { method: "POST", body: { variant_id: variantId } },
-      ).then(() => undefined),
+      sdk.client
+        .fetch<WishlistResponse>(`/store/wishlists/${guestWishlistId}/items`, {
+          method: "POST",
+          body: { variant_id: variantId },
+        })
+        .then(() => undefined),
     "Error adding to wishlist",
   );
   if (guestResult?.success && productId) {
-    try { await trackServer("wishlist_item_added", { product_id: productId, variant_id: variantId, wishlist_id: guestWishlistId }) } catch {}
+    try {
+      await trackServer("wishlist_item_added", {
+        product_id: productId,
+        variant_id: variantId,
+        wishlist_id: guestWishlistId,
+      });
+    } catch {}
   }
   return guestResult;
 }
@@ -324,12 +373,21 @@ export async function removeFromWishlist(
     : `/store/wishlists/${wishlistId}/items/${itemId}`;
 
   const removeResult = await wishlistMutation(
-    () => sdk.client.fetch(basePath, { method: "DELETE", headers }).then(() => undefined),
+    () =>
+      sdk.client
+        .fetch(basePath, { method: "DELETE", headers })
+        .then(() => undefined),
     "Error removing item",
   );
   if (removeResult?.success) {
     if (productId && variantId) {
-      try { await trackServer("wishlist_item_removed", { product_id: productId, variant_id: variantId, wishlist_id: wishlistId }) } catch {}
+      try {
+        await trackServer("wishlist_item_removed", {
+          product_id: productId,
+          variant_id: variantId,
+          wishlist_id: wishlistId,
+        });
+      } catch {}
     }
   }
   return removeResult;
@@ -346,14 +404,18 @@ export async function deleteWishlist(
 
   const deleteResult = await wishlistMutation(
     () =>
-      sdk.client.fetch(
-        `/store/customers/me/wishlists/${wishlistId}`,
-        { method: "DELETE", headers },
-      ).then(() => undefined),
+      sdk.client
+        .fetch(`/store/customers/me/wishlists/${wishlistId}`, {
+          method: "DELETE",
+          headers,
+        })
+        .then(() => undefined),
     "Error deleting wishlist",
   );
   if (deleteResult?.success) {
-    try { await trackServer("wishlist_deleted", { wishlist_id: wishlistId }) } catch {}
+    try {
+      await trackServer("wishlist_deleted", { wishlist_id: wishlistId });
+    } catch {}
   }
   return deleteResult;
 }
@@ -371,14 +433,19 @@ export async function renameWishlist(
 
   const renameResult = await wishlistMutation(
     () =>
-      sdk.client.fetch(
-        `/store/customers/me/wishlists/${wishlistId}`,
-        { method: "PUT", headers, body: { name } },
-      ).then(() => undefined),
+      sdk.client
+        .fetch(`/store/customers/me/wishlists/${wishlistId}`, {
+          method: "PUT",
+          headers,
+          body: { name },
+        })
+        .then(() => undefined),
     "Error renaming wishlist",
   );
   if (renameResult?.success) {
-    try { await trackServer("wishlist_renamed", { wishlist_id: wishlistId }) } catch {}
+    try {
+      await trackServer("wishlist_renamed", { wishlist_id: wishlistId });
+    } catch {}
   }
   return renameResult;
 }
@@ -402,7 +469,9 @@ export async function transferWishlist(): Promise<void> {
   }
 }
 
-export async function shareWishlist(wishlistId: string): Promise<string | null> {
+export async function shareWishlist(
+  wishlistId: string,
+): Promise<string | null> {
   const headers = await getAuthHeaders();
 
   try {
@@ -411,7 +480,12 @@ export async function shareWishlist(wishlistId: string): Promise<string | null> 
       { method: "POST", headers },
     );
     const wishlist = await getWishlist(wishlistId);
-    try { await trackServer("wishlist_shared", { wishlist_id: wishlistId, item_count: wishlist?.items?.length ?? 0 }) } catch {}
+    try {
+      await trackServer("wishlist_shared", {
+        wishlist_id: wishlistId,
+        item_count: wishlist?.items?.length ?? 0,
+      });
+    } catch {}
     return result.token;
   } catch {
     return null;
@@ -426,14 +500,24 @@ export async function importWishlist(
   let importedWishlist: Wishlist | undefined;
   const importResult = await wishlistMutation(
     () =>
-      sdk.client.fetch<WishlistResponse>(
-        "/store/wishlists/import",
-        { method: "POST", headers, body: { share_token: shareToken } },
-      ).then((res) => { importedWishlist = res.wishlist; }),
+      sdk.client
+        .fetch<WishlistResponse>("/store/wishlists/import", {
+          method: "POST",
+          headers,
+          body: { share_token: shareToken },
+        })
+        .then((res) => {
+          importedWishlist = res.wishlist;
+        }),
     "Error importing wishlist",
   );
   if (importResult?.success && importedWishlist) {
-    try { await trackServer("wishlist_imported", { wishlist_id: importedWishlist.id, item_count: importedWishlist.items?.length ?? 0 }) } catch {}
+    try {
+      await trackServer("wishlist_imported", {
+        wishlist_id: importedWishlist.id,
+        item_count: importedWishlist.items?.length ?? 0,
+      });
+    } catch {}
   }
   return importResult;
 }

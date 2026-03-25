@@ -21,9 +21,9 @@ test.describe("Authenticated Checkout Flow", () => {
     const addressField = page.locator(sel.ADDR_FIRST_NAME);
 
     // Wait for either: "Signed in as" visible (step still showing) or address step active
-    await expect(
-      signedInText.or(addressField),
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(signedInText.or(addressField)).toBeVisible({
+      timeout: 15_000,
+    });
 
     // If email step hasn't auto-advanced yet, wait for address step
     if (!(await addressField.isVisible().catch(() => false))) {
@@ -39,7 +39,9 @@ test.describe("Authenticated Checkout Flow", () => {
     await page.locator(sel.ADDR_CITY).fill(TEST_ADDRESS.city);
     await page.locator(sel.ADDR_PROVINCE).fill(TEST_ADDRESS.province);
     await page.locator(sel.ADDR_POSTAL_CODE).fill(TEST_ADDRESS.postal_code);
-    await page.locator(sel.ADDR_COUNTRY).selectOption(TEST_ADDRESS.country_code);
+    await page
+      .locator(sel.ADDR_COUNTRY)
+      .selectOption(TEST_ADDRESS.country_code);
 
     await page.locator(sel.CHECKOUT_CONTINUE_BUTTON).click();
 
@@ -49,9 +51,9 @@ test.describe("Authenticated Checkout Flow", () => {
     await selectShippingOption(page);
 
     // Wait for payment step to become active
-    await expect(
-      page.getByRole("heading", { name: "Payment" }),
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("heading", { name: "Payment" })).toBeVisible({
+      timeout: 15_000,
+    });
 
     // ---------------------------------------------------------------
     // Step 4: Payment

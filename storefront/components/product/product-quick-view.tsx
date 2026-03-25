@@ -97,20 +97,20 @@ export function ProductQuickView({
     <Dialog open={open} onClose={onClose} className="relative z-50">
       <DialogBackdrop
         transition
-        className="fixed inset-0 hidden bg-gray-500/75 transition-opacity data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in md:block"
+        className="fixed inset-0 hidden bg-gray-500/75 transition-opacity data-[closed]:opacity-0 data-[enter]:duration-300 data-[enter]:ease-out data-[leave]:duration-200 data-[leave]:ease-in md:block"
       />
 
       <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
         <div className="flex min-h-full items-stretch justify-center text-center md:items-center md:px-2 lg:px-4">
           <DialogPanel
             transition
-            className="flex w-full transform text-left text-base transition data-[closed]:translate-y-4 data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in md:my-8 md:max-w-2xl md:px-4 data-[closed]:md:translate-y-0 data-[closed]:md:scale-95 lg:max-w-4xl"
+            className="flex w-full transform text-left text-base transition data-[closed]:translate-y-4 data-[closed]:opacity-0 data-[enter]:duration-300 data-[enter]:ease-out data-[leave]:duration-200 data-[leave]:ease-in md:my-8 md:max-w-2xl md:px-4 data-[closed]:md:translate-y-0 data-[closed]:md:scale-95 lg:max-w-4xl"
           >
-            <div className="relative flex w-full items-center overflow-hidden bg-white px-4 pb-8 pt-14 shadow-2xl sm:px-6 sm:pt-8 md:p-6 lg:p-8">
+            <div className="relative flex w-full items-center overflow-hidden bg-white px-4 pt-14 pb-8 shadow-2xl sm:px-6 sm:pt-8 md:p-6 lg:p-8">
               <button
                 type="button"
                 onClick={onClose}
-                className="absolute right-4 top-4 text-gray-400 hover:text-gray-500 sm:right-6 sm:top-8 md:right-6 md:top-6 lg:right-8 lg:top-8"
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-500 sm:top-8 sm:right-6 md:top-6 md:right-6 lg:top-8 lg:right-8"
               >
                 <span className="sr-only">Close</span>
                 <XMarkIcon aria-hidden="true" className="size-6" />
@@ -120,9 +120,7 @@ export function ProductQuickView({
                 <div className="sm:col-span-4 lg:col-span-5">
                   <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
                     <Image
-                      alt={
-                        product.featuredImage?.altText || product.title
-                      }
+                      alt={product.featuredImage?.altText || product.title}
                       src={
                         product.featuredImage?.url ||
                         "https://via.placeholder.com/400"
@@ -138,7 +136,10 @@ export function ProductQuickView({
                     {product.title}
                   </h2>
 
-                  <section aria-labelledby="information-heading" className="mt-3">
+                  <section
+                    aria-labelledby="information-heading"
+                    className="mt-3"
+                  >
                     <h3 id="information-heading" className="sr-only">
                       Product information
                     </h3>
@@ -165,13 +166,19 @@ export function ProductQuickView({
 
                     <form
                       action={() => {
-                        if (!selectedVariant || !selectedVariant.availableForSale) {
+                        if (
+                          !selectedVariant ||
+                          !selectedVariant.availableForSale
+                        ) {
                           setMessage("Selected variant is out of stock");
                           return;
                         }
                         addCartItem(selectedVariant, product);
                         startTransition(async () => {
-                          const result = await addItem(null, selectedVariant.id);
+                          const result = await addItem(
+                            null,
+                            selectedVariant.id,
+                          );
                           if (result) {
                             setMessage(result);
                           } else {
@@ -213,11 +220,14 @@ export function ProductQuickView({
                                       checked={isSelected}
                                       onChange={() => {
                                         setSelectedColor(colorName);
-                                        trackClient("product_variant_selected", {
-                                          product_id: product.id,
-                                          option_name: "color",
-                                          option_value: colorName,
-                                        });
+                                        trackClient(
+                                          "product_variant_selected",
+                                          {
+                                            product_id: product.id,
+                                            option_name: "color",
+                                            option_value: colorName,
+                                          },
+                                        );
                                       }}
                                       disabled={!isAvailable}
                                       name="color"
@@ -226,7 +236,9 @@ export function ProductQuickView({
                                       className="size-8 cursor-pointer appearance-none rounded-full checked:outline checked:outline-2 checked:outline-offset-2 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] disabled:cursor-not-allowed"
                                       style={{
                                         backgroundColor: hex,
-                                        outlineColor: isSelected ? hex : undefined,
+                                        outlineColor: isSelected
+                                          ? hex
+                                          : undefined,
                                       }}
                                     />
                                   </div>
@@ -244,10 +256,7 @@ export function ProductQuickView({
                             Size
                           </h4>
 
-                          <fieldset
-                            aria-label="Choose a size"
-                            className="mt-2"
-                          >
+                          <fieldset aria-label="Choose a size" className="mt-2">
                             <div className="flex items-center gap-x-3">
                               {sizeOption.values.map((size) => {
                                 const isSelected = selectedSize === size;
@@ -272,11 +281,14 @@ export function ProductQuickView({
                                       checked={isSelected}
                                       onChange={() => {
                                         setSelectedSize(size);
-                                        trackClient("product_variant_selected", {
-                                          product_id: product.id,
-                                          option_name: "size",
-                                          option_value: size,
-                                        });
+                                        trackClient(
+                                          "product_variant_selected",
+                                          {
+                                            product_id: product.id,
+                                            option_name: "size",
+                                            option_value: size,
+                                          },
+                                        );
                                       }}
                                       disabled={!isAvailable}
                                       name="size"
@@ -300,8 +312,10 @@ export function ProductQuickView({
                         <div className="flex-1">
                           <button
                             type="submit"
-                            disabled={!selectedVariant?.availableForSale || isPending}
-                            className="flex w-full items-center justify-center rounded-md border border-transparent bg-primary-600 px-8 py-3 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                            disabled={
+                              !selectedVariant?.availableForSale || isPending
+                            }
+                            className="bg-primary-600 hover:bg-primary-700 focus:ring-primary-500 flex w-full items-center justify-center rounded-md border border-transparent px-8 py-3 text-base font-medium text-white focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             {!selectedVariant?.availableForSale
                               ? "Out of stock"
@@ -310,10 +324,10 @@ export function ProductQuickView({
                                 : "Add to cart"}
                           </button>
 
-                          <p className="absolute left-4 top-4 sm:static sm:mt-6 sm:text-center">
+                          <p className="absolute top-4 left-4 sm:static sm:mt-6 sm:text-center">
                             <Link
                               href={`/product/${product.handle}`}
-                              className="font-medium text-primary-600 hover:text-primary-500"
+                              className="text-primary-600 hover:text-primary-500 font-medium"
                               onClick={onClose}
                             >
                               View full details

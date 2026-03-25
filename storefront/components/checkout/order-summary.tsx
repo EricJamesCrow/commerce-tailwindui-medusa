@@ -54,7 +54,7 @@ export function OrderSummary({ cart }: { cart: HttpTypes.StoreCart }) {
                     {handle && (
                       <Link
                         href={`/product/${handle}`}
-                        className="font-medium text-primary-600 hover:text-primary-500"
+                        className="text-primary-600 hover:text-primary-500 font-medium"
                       >
                         Edit
                       </Link>
@@ -101,9 +101,7 @@ export function OrderSummary({ cart }: { cart: HttpTypes.StoreCart }) {
         )}
         <div className="flex justify-between border-t border-gray-200 pt-6 text-gray-900">
           <dt className="text-base">Total</dt>
-          <dd className="text-base">
-            {formatMoney(cart.total, currencyCode)}
-          </dd>
+          <dd className="text-base">{formatMoney(cart.total, currencyCode)}</dd>
         </div>
       </dl>
     </>

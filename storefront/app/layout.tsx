@@ -44,7 +44,10 @@ async function AppProviders({ children }: { children: ReactNode }) {
 
   return (
     <CartProvider cartPromise={cartPromise}>
-      <PostHogProvider bootstrapDistinctId={distinctId} bootstrapFlags={bootstrapFlags}>
+      <PostHogProvider
+        bootstrapDistinctId={distinctId}
+        bootstrapFlags={bootstrapFlags}
+      >
         <SentryUserProvider customerId={customer?.id ?? null} />
         <WebVitals />
         <NotificationProvider>

@@ -80,7 +80,7 @@ test.describe("Cmd+K Search Palette", () => {
     const input = dialog.locator("input");
     await input.fill("tee");
 
-    const seeAll = dialog.locator('text=/See all \\d+ products matching/');
+    const seeAll = dialog.locator("text=/See all \\d+ products matching/");
     await expect(seeAll).toBeVisible({ timeout: 10_000 });
   });
 
@@ -115,7 +115,7 @@ test.describe("Cmd+K Search Palette", () => {
     await input.fill("bag");
 
     // Wait for results
-    const seeAll = dialog.locator('text=/See all \\d+ products matching/');
+    const seeAll = dialog.locator("text=/See all \\d+ products matching/");
     await expect(seeAll).toBeVisible({ timeout: 10_000 });
 
     // Press Enter — should select "See all" and navigate to /search
@@ -134,7 +134,10 @@ test.describe("Cmd+K Search Palette", () => {
     await input.fill("test");
 
     // X button should appear
-    const clearButton = dialog.locator("button").filter({ has: page.locator('svg.h-5.w-5') }).last();
+    const clearButton = dialog
+      .locator("button")
+      .filter({ has: page.locator("svg.h-5.w-5") })
+      .last();
     await expect(clearButton).toBeVisible();
     await clearButton.click();
 
@@ -171,7 +174,7 @@ test.describe("Cmd+K Search Palette", () => {
     });
 
     // Footer with Enter key hint should be visible
-    const footer = dialog.locator('text=/Press Enter to select|to select/');
+    const footer = dialog.locator("text=/Press Enter to select|to select/");
     await expect(footer).toBeVisible();
   });
 });
@@ -188,10 +191,8 @@ test.describe("Search Results Page", () => {
     await page.waitForLoadState("networkidle");
 
     // Should show result count text
-    const resultsText = page.locator('text=/Showing \\d+ results? for/');
-    const noResults = page.locator(
-      'text="There are no products that match "',
-    );
+    const resultsText = page.locator("text=/Showing \\d+ results? for/");
+    const noResults = page.locator('text="There are no products that match "');
 
     await expect(resultsText.or(noResults)).toBeVisible({ timeout: 15_000 });
   });
@@ -220,7 +221,9 @@ test.describe("Search Results Page", () => {
     await page.waitForLoadState("networkidle");
 
     // The (store) layout renders collections in the sidebar
-    const collectionsHeading = page.locator('h3.sr-only:has-text("Collections")');
+    const collectionsHeading = page.locator(
+      'h3.sr-only:has-text("Collections")',
+    );
     await expect(collectionsHeading).toBeAttached({ timeout: 10_000 });
   });
 

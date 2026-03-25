@@ -41,15 +41,15 @@ test.describe("Order Detail Page", () => {
     await page.locator(sel.ADDR_CITY).fill(TEST_ADDRESS.city);
     await page.locator(sel.ADDR_PROVINCE).fill(TEST_ADDRESS.province);
     await page.locator(sel.ADDR_POSTAL_CODE).fill(TEST_ADDRESS.postal_code);
-    await page.locator(sel.ADDR_COUNTRY).selectOption(
-      TEST_ADDRESS.country_code,
-    );
+    await page
+      .locator(sel.ADDR_COUNTRY)
+      .selectOption(TEST_ADDRESS.country_code);
     await page.locator(sel.CHECKOUT_CONTINUE_BUTTON).click();
 
     await selectShippingOption(page);
-    await expect(
-      page.getByRole("heading", { name: "Payment" }),
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("heading", { name: "Payment" })).toBeVisible({
+      timeout: 15_000,
+    });
 
     await fillStripeCard(page);
     const paymentContinue = page.locator(sel.PAYMENT_CONTINUE_BUTTON);
@@ -93,9 +93,7 @@ test.describe("Order Detail Page", () => {
     // ---------------------------------------------------------------
     // Step 3: Click "View Order" to navigate to detail page
     // ---------------------------------------------------------------
-    const viewOrderLink = page
-      .locator('a:has-text("View Order")')
-      .first();
+    const viewOrderLink = page.locator('a:has-text("View Order")').first();
     await expect(viewOrderLink).toBeVisible();
     await viewOrderLink.click();
 
@@ -130,11 +128,9 @@ test.describe("Order Detail Page", () => {
     await expect(productItem.first()).toBeVisible();
     await expect(productItem.first().locator("h3")).toBeVisible();
     await expect(
-      productItem.first().locator('text=/\\$[\\d,.]+/'),
+      productItem.first().locator("text=/\\$[\\d,.]+/"),
     ).toBeVisible();
-    await expect(
-      productItem.first().locator('text=/Qty: \\d+/'),
-    ).toBeVisible();
+    await expect(productItem.first().locator("text=/Qty: \\d+/")).toBeVisible();
 
     // 4d: Delivery address
     await expect(page.locator('dt:has-text("Delivery address")')).toBeVisible();
@@ -161,9 +157,7 @@ test.describe("Order Detail Page", () => {
     expect(width).toBeTruthy();
 
     // Progress step labels (desktop only — sm:grid)
-    const progressLabels = page.locator(
-      ".hidden.grid-cols-4 div",
-    );
+    const progressLabels = page.locator(".hidden.grid-cols-4 div");
     // On desktop viewport, all 4 labels should be present
     const labelCount = await progressLabels.count();
     expect(labelCount).toBe(4);

@@ -11,7 +11,12 @@ export function WishlistCount({ productId }: { productId: string }) {
   useEffect(() => {
     getProductWishlistCount(productId)
       .then(setCount)
-      .catch((e: unknown) => { Sentry.captureException(e, { tags: { action: "get_product_wishlist_count" }, level: "info" }) });
+      .catch((e: unknown) => {
+        Sentry.captureException(e, {
+          tags: { action: "get_product_wishlist_count" },
+          level: "info",
+        });
+      });
   }, [productId]);
 
   if (count === 0) return null;

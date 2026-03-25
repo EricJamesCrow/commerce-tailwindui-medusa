@@ -21,9 +21,7 @@ test.describe("Order Summary Actions", () => {
     }
   });
 
-  test("each item has a Remove button", async ({
-    guestCheckoutPage: page,
-  }) => {
+  test("each item has a Remove button", async ({ guestCheckoutPage: page }) => {
     // Wait for at least one order summary item to render
     await expect(page.locator(sel.ORDER_SUMMARY_ITEM).first()).toBeVisible({
       timeout: 15_000,

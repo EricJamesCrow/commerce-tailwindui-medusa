@@ -1,7 +1,7 @@
-import * as Sentry from "@sentry/nextjs"
-import { browserProfilingIntegration } from "@sentry/nextjs"
+import * as Sentry from "@sentry/nextjs";
+import { browserProfilingIntegration } from "@sentry/nextjs";
 
-export const onRouterTransitionStart = Sentry.captureRouterTransitionStart
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -10,7 +10,7 @@ Sentry.init({
     process.env.NODE_ENV ||
     "development",
   tracesSampleRate: parseFloat(
-    process.env.NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE || "0.2"
+    process.env.NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE || "0.2",
   ),
   profilesSampleRate: 0.1,
   replaysSessionSampleRate: 0,
@@ -22,4 +22,4 @@ Sentry.init({
     }),
     browserProfilingIntegration(),
   ],
-})
+});

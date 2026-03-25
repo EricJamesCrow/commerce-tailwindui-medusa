@@ -17,7 +17,9 @@ test.describe("Newsletter Unsubscribe", () => {
 
     await subscribeEmailViaApi(email);
 
-    await page.goto(`/newsletter/unsubscribe?token=${encodeURIComponent(token)}`);
+    await page.goto(
+      `/newsletter/unsubscribe?token=${encodeURIComponent(token)}`,
+    );
     await page.waitForLoadState("networkidle");
 
     await expect(

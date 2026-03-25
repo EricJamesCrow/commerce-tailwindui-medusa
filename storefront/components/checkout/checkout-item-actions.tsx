@@ -11,11 +11,19 @@ export function RemoveItemButton({ lineItemId }: { lineItemId: string }) {
       <button
         type="submit"
         disabled={isPending}
-        className="font-medium text-primary-600 hover:text-primary-500"
+        className="text-primary-600 hover:text-primary-500 font-medium"
       >
         {isPending ? "Removing..." : "Remove"}
       </button>
-      {message && <p role="status" aria-live="polite" className="mt-1 text-xs text-red-600">{message}</p>}
+      {message && (
+        <p
+          role="status"
+          aria-live="polite"
+          className="mt-1 text-xs text-red-600"
+        >
+          {message}
+        </p>
+      )}
     </form>
   );
 }

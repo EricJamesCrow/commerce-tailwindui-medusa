@@ -65,9 +65,10 @@ export function ReviewForm({
         }
 
         const { files: uploaded } = await res.json();
-        uploadedImages = uploaded.map(
-          (f: { url: string }, i: number) => ({ url: f.url, sort_order: i }),
-        );
+        uploadedImages = uploaded.map((f: { url: string }, i: number) => ({
+          url: f.url,
+          sort_order: i,
+        }));
         formData.set("images", JSON.stringify(uploadedImages));
       } catch {
         setIsSubmitting(false);
@@ -111,7 +112,8 @@ export function ReviewForm({
   const isDisabled = isSubmitting || rating === 0;
 
   function submitButtonLabel(): string {
-    if (isSubmitting) return selectedFiles.length > 0 ? "Uploading images..." : "Submitting...";
+    if (isSubmitting)
+      return selectedFiles.length > 0 ? "Uploading images..." : "Submitting...";
     return "Submit review";
   }
 
@@ -179,7 +181,7 @@ export function ReviewForm({
                   type="text"
                   id="review-title"
                   name="title"
-                  className="mt-2 block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600 sm:text-sm/6"
+                  className="focus:outline-primary-600 mt-2 block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 sm:text-sm/6"
                   placeholder="Summarize your experience"
                 />
               </div>
@@ -196,14 +198,15 @@ export function ReviewForm({
                   name="content"
                   rows={4}
                   required
-                  className="mt-2 block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600 sm:text-sm/6"
+                  className="focus:outline-primary-600 mt-2 block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 sm:text-sm/6"
                   placeholder="What did you like or dislike about this product?"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Photos <span className="text-gray-400">(optional, max 3)</span>
+                  Photos{" "}
+                  <span className="text-gray-400">(optional, max 3)</span>
                 </label>
                 <div className="mt-2 flex gap-2">
                   {selectedFiles.map((file, i) => (

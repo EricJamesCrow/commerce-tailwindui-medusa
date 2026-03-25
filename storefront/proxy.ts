@@ -1,13 +1,13 @@
-import { NextResponse, type NextRequest } from "next/server"
-import { randomUUID } from "node:crypto"
+import { NextResponse, type NextRequest } from "next/server";
+import { randomUUID } from "node:crypto";
 
-const PH_ANON_COOKIE = "_ph_anon_id"
-export const PH_ANON_HEADER = "x-ph-anon-id"
+const PH_ANON_COOKIE = "_ph_anon_id";
+export const PH_ANON_HEADER = "x-ph-anon-id";
 
 function buildCsp(nonce: string): string {
-  const isDev = process.env.NODE_ENV !== "production"
-  const backendUrl = process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"
-  const meilisearchHost = process.env.NEXT_PUBLIC_MEILISEARCH_HOST || ""
+  const isDev = process.env.NODE_ENV !== "production";
+  const backendUrl = process.env.MEDUSA_BACKEND_URL || "http://localhost:9000";
+  const meilisearchHost = process.env.NEXT_PUBLIC_MEILISEARCH_HOST || "";
 
   const scriptSrc = [
     "'self'",
@@ -17,7 +17,7 @@ function buildCsp(nonce: string): string {
     isDev ? "'unsafe-eval'" : "", // Next.js Turbopack HMR requires eval in dev
   ]
     .filter(Boolean)
-    .join(" ")
+    .join(" ");
 
   const connectSrc = [
     "'self'", // Covers PostHog — proxied via /api/ph/* (see next.config.ts rewrites)
@@ -29,7 +29,7 @@ function buildCsp(nonce: string): string {
     meilisearchHost,
   ]
     .filter(Boolean)
-    .join(" ")
+    .join(" ");
 
   return [
     "default-src 'self'",
@@ -43,19 +43,19 @@ function buildCsp(nonce: string): string {
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
-  ].join("; ")
+  ].join("; ");
 }
 
 export function proxy(request: NextRequest): NextResponse {
-  const existingId = request.cookies.get(PH_ANON_COOKIE)?.value
-  const anonId = existingId || randomUUID()
-  const nonce = Buffer.from(randomUUID()).toString("base64")
+  const existingId = request.cookies.get(PH_ANON_COOKIE)?.value;
+  const anonId = existingId || randomUUID();
+  const nonce = Buffer.from(randomUUID()).toString("base64");
 
-  const requestHeaders = new Headers(request.headers)
-  requestHeaders.set(PH_ANON_HEADER, anonId)
-  requestHeaders.set("x-nonce", nonce) // Next.js App Router reads this for its own inline scripts
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(PH_ANON_HEADER, anonId);
+  requestHeaders.set("x-nonce", nonce); // Next.js App Router reads this for its own inline scripts
 
-  const response = NextResponse.next({ request: { headers: requestHeaders } })
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
 
   if (!existingId) {
     response.cookies.set(PH_ANON_COOKIE, anonId, {
@@ -63,16 +63,16 @@ export function proxy(request: NextRequest): NextResponse {
       sameSite: "strict",
       secure: process.env.NODE_ENV === "production",
       maxAge: 60 * 60 * 24 * 365,
-    })
+    });
   }
 
-  response.headers.set("Content-Security-Policy", buildCsp(nonce))
+  response.headers.set("Content-Security-Policy", buildCsp(nonce));
 
-  return response
+  return response;
 }
 
 export const config = {
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
-}
+};

@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import * as Sentry from "@sentry/nextjs"
-import { useEffect } from "react"
+import * as Sentry from "@sentry/nextjs";
+import { useEffect } from "react";
 
 export function SentryUserProvider({
   customerId,
 }: {
-  customerId: string | null
+  customerId: string | null;
 }) {
   useEffect(() => {
-    Sentry.setUser(customerId ? { id: customerId } : null)
-  }, [customerId])
+    Sentry.setUser(customerId ? { id: customerId } : null);
+  }, [customerId]);
 
-  return null
+  return null;
 }

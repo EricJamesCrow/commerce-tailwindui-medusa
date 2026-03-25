@@ -1,6 +1,6 @@
 "use server";
 
-import * as Sentry from "@sentry/nextjs"
+import * as Sentry from "@sentry/nextjs";
 import type { HttpTypes } from "@medusajs/types";
 import { STRIPE_PROVIDER_ID, TAGS } from "lib/constants";
 import { sdk } from "lib/medusa";
@@ -42,16 +42,18 @@ export async function getCheckoutCart(): Promise<HttpTypes.StoreCart | null> {
   const headers = await getAuthHeaders();
 
   try {
-    const { cart } = await sdk.client.fetch<{
-      cart: HttpTypes.StoreCart;
-    }>(`/store/carts/${cartId}`, {
-      method: "GET",
-      headers,
-      query: {
-        fields:
-          "*items,*items.product,*items.variant,*items.thumbnail,+items.total,*promotions,+shipping_methods.name,*payment_collection.payment_sessions",
-      },
-    }).catch(medusaError);
+    const { cart } = await sdk.client
+      .fetch<{
+        cart: HttpTypes.StoreCart;
+      }>(`/store/carts/${cartId}`, {
+        method: "GET",
+        headers,
+        query: {
+          fields:
+            "*items,*items.product,*items.variant,*items.thumbnail,+items.total,*promotions,+shipping_methods.name,*payment_collection.payment_sessions",
+        },
+      })
+      .catch(medusaError);
     // Strip sensitive payment provider data (e.g. Stripe client_secret) before
     // serializing the cart into RSC props. Clients must call getPaymentClientSecret()
     // via a dedicated server action to obtain the secret securely.
@@ -64,7 +66,7 @@ export async function getCheckoutCart(): Promise<HttpTypes.StoreCart | null> {
     }
     return cart;
   } catch (error) {
-    Sentry.captureException(error, { tags: { action: "get_checkout_cart" } })
+    Sentry.captureException(error, { tags: { action: "get_checkout_cart" } });
     console.error("[checkout] Failed to fetch cart:", error);
     return null;
   }
@@ -86,13 +88,15 @@ export async function getPaymentClientSecret(
 
   const headers = await getAuthHeaders();
   try {
-    const { cart } = await sdk.client.fetch<{
-      cart: HttpTypes.StoreCart;
-    }>(`/store/carts/${cartId}`, {
-      method: "GET",
-      headers,
-      query: { fields: "*payment_collection.payment_sessions" },
-    }).catch(medusaError);
+    const { cart } = await sdk.client
+      .fetch<{
+        cart: HttpTypes.StoreCart;
+      }>(`/store/carts/${cartId}`, {
+        method: "GET",
+        headers,
+        query: { fields: "*payment_collection.payment_sessions" },
+      })
+      .catch(medusaError);
 
     const sessions = cart.payment_collection?.payment_sessions ?? [];
     const session = providerId
@@ -126,9 +130,16 @@ export async function setCartEmail(
     await sdk.store.cart
       .update(cartId, { email: normalizedEmail }, {}, headers)
       .catch(medusaError);
-    try { await trackServer("checkout_step_completed", { step_name: "email", step_number: 1 }) } catch {}
+    try {
+      await trackServer("checkout_step_completed", {
+        step_name: "email",
+        step_number: 1,
+      });
+    } catch {}
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "set_cart_email", cart_id: cartId } })
+    Sentry.captureException(e, {
+      tags: { action: "set_cart_email", cart_id: cartId },
+    });
     return e instanceof Error ? e.message : "Error setting email";
   } finally {
     revalidateCheckout();
@@ -146,14 +157,18 @@ export async function setCartAddresses(
 ): Promise<string | null> {
   const shippingResult = addressSchema.safeParse(shipping);
   if (!shippingResult.success) {
-    return shippingResult.error.issues[0]?.message ?? "Invalid shipping address";
+    return (
+      shippingResult.error.issues[0]?.message ?? "Invalid shipping address"
+    );
   }
   const validatedShipping = shippingResult.data;
   let validatedBilling = validatedShipping;
   if (billing !== undefined) {
     const billingResult = addressSchema.safeParse(billing);
     if (!billingResult.success) {
-      return billingResult.error.issues[0]?.message ?? "Invalid billing address";
+      return (
+        billingResult.error.issues[0]?.message ?? "Invalid billing address"
+      );
     }
     validatedBilling = billingResult.data;
   }
@@ -173,9 +188,16 @@ export async function setCartAddresses(
         headers,
       )
       .catch(medusaError);
-    try { await trackServer("checkout_step_completed", { step_name: "address", step_number: 2 }) } catch {}
+    try {
+      await trackServer("checkout_step_completed", {
+        step_name: "address",
+        step_number: 2,
+      });
+    } catch {}
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "set_cart_addresses", cart_id: cartId } })
+    Sentry.captureException(e, {
+      tags: { action: "set_cart_addresses", cart_id: cartId },
+    });
     return e instanceof Error ? e.message : "Error setting addresses";
   } finally {
     revalidateCheckout();
@@ -192,19 +214,21 @@ export async function getShippingOptions(
   const headers = await getAuthHeaders();
 
   try {
-    const { shipping_options } = await sdk.client.fetch<{
-      shipping_options: Array<{
-        id: string;
-        name: string;
-        price_type?: string;
-        amount?: number;
-        currency_code?: string;
-      }>;
-    }>("/store/shipping-options", {
-      method: "GET",
-      headers,
-      query: { cart_id: cartId },
-    }).catch(medusaError);
+    const { shipping_options } = await sdk.client
+      .fetch<{
+        shipping_options: Array<{
+          id: string;
+          name: string;
+          price_type?: string;
+          amount?: number;
+          currency_code?: string;
+        }>;
+      }>("/store/shipping-options", {
+        method: "GET",
+        headers,
+        query: { cart_id: cartId },
+      })
+      .catch(medusaError);
 
     return shipping_options.map((opt) => ({
       id: opt.id,
@@ -214,7 +238,9 @@ export async function getShippingOptions(
       currency_code: opt.currency_code || "USD",
     }));
   } catch (error) {
-    Sentry.captureException(error, { tags: { action: "get_shipping_options", cart_id: cartId } })
+    Sentry.captureException(error, {
+      tags: { action: "get_shipping_options", cart_id: cartId },
+    });
     console.error("[checkout] Failed to fetch shipping options:", error);
     return [];
   }
@@ -231,9 +257,16 @@ export async function setShippingMethod(
     await sdk.store.cart
       .addShippingMethod(cartId, { option_id: optionId }, {}, headers)
       .catch(medusaError);
-    try { await trackServer("checkout_step_completed", { step_name: "shipping", step_number: 3 }) } catch {}
+    try {
+      await trackServer("checkout_step_completed", {
+        step_name: "shipping",
+        step_number: 3,
+      });
+    } catch {}
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "set_shipping_method", cart_id: cartId } })
+    Sentry.captureException(e, {
+      tags: { action: "set_shipping_method", cart_id: cartId },
+    });
     return e instanceof Error ? e.message : "Error setting shipping method";
   } finally {
     revalidateCheckout();
@@ -262,20 +295,38 @@ export async function initializePaymentSession(
 
   try {
     await assertSessionCart(cartId);
-    const { cart } = await sdk.client.fetch<{
-      cart: HttpTypes.StoreCart;
-    }>(`/store/carts/${cartId}`, {
-      method: "GET",
-      headers,
-      query: { fields: "*payment_collection.payment_sessions" },
-    }).catch(medusaError);
+    const { cart } = await sdk.client
+      .fetch<{
+        cart: HttpTypes.StoreCart;
+      }>(`/store/carts/${cartId}`, {
+        method: "GET",
+        headers,
+        query: { fields: "*payment_collection.payment_sessions" },
+      })
+      .catch(medusaError);
 
     await sdk.store.payment
-      .initiatePaymentSession(cart, { provider_id: providerResult.data, data: dataResult.data }, {}, headers)
+      .initiatePaymentSession(
+        cart,
+        { provider_id: providerResult.data, data: dataResult.data },
+        {},
+        headers,
+      )
       .catch(medusaError);
-    try { await trackServer("checkout_step_completed", { step_name: "payment", step_number: 4 }) } catch {}
+    try {
+      await trackServer("checkout_step_completed", {
+        step_name: "payment",
+        step_number: 4,
+      });
+    } catch {}
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "init_payment_session", cart_id: cartId, provider_id: providerId } })
+    Sentry.captureException(e, {
+      tags: {
+        action: "init_payment_session",
+        cart_id: cartId,
+        provider_id: providerId,
+      },
+    });
     return e instanceof Error ? e.message : "Error initializing payment";
   } finally {
     revalidateCheckout();
@@ -292,15 +343,19 @@ export async function getSavedPaymentMethods(
   const headers = await getAuthHeaders();
 
   try {
-    const { payment_methods } = await sdk.client.fetch<{
-      payment_methods: SavedPaymentMethod[];
-    }>(`/store/payment-methods/${accountHolderId}`, {
-      method: "GET",
-      headers,
-    }).catch(medusaError);
+    const { payment_methods } = await sdk.client
+      .fetch<{
+        payment_methods: SavedPaymentMethod[];
+      }>(`/store/payment-methods/${accountHolderId}`, {
+        method: "GET",
+        headers,
+      })
+      .catch(medusaError);
     return payment_methods;
   } catch (error) {
-    Sentry.captureException(error, { tags: { action: "get_saved_payment_methods" } })
+    Sentry.captureException(error, {
+      tags: { action: "get_saved_payment_methods" },
+    });
     console.error("[checkout] Failed to fetch saved payment methods:", error);
     return [];
   }
@@ -322,13 +377,16 @@ export async function completeCart(
     if (result.type === "order") {
       await removeCartId();
       try {
-        await trackServer("checkout_step_completed", { step_name: "review", step_number: 5 })
+        await trackServer("checkout_step_completed", {
+          step_name: "review",
+          step_number: 5,
+        });
         await trackServer("order_completed", {
           order_id: result.order.id,
           order_total: result.order.total || 0,
           item_count: result.order.items?.length || 0,
           currency_code: result.order.currency_code || "usd",
-        })
+        });
       } catch {}
       return { type: "order", order: result.order };
     }
@@ -341,7 +399,10 @@ export async function completeCart(
           : result.error?.message) || "Payment could not be completed",
     };
   } catch (err) {
-    Sentry.captureException(err, { tags: { action: "complete_cart", cart_id: cartId }, level: "error" })
+    Sentry.captureException(err, {
+      tags: { action: "complete_cart", cart_id: cartId },
+      level: "error",
+    });
     return {
       type: "cart",
       error: err instanceof Error ? err.message : "Error completing order",
@@ -389,7 +450,8 @@ export async function applyExpressCheckoutData(
   // getCheckoutCart() strips session data, so we can't read it from there.
   // Pass STRIPE_PROVIDER_ID to guard against multi-provider ordering ambiguity.
   const secret = await getPaymentClientSecret(cartId, STRIPE_PROVIDER_ID);
-  if (!secret) throw new Error("Payment session created but no client secret found");
+  if (!secret)
+    throw new Error("Payment session created but no client secret found");
   return secret;
 }
 
@@ -402,15 +464,19 @@ export async function getCustomerAddresses(): Promise<
   if (!("authorization" in headers)) return [];
 
   try {
-    const { addresses } = await sdk.client.fetch<{
-      addresses: HttpTypes.StoreCustomerAddress[];
-    }>("/store/customers/me/addresses", {
-      method: "GET",
-      headers,
-    }).catch(medusaError);
+    const { addresses } = await sdk.client
+      .fetch<{
+        addresses: HttpTypes.StoreCustomerAddress[];
+      }>("/store/customers/me/addresses", {
+        method: "GET",
+        headers,
+      })
+      .catch(medusaError);
     return addresses;
   } catch (error) {
-    Sentry.captureException(error, { tags: { action: "get_customer_addresses" } })
+    Sentry.captureException(error, {
+      tags: { action: "get_customer_addresses" },
+    });
     console.error("[checkout] Failed to fetch customer addresses:", error);
     return [];
   }

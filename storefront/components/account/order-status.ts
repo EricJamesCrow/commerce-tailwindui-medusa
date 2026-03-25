@@ -105,14 +105,17 @@ function getLatestFulfillmentDate(
   fulfillments: FulfillmentLike[] | null | undefined,
   field: "created_at" | "shipped_at" | "delivered_at",
 ): string | null {
-  return getLatestDate((fulfillments || []).map((fulfillment) => fulfillment?.[field]));
+  return getLatestDate(
+    (fulfillments || []).map((fulfillment) => fulfillment?.[field]),
+  );
 }
 
 function getLatestPaymentDate(
   paymentCollections: PaymentCollectionLike[] | null | undefined,
 ): string | null {
   const paymentDates = (paymentCollections || []).flatMap(
-    (collection) => collection?.payments?.map((payment) => payment?.created_at) || [],
+    (collection) =>
+      collection?.payments?.map((payment) => payment?.created_at) || [],
   );
 
   return getLatestDate(paymentDates);
@@ -161,7 +164,10 @@ export function deriveCustomerOrderProgress(
     };
   }
 
-  const fulfilledAt = getLatestFulfillmentDate(order.fulfillments, "created_at");
+  const fulfilledAt = getLatestFulfillmentDate(
+    order.fulfillments,
+    "created_at",
+  );
 
   if (PROCESSING_FULFILLMENT_STATUSES.has(fulfillmentStatus)) {
     return {

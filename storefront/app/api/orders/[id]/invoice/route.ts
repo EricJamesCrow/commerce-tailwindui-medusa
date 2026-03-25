@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/nextjs"
+import * as Sentry from "@sentry/nextjs";
 import { getAuthHeaders } from "lib/medusa/cookies";
 import { trackServer } from "lib/analytics-server";
 import { NextRequest, NextResponse } from "next/server";
@@ -42,10 +42,17 @@ export async function GET(
       const err = await res.json().catch(() => ({}));
       // Only report server errors — 4xx are expected (auth, not-found, no items)
       if (res.status >= 500) {
-        Sentry.captureException(new Error(`Invoice generation failed (${res.status})`), { tags: { action: "invoice_download", order_id: id } })
+        Sentry.captureException(
+          new Error(`Invoice generation failed (${res.status})`),
+          { tags: { action: "invoice_download", order_id: id } },
+        );
       }
       return NextResponse.json(
-        { error: (err as { message?: string }).message || `Invoice generation failed (${res.status})` },
+        {
+          error:
+            (err as { message?: string }).message ||
+            `Invoice generation failed (${res.status})`,
+        },
         { status: res.status },
       );
     }
@@ -55,7 +62,9 @@ export async function GET(
       res.headers.get("content-disposition") ||
       `attachment; filename="invoice.pdf"`;
 
-    try { await trackServer("invoice_downloaded", { order_id: id }) } catch {}
+    try {
+      await trackServer("invoice_downloaded", { order_id: id });
+    } catch {}
 
     return new NextResponse(pdfBuffer, {
       status: 200,
@@ -66,7 +75,9 @@ export async function GET(
       },
     });
   } catch (err) {
-    Sentry.captureException(err, { tags: { action: "invoice_download", order_id: id } })
+    Sentry.captureException(err, {
+      tags: { action: "invoice_download", order_id: id },
+    });
     const isTimeout =
       err instanceof DOMException && err.name === "TimeoutError";
 

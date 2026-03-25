@@ -31,9 +31,9 @@ test.describe("Review Image Upload", () => {
     await page.waitForLoadState("networkidle");
 
     await page.locator(sel.WRITE_REVIEW_BUTTON).click();
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).toBeVisible({
+      timeout: 5_000,
+    });
 
     // Photo label should be visible
     await expect(page.locator(sel.REVIEW_PHOTO_LABEL)).toBeVisible();
@@ -50,9 +50,9 @@ test.describe("Review Image Upload", () => {
     await page.waitForLoadState("networkidle");
 
     await page.locator(sel.WRITE_REVIEW_BUTTON).click();
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).toBeVisible({
+      timeout: 5_000,
+    });
 
     // Select a file
     const testImage = createTestImage("test1.jpg");
@@ -73,9 +73,9 @@ test.describe("Review Image Upload", () => {
     await page.waitForLoadState("networkidle");
 
     await page.locator(sel.WRITE_REVIEW_BUTTON).click();
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).toBeVisible({
+      timeout: 5_000,
+    });
 
     // Add 3 images one by one
     const img1 = createTestImage("test-a.jpg");
@@ -99,9 +99,7 @@ test.describe("Review Image Upload", () => {
     });
 
     // The "add photo" label should no longer be visible (max reached)
-    await expect(
-      page.locator(sel.REVIEW_ADD_PHOTO_LABEL),
-    ).not.toBeVisible();
+    await expect(page.locator(sel.REVIEW_ADD_PHOTO_LABEL)).not.toBeVisible();
   });
 
   test("can remove a selected image", async ({
@@ -112,9 +110,9 @@ test.describe("Review Image Upload", () => {
     await page.waitForLoadState("networkidle");
 
     await page.locator(sel.WRITE_REVIEW_BUTTON).click();
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).toBeVisible({
+      timeout: 5_000,
+    });
 
     // Add an image
     const testImage = createTestImage("test-remove.jpg");
@@ -146,9 +144,9 @@ test.describe("Review Image Upload", () => {
     await page.waitForLoadState("networkidle");
 
     await page.locator(sel.WRITE_REVIEW_BUTTON).click();
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).toBeVisible({
+      timeout: 5_000,
+    });
 
     // Check the accept attribute
     const fileInput = page.locator(sel.REVIEW_FILE_INPUT);

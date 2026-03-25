@@ -63,7 +63,10 @@ export function EditItemQuantityButton({
 }: {
   item: CartItem;
   type: "plus" | "minus";
-  optimisticUpdate: (merchandiseId: string, updateType: "plus" | "minus" | "delete") => void;
+  optimisticUpdate: (
+    merchandiseId: string,
+    updateType: "plus" | "minus" | "delete",
+  ) => void;
   size?: "xs" | "sm" | "md";
 }) {
   const [message, formAction] = useActionState(updateItemQuantity, null);

@@ -1,6 +1,6 @@
 "use server";
 
-import * as Sentry from "@sentry/nextjs"
+import * as Sentry from "@sentry/nextjs";
 import type { HttpTypes } from "@medusajs/types";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
@@ -16,9 +16,9 @@ import {
   removeWishlistId,
   setAuthToken,
 } from "lib/medusa/cookies";
-import { transferWishlist } from "lib/medusa/wishlist"
-import { getPostHogServer } from "lib/posthog-server"
-import { getPostHogAnonId, removePostHogAnonId } from "lib/posthog-cookies"
+import { transferWishlist } from "lib/medusa/wishlist";
+import { getPostHogServer } from "lib/posthog-server";
+import { getPostHogAnonId, removePostHogAnonId } from "lib/posthog-cookies";
 import { trackServer } from "lib/analytics-server";
 
 export type ActionResult = { error?: string; success?: boolean } | null;
@@ -55,13 +55,19 @@ export async function retrieveCustomer(): Promise<HttpTypes.StoreCustomer | null
       headers,
       query: { fields: "*addresses" },
     });
-    Sentry.setUser({ id: customer.id })
+    Sentry.setUser({ id: customer.id });
     return customer;
   } catch (e) {
     // Stale/expired tokens produce 401s on every page load — don't report those
-    const isAuthError = e instanceof Object && "status" in e && (e as { status: number }).status === 401
+    const isAuthError =
+      e instanceof Object &&
+      "status" in e &&
+      (e as { status: number }).status === 401;
     if (!isAuthError) {
-      Sentry.captureException(e, { tags: { action: "retrieve_customer" }, level: "warning" })
+      Sentry.captureException(e, {
+        tags: { action: "retrieve_customer" },
+        level: "warning",
+      });
     }
     return null;
   }
@@ -85,10 +91,12 @@ export async function login(
     await setAuthToken(token as string);
   } catch (e) {
     if (isRateLimited(e)) {
-      try { await trackServer("auth_rate_limited", { action: "login" }) } catch {}
+      try {
+        await trackServer("auth_rate_limited", { action: "login" });
+      } catch {}
       return "Too many login attempts. Please try again in 15 minutes.";
     }
-    Sentry.captureException(e, { tags: { action: "customer_login" } })
+    Sentry.captureException(e, { tags: { action: "customer_login" } });
     return e instanceof Error ? e.message : "Invalid email or password";
   }
 
@@ -106,14 +114,14 @@ export async function login(
 
   // PostHog: merge anonymous → customer identity
   try {
-    const customer = await retrieveCustomer()
+    const customer = await retrieveCustomer();
     if (customer) {
-      const anonId = await getPostHogAnonId()
-      const posthog = getPostHogServer()
+      const anonId = await getPostHogAnonId();
+      const posthog = getPostHogServer();
       if (posthog && anonId) {
-        posthog.alias({ distinctId: customer.id, alias: anonId })
+        posthog.alias({ distinctId: customer.id, alias: anonId });
       }
-      await trackServer("customer_logged_in", { method: "email" }, customer.id)
+      await trackServer("customer_logged_in", { method: "email" }, customer.id);
     }
   } catch {
     // Analytics is best-effort — don't block login
@@ -137,8 +145,8 @@ export async function signup(
   if (!firstName) return "First name is required";
   if (!lastName) return "Last name is required";
 
-  const passwordError = validatePassword(password)
-  if (passwordError) return passwordError
+  const passwordError = validatePassword(password);
+  if (passwordError) return passwordError;
 
   const customerForm = {
     email,
@@ -191,10 +199,12 @@ export async function signup(
   } catch (e) {
     if (tokenSet) await removeAuthToken();
     if (isRateLimited(e)) {
-      try { await trackServer("auth_rate_limited", { action: "signup" }) } catch {}
+      try {
+        await trackServer("auth_rate_limited", { action: "signup" });
+      } catch {}
       return "Too many attempts. Please try again in 15 minutes.";
     }
-    Sentry.captureException(e, { tags: { action: "customer_signup" } })
+    Sentry.captureException(e, { tags: { action: "customer_signup" } });
     return e instanceof Error ? e.message : "Error creating account";
   }
 
@@ -212,14 +222,14 @@ export async function signup(
 
   // PostHog: merge anonymous → customer identity
   try {
-    const customer = await retrieveCustomer()
+    const customer = await retrieveCustomer();
     if (customer) {
-      const anonId = await getPostHogAnonId()
-      const posthog = getPostHogServer()
+      const anonId = await getPostHogAnonId();
+      const posthog = getPostHogServer();
       if (posthog && anonId) {
-        posthog.alias({ distinctId: customer.id, alias: anonId })
+        posthog.alias({ distinctId: customer.id, alias: anonId });
       }
-      await trackServer("customer_signed_up", { method: "email" }, customer.id)
+      await trackServer("customer_signed_up", { method: "email" }, customer.id);
     }
   } catch {
     // Analytics is best-effort — don't block signup
@@ -232,9 +242,9 @@ export async function signup(
 export async function signout(): Promise<void> {
   // Track logout BEFORE clearing cookies (need customer context)
   try {
-    const customer = await retrieveCustomer()
+    const customer = await retrieveCustomer();
     if (customer) {
-      await trackServer("customer_logged_out", {}, customer.id)
+      await trackServer("customer_logged_out", {}, customer.id);
     }
   } catch {
     // Analytics is best-effort
@@ -246,11 +256,11 @@ export async function signout(): Promise<void> {
     // Logout endpoint may fail if token already expired — proceed anyway
   }
 
-  Sentry.setUser(null)
+  Sentry.setUser(null);
   await removeAuthToken();
   await removeCartId();
   await removeWishlistId();
-  await removePostHogAnonId() // Force new anonymous ID on next request
+  await removePostHogAnonId(); // Force new anonymous ID on next request
 
   revalidateTag(TAGS.customers, "max");
   revalidateTag(TAGS.cart, "max");
@@ -263,26 +273,33 @@ export async function signout(): Promise<void> {
 export async function requestPasswordReset(
   email: string,
 ): Promise<{ error?: string; success?: boolean }> {
-  const normalizedEmail = email?.trim().toLowerCase()
+  const normalizedEmail = email?.trim().toLowerCase();
   if (!normalizedEmail) {
-    return { error: "Email is required" }
+    return { error: "Email is required" };
   }
   try {
     await sdk.auth.resetPassword("customer", "emailpass", {
       identifier: normalizedEmail,
-    })
-    try { await trackServer("password_reset_requested", { email: normalizedEmail }) } catch {}
+    });
+    try {
+      await trackServer("password_reset_requested", { email: normalizedEmail });
+    } catch {}
   } catch (e) {
     if (isRateLimited(e)) {
-      try { await trackServer("auth_rate_limited", { action: "password-reset" }) } catch {}
-      return { error: "Too many attempts. Please try again in 15 minutes." }
+      try {
+        await trackServer("auth_rate_limited", { action: "password-reset" });
+      } catch {}
+      return { error: "Too many attempts. Please try again in 15 minutes." };
     }
     // Log infrastructure errors (network/5xx) for debugging, but still return
     // success to the user to prevent email enumeration.
-    Sentry.captureException(e, { tags: { action: "password_reset_request" }, level: "warning" })
-    console.error("[requestPasswordReset]", e)
+    Sentry.captureException(e, {
+      tags: { action: "password_reset_request" },
+      level: "warning",
+    });
+    console.error("[requestPasswordReset]", e);
   }
-  return { success: true }
+  return { success: true };
 }
 
 export async function completePasswordReset(
@@ -290,31 +307,38 @@ export async function completePasswordReset(
   email: string,
   password: string,
 ): Promise<{ error?: string; success?: boolean }> {
-  const normalizedEmail = email?.trim().toLowerCase()
-  if (!token) return { error: "Reset token is missing" }
-  if (!normalizedEmail) return { error: "Email is missing" }
-  if (!password) return { error: "Password is required" }
-  const passwordError = validatePassword(password)
-  if (passwordError) return { error: passwordError }
+  const normalizedEmail = email?.trim().toLowerCase();
+  if (!token) return { error: "Reset token is missing" };
+  if (!normalizedEmail) return { error: "Email is missing" };
+  if (!password) return { error: "Password is required" };
+  const passwordError = validatePassword(password);
+  if (passwordError) return { error: passwordError };
   try {
     await sdk.auth.updateProvider(
       "customer",
       "emailpass",
       { email: normalizedEmail, password },
       token,
-    )
-    try { await trackServer("password_reset_completed", {}) } catch {}
+    );
+    try {
+      await trackServer("password_reset_completed", {});
+    } catch {}
   } catch (e) {
     if (isRateLimited(e)) {
-      try { await trackServer("auth_rate_limited", { action: "password-reset" }) } catch {}
-      return { error: "Too many attempts. Please try again in 15 minutes." }
+      try {
+        await trackServer("auth_rate_limited", { action: "password-reset" });
+      } catch {}
+      return { error: "Too many attempts. Please try again in 15 minutes." };
     }
-    Sentry.captureException(e, { tags: { action: "password_reset_complete" } })
+    Sentry.captureException(e, { tags: { action: "password_reset_complete" } });
     return {
-      error: e instanceof Error ? e.message : "Unable to reset password. The link may have expired.",
-    }
+      error:
+        e instanceof Error
+          ? e.message
+          : "Unable to reset password. The link may have expired.",
+    };
   }
-  return { success: true }
+  return { success: true };
 }
 
 export async function updateCustomer(
@@ -332,11 +356,13 @@ export async function updateCustomer(
   try {
     await sdk.store.customer.update(body, {}, headers);
     try {
-      const fieldsChanged = Object.keys(body).filter((k) => body[k as keyof typeof body] !== undefined)
-      await trackServer("profile_updated", { fields_changed: fieldsChanged })
+      const fieldsChanged = Object.keys(body).filter(
+        (k) => body[k as keyof typeof body] !== undefined,
+      );
+      await trackServer("profile_updated", { fields_changed: fieldsChanged });
     } catch {}
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "update_customer" } })
+    Sentry.captureException(e, { tags: { action: "update_customer" } });
     return {
       error: e instanceof Error ? e.message : "Error updating profile",
     };
@@ -372,14 +398,14 @@ export async function addCustomerAddress(
   const address = parseAddressFields(formData);
 
   try {
-    await sdk.store.customer.createAddress(
-      address,
-      {},
-      headers,
-    );
-    try { await trackServer("address_added", { country_code: address.country_code ?? "" }) } catch {}
+    await sdk.store.customer.createAddress(address, {}, headers);
+    try {
+      await trackServer("address_added", {
+        country_code: address.country_code ?? "",
+      });
+    } catch {}
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "add_address" } })
+    Sentry.captureException(e, { tags: { action: "add_address" } });
     return {
       error: e instanceof Error ? e.message : "Error adding address",
     };
@@ -401,15 +427,14 @@ export async function updateCustomerAddress(
   const address = parseAddressFields(formData);
 
   try {
-    await sdk.store.customer.updateAddress(
-      addressId,
-      address,
-      {},
-      headers,
-    );
-    try { await trackServer("address_updated", { country_code: address.country_code ?? "" }) } catch {}
+    await sdk.store.customer.updateAddress(addressId, address, {}, headers);
+    try {
+      await trackServer("address_updated", {
+        country_code: address.country_code ?? "",
+      });
+    } catch {}
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "update_address" } })
+    Sentry.captureException(e, { tags: { action: "update_address" } });
     return {
       error: e instanceof Error ? e.message : "Error updating address",
     };
@@ -427,9 +452,11 @@ export async function deleteCustomerAddress(
 
   try {
     await sdk.store.customer.deleteAddress(addressId, headers);
-    try { await trackServer("address_deleted", {}) } catch {}
+    try {
+      await trackServer("address_deleted", {});
+    } catch {}
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "delete_address" } })
+    Sentry.captureException(e, { tags: { action: "delete_address" } });
     return e instanceof Error ? e.message : "Error deleting address";
   } finally {
     revalidateCustomer();

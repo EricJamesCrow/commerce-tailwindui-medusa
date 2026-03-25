@@ -40,11 +40,7 @@ export function ProductPageContent({
   );
 }
 
-function TrackProductView({
-  product,
-}: {
-  product: Product;
-}) {
+function TrackProductView({ product }: { product: Product }) {
   useEffect(() => {
     trackClient("product_viewed", {
       product_id: product.id,

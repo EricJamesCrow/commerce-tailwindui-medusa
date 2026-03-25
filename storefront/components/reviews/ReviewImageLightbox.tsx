@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  Dialog,
-  DialogBackdrop,
-  DialogPanel,
-} from "@headlessui/react";
+import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import {
   XMarkIcon,
   ChevronLeftIcon,
@@ -55,7 +51,9 @@ export function ReviewImageLightbox({
             <div className="absolute inset-y-0 flex w-full items-center justify-between px-2">
               <button
                 type="button"
-                onClick={() => setIndex((i) => (i > 0 ? i - 1 : images.length - 1))}
+                onClick={() =>
+                  setIndex((i) => (i > 0 ? i - 1 : images.length - 1))
+                }
                 aria-label="Previous image"
                 className="rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
               >
@@ -63,7 +61,9 @@ export function ReviewImageLightbox({
               </button>
               <button
                 type="button"
-                onClick={() => setIndex((i) => (i < images.length - 1 ? i + 1 : 0))}
+                onClick={() =>
+                  setIndex((i) => (i < images.length - 1 ? i + 1 : 0))
+                }
                 aria-label="Next image"
                 className="rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
               >

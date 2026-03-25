@@ -12,9 +12,7 @@ export async function GET(
   // Verify the cart belongs to the current session to prevent unauthorized completion
   const sessionCartId = await getCartId();
   if (!sessionCartId || sessionCartId !== cartId) {
-    return NextResponse.redirect(
-      `${origin}/checkout?error=invalid_session`,
-    );
+    return NextResponse.redirect(`${origin}/checkout?error=invalid_session`);
   }
 
   // Always attempt cart completion — Medusa validates payment status server-side
@@ -28,9 +26,7 @@ export async function GET(
       ),
     ]);
   } catch {
-    return NextResponse.redirect(
-      `${origin}/checkout?error=payment_failed`,
-    );
+    return NextResponse.redirect(`${origin}/checkout?error=payment_failed`);
   }
 
   if (result.type === "order") {

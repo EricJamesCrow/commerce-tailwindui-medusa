@@ -1,4 +1,4 @@
-import { withSentryConfig } from "@sentry/nextjs"
+import { withSentryConfig } from "@sentry/nextjs";
 
 export default withSentryConfig(
   {
@@ -36,7 +36,7 @@ export default withSentryConfig(
           source: "/api/ph/:path*",
           destination: "https://us.i.posthog.com/:path*",
         },
-      ]
+      ];
     },
     experimental: {
       serverActions: {
@@ -89,5 +89,5 @@ export default withSentryConfig(
     org: process.env.SENTRY_ORG,
     project: process.env.SENTRY_PROJECT,
     silent: !process.env.CI,
-  }
-)
+  },
+);

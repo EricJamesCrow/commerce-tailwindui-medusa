@@ -12,9 +12,7 @@ test.describe("Nav Wishlist Badge", () => {
     await expect(navHeart).toBeVisible({ timeout: 10_000 });
   });
 
-  test("nav badge links to wishlist page", async ({
-    authedPage: page,
-  }) => {
+  test("nav badge links to wishlist page", async ({ authedPage: page }) => {
     await page.goto("/");
     await page.waitForLoadState("networkidle");
 

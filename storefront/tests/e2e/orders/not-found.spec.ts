@@ -116,8 +116,8 @@ test.describe("404 Page", () => {
     await expect(heading).toBeVisible();
 
     // The heading should have white text
-    const headingColor = await heading.evaluate((el) =>
-      window.getComputedStyle(el).color,
+    const headingColor = await heading.evaluate(
+      (el) => window.getComputedStyle(el).color,
     );
     // White = rgb(255, 255, 255)
     expect(headingColor).toBe("rgb(255, 255, 255)");

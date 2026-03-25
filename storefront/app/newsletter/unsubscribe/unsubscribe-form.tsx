@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useActionState } from "react"
-import { unsubscribeNewsletter } from "./actions"
+import { useActionState } from "react";
+import { unsubscribeNewsletter } from "./actions";
 
-type Result = { success?: boolean; error?: string } | null
+type Result = { success?: boolean; error?: string } | null;
 
 export function UnsubscribeForm({ token }: { token: string }) {
   const [state, formAction, isPending] = useActionState<Result, FormData>(
     async () => unsubscribeNewsletter(token),
-    null
-  )
+    null,
+  );
 
   if (state?.success) {
     return (
@@ -23,7 +23,7 @@ export function UnsubscribeForm({ token }: { token: string }) {
           </p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -61,5 +61,5 @@ export function UnsubscribeForm({ token }: { token: string }) {
         )}
       </div>
     </div>
-  )
+  );
 }

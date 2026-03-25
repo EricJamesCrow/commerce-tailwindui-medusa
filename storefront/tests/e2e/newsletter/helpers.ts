@@ -1,5 +1,11 @@
 import { createHmac } from "node:crypto";
-import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { resolve } from "node:path";
 import type { Page } from "@playwright/test";
 import { BACKEND_URL, PUBLISHABLE_KEY } from "../fixtures/api.fixture";
@@ -33,7 +39,10 @@ function parseEnvValue(content: string, key: string): string | null {
     const currentKey = line.slice(0, separator).trim();
     if (currentKey !== key) continue;
 
-    return line.slice(separator + 1).trim().replace(/^["']|["']$/g, "");
+    return line
+      .slice(separator + 1)
+      .trim()
+      .replace(/^["']|["']$/g, "");
   }
 
   return null;
@@ -95,7 +104,10 @@ async function acquireNewsletterRateLimitLock(): Promise<() => void> {
     try {
       mkdirSync(NEWSLETTER_RATE_LIMIT_LOCK_DIR);
       return () => {
-        rmSync(NEWSLETTER_RATE_LIMIT_LOCK_DIR, { recursive: true, force: true });
+        rmSync(NEWSLETTER_RATE_LIMIT_LOCK_DIR, {
+          recursive: true,
+          force: true,
+        });
       };
     } catch (error) {
       const code = (error as NodeJS.ErrnoException).code;

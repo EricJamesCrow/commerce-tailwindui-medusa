@@ -1,11 +1,11 @@
-import { UnsubscribeForm } from "./unsubscribe-form"
+import { UnsubscribeForm } from "./unsubscribe-form";
 
 type Props = {
-  searchParams: Promise<{ token?: string }>
-}
+  searchParams: Promise<{ token?: string }>;
+};
 
 export default async function UnsubscribePage({ searchParams }: Props) {
-  const { token } = await searchParams
+  const { token } = await searchParams;
 
   if (!token) {
     return (
@@ -17,8 +17,8 @@ export default async function UnsubscribePage({ searchParams }: Props) {
           </p>
         </div>
       </div>
-    )
+    );
   }
 
-  return <UnsubscribeForm token={token} />
+  return <UnsubscribeForm token={token} />;
 }

@@ -133,10 +133,7 @@ function WishlistItemCard({
   const product = variant?.product;
   const thumbnail = product?.thumbnail;
 
-  const boundAddToCart = addToCartAction.bind(
-    null,
-    item.product_variant_id,
-  );
+  const boundAddToCart = addToCartAction.bind(null, item.product_variant_id);
 
   function handleRemove() {
     startRemoveTransition(async () => {
@@ -144,7 +141,8 @@ function WishlistItemCard({
       formData.set("wishlist_id", wishlistId);
       formData.set("item_id", item.id);
       if (product?.id) formData.set("product_id", product.id);
-      if (item.product_variant_id) formData.set("variant_id", item.product_variant_id);
+      if (item.product_variant_id)
+        formData.set("variant_id", item.product_variant_id);
       const result = await removeFromWishlist(null, formData);
       if (result?.error) {
         showNotification("error", "Could not remove item", result.error);
@@ -256,7 +254,7 @@ function EmptyState() {
       <div className="mt-6">
         <Link
           href="/products"
-          className="inline-flex items-center rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+          className="bg-primary-600 hover:bg-primary-500 focus-visible:outline-primary-600 inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           Browse Products
         </Link>
@@ -299,7 +297,7 @@ function ShareButton({ wishlistId }: { wishlistId: string }) {
       onClick={handleShare}
       disabled={isPending}
       className={clsx(
-        "inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 shadow-sm ring-gray-300 ring-inset hover:bg-gray-50",
+        "inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50",
         isPending && "cursor-not-allowed opacity-50",
       )}
     >
@@ -336,7 +334,7 @@ function NewWishlistButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+        className="bg-primary-600 hover:bg-primary-500 focus-visible:outline-primary-600 inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2"
       >
         <PlusIcon className="-ml-0.5 size-4" />
         New Wishlist
@@ -375,7 +373,7 @@ function NewWishlistButton() {
                     type="text"
                     required
                     placeholder="e.g. Gift ideas"
-                    className="mt-1 block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600 sm:text-sm/6"
+                    className="focus:outline-primary-600 mt-1 block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 sm:text-sm/6"
                   />
 
                   {state?.error && (
@@ -386,7 +384,7 @@ function NewWishlistButton() {
                     <button
                       type="button"
                       onClick={() => setOpen(false)}
-                      className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 shadow-sm ring-gray-300 ring-inset hover:bg-gray-50"
+                      className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
                     >
                       Cancel
                     </button>
@@ -394,7 +392,7 @@ function NewWishlistButton() {
                       type="submit"
                       disabled={isPending}
                       className={clsx(
-                        "rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600",
+                        "bg-primary-600 hover:bg-primary-500 focus-visible:outline-primary-600 rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2",
                         isPending && "cursor-not-allowed opacity-50",
                       )}
                     >
@@ -428,14 +426,14 @@ function WishlistActionsMenu({
   return (
     <>
       <Menu as="div" className="relative">
-        <MenuButton className="inline-flex items-center rounded-md bg-white p-2 text-gray-400 ring-1 shadow-sm ring-gray-300 ring-inset hover:bg-gray-50 hover:text-gray-500">
+        <MenuButton className="inline-flex items-center rounded-md bg-white p-2 text-gray-400 shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50 hover:text-gray-500">
           <span className="sr-only">Wishlist options</span>
           <EllipsisVerticalIcon className="size-5" />
         </MenuButton>
 
         <MenuItems
           transition
-          className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 ring-1 shadow-lg ring-black/5 transition focus:outline-none data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
+          className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 transition focus:outline-none data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
         >
           <MenuItem>
             <button
@@ -536,7 +534,7 @@ function RenameWishlistDialog({
                 type="text"
                 required
                 defaultValue={wishlist.name || ""}
-                className="mt-1 block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600 sm:text-sm/6"
+                className="focus:outline-primary-600 mt-1 block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 sm:text-sm/6"
               />
               {state?.error && (
                 <p className="mt-2 text-sm text-red-600">{state.error}</p>
@@ -545,7 +543,7 @@ function RenameWishlistDialog({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 shadow-sm ring-gray-300 ring-inset hover:bg-gray-50"
+                  className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
                 >
                   Cancel
                 </button>
@@ -553,7 +551,7 @@ function RenameWishlistDialog({
                   type="submit"
                   disabled={isPending}
                   className={clsx(
-                    "rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600",
+                    "bg-primary-600 hover:bg-primary-500 focus-visible:outline-primary-600 rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2",
                     isPending && "cursor-not-allowed opacity-50",
                   )}
                 >
@@ -628,7 +626,7 @@ function DeleteWishlistDialog({
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 shadow-sm ring-gray-300 ring-inset hover:bg-gray-50"
+                className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
               >
                 Cancel
               </button>

@@ -11,15 +11,13 @@ test.describe("Optimistic Review Submission", () => {
 
     // Open review form
     await page.locator(sel.WRITE_REVIEW_BUTTON).click();
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).toBeVisible({
+      timeout: 5_000,
+    });
 
     // Fill and submit
     await page.locator(sel.REVIEW_STAR_BUTTON(4)).click();
-    await page
-      .locator(sel.REVIEW_TITLE_INPUT)
-      .fill("Optimistic test review");
+    await page.locator(sel.REVIEW_TITLE_INPUT).fill("Optimistic test review");
     await page
       .locator(sel.REVIEW_CONTENT_INPUT)
       .fill("This review should appear instantly without a page refresh.");
@@ -28,9 +26,9 @@ test.describe("Optimistic Review Submission", () => {
     await submitBtn.click();
 
     // Dialog should close immediately
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).not.toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).not.toBeVisible({
+      timeout: 5_000,
+    });
 
     // Review should appear in the list without refreshing
     await expect(
@@ -55,9 +53,9 @@ test.describe("Optimistic Review Submission", () => {
 
     // Open review form
     await page.locator(sel.WRITE_REVIEW_BUTTON).click();
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).toBeVisible({
+      timeout: 5_000,
+    });
 
     // Fill and submit
     await page.locator(sel.REVIEW_STAR_BUTTON(3)).click();
@@ -69,9 +67,9 @@ test.describe("Optimistic Review Submission", () => {
     await submitBtn.click();
 
     // Dialog should close
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).not.toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).not.toBeVisible({
+      timeout: 5_000,
+    });
 
     // Count should increment by 1
     const expectedCount = beforeCount + 1;
@@ -90,14 +88,12 @@ test.describe("Optimistic Review Submission", () => {
 
     // Open, fill, submit
     await page.locator(sel.WRITE_REVIEW_BUTTON).click();
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).toBeVisible({
+      timeout: 5_000,
+    });
 
     await page.locator(sel.REVIEW_STAR_BUTTON(5)).click();
-    await page
-      .locator(sel.REVIEW_TITLE_INPUT)
-      .fill("Persistent review");
+    await page.locator(sel.REVIEW_TITLE_INPUT).fill("Persistent review");
     await page
       .locator(sel.REVIEW_CONTENT_INPUT)
       .fill("This review should persist after the dialog closes.");
@@ -106,9 +102,9 @@ test.describe("Optimistic Review Submission", () => {
     await submitBtn.click();
 
     // Dialog closes
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).not.toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).not.toBeVisible({
+      timeout: 5_000,
+    });
 
     // Scroll to reviews section and verify the review is still visible
     await page.locator(sel.REVIEW_SECTION_HEADING).scrollIntoViewIfNeeded();

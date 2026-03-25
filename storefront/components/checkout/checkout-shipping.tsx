@@ -1,7 +1,7 @@
 "use client";
 
 import type { HttpTypes } from "@medusajs/types";
-import * as Sentry from "@sentry/nextjs"
+import * as Sentry from "@sentry/nextjs";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
 
@@ -15,10 +15,7 @@ type CheckoutShippingProps = {
   onComplete: () => void;
 };
 
-export function CheckoutShipping({
-  cart,
-  onComplete,
-}: CheckoutShippingProps) {
+export function CheckoutShipping({ cart, onComplete }: CheckoutShippingProps) {
   const [options, setOptions] = useState<ShippingOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(
@@ -48,8 +45,7 @@ export function CheckoutShipping({
         // Auto-select and submit if there's only one option
         const preselected =
           cart.shipping_methods?.[0]?.shipping_option_id ?? null;
-        const autoSelectId =
-          opts.length === 1 ? opts[0]!.id : preselected;
+        const autoSelectId = opts.length === 1 ? opts[0]!.id : preselected;
 
         if (autoSelectId && opts.some((o) => o.id === autoSelectId)) {
           setSelectedOptionId(autoSelectId);
@@ -62,14 +58,18 @@ export function CheckoutShipping({
               setError(result);
             }
           } catch (e) {
-            Sentry.captureException(e, { tags: { action: "auto_select_shipping", } })
+            Sentry.captureException(e, {
+              tags: { action: "auto_select_shipping" },
+            });
           } finally {
             setIsSubmitting(false);
           }
         }
       })
       .catch((e: unknown) => {
-        Sentry.captureException(e, { tags: { action: "load_shipping_options", } })
+        Sentry.captureException(e, {
+          tags: { action: "load_shipping_options" },
+        });
         setError("Failed to load shipping options. Please try again.");
         setIsLoading(false);
       });
@@ -89,7 +89,7 @@ export function CheckoutShipping({
         setError(result);
       }
     } catch (err) {
-      Sentry.captureException(err, { tags: { action: "set_shipping_method", } })
+      Sentry.captureException(err, { tags: { action: "set_shipping_method" } });
       setError(
         err instanceof Error ? err.message : "An unexpected error occurred.",
       );
@@ -141,7 +141,7 @@ export function CheckoutShipping({
             <label
               key={option.id}
               className={clsx(
-                "group relative block cursor-pointer rounded-lg border border-gray-300 bg-white px-6 py-4 has-[:checked]:outline has-[:checked]:outline-2 has-[:checked]:-outline-offset-2 has-[:checked]:outline-primary-600 sm:flex sm:justify-between",
+                "group has-[:checked]:outline-primary-600 relative block cursor-pointer rounded-lg border border-gray-300 bg-white px-6 py-4 has-[:checked]:outline has-[:checked]:outline-2 has-[:checked]:-outline-offset-2 sm:flex sm:justify-between",
                 isSubmitting && "pointer-events-none opacity-60",
               )}
             >
@@ -166,7 +166,7 @@ export function CheckoutShipping({
                   </span>
                 </span>
               </span>
-              <span className="mt-2 flex text-sm sm:ml-4 sm:mt-0 sm:flex-col sm:text-right">
+              <span className="mt-2 flex text-sm sm:mt-0 sm:ml-4 sm:flex-col sm:text-right">
                 <span className="font-medium text-gray-900">
                   {formatMoney(option.amount, option.currency_code)}
                 </span>
@@ -181,9 +181,7 @@ export function CheckoutShipping({
 
       {/* Submitting indicator */}
       {isSubmitting && (
-        <p className="mt-4 text-sm text-gray-500">
-          Setting shipping method...
-        </p>
+        <p className="mt-4 text-sm text-gray-500">Setting shipping method...</p>
       )}
     </div>
   );

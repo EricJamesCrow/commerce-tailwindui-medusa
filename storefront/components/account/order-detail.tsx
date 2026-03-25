@@ -54,10 +54,7 @@ function getProgressLabelAlignment(stepIndex: number): string {
 }
 
 function getProgressWidth(step: number): string {
-  const clampedStep = Math.max(
-    0,
-    Math.min(step, LAST_PROGRESS_STEP_INDEX),
-  );
+  const clampedStep = Math.max(0, Math.min(step, LAST_PROGRESS_STEP_INDEX));
 
   // Preserve the staggered fill behavior for in-flight stages, but let the
   // terminal state render as fully complete.
@@ -74,7 +71,7 @@ function ProgressBar({ step }: { step: number }) {
       <div className="overflow-hidden rounded-full bg-gray-200">
         <div
           style={{ width: getProgressWidth(step) }}
-          className="h-2 rounded-full bg-primary-600"
+          className="bg-primary-600 h-2 rounded-full"
         />
       </div>
       <div className="mt-6 hidden grid-cols-4 text-sm font-medium text-gray-600 sm:grid">
@@ -117,9 +114,7 @@ function AddressBlock({
         <span className="block">
           {address.city}, {address.province} {address.postal_code}
         </span>
-        {address.phone && (
-          <span className="block mt-1">{address.phone}</span>
-        )}
+        {address.phone && <span className="mt-1 block">{address.phone}</span>}
       </dd>
     </div>
   );
@@ -156,8 +151,24 @@ function CardSvg() {
       aria-hidden="true"
     >
       <rect rx={4} fill="currentColor" width={36} height={24} opacity={0.2} />
-      <rect x={2} y={6} width={32} height={4} rx={1} fill="currentColor" opacity={0.4} />
-      <rect x={4} y={14} width={8} height={2} rx={1} fill="currentColor" opacity={0.3} />
+      <rect
+        x={2}
+        y={6}
+        width={32}
+        height={4}
+        rx={1}
+        fill="currentColor"
+        opacity={0.4}
+      />
+      <rect
+        x={4}
+        y={14}
+        width={8}
+        height={2}
+        rx={1}
+        fill="currentColor"
+        opacity={0.3}
+      />
     </svg>
   );
 }
@@ -185,9 +196,7 @@ export function OrderDetail({ order }: { order: StoreOrderDetail }) {
       <div className="mt-2 border-b border-gray-200 pb-5 text-sm sm:flex sm:justify-between">
         <dl className="flex">
           <dt className="text-gray-500">Order number&nbsp;</dt>
-          <dd className="font-medium text-gray-900">
-            #{order.display_id}
-          </dd>
+          <dd className="font-medium text-gray-900">#{order.display_id}</dd>
           <dt>
             <span className="sr-only">Date</span>
             <span aria-hidden="true" className="mx-2 text-gray-400">
@@ -261,12 +270,9 @@ export function OrderDetail({ order }: { order: StoreOrderDetail }) {
                 <p className="mt-1 font-medium text-gray-900">
                   {formatMoney(item.unit_price as number, currencyCode)}
                 </p>
-                {item.variant?.title &&
-                  item.variant.title !== "Default" && (
-                    <p className="mt-1 text-gray-500">
-                      {item.variant.title}
-                    </p>
-                  )}
+                {item.variant?.title && item.variant.title !== "Default" && (
+                  <p className="mt-1 text-gray-500">{item.variant.title}</p>
+                )}
                 <p className="mt-1 text-gray-500">Qty: {item.quantity}</p>
               </div>
 
@@ -326,9 +332,7 @@ export function OrderDetail({ order }: { order: StoreOrderDetail }) {
               address={order.billing_address}
             />
             <div>
-              <dt className="font-medium text-gray-900">
-                Payment information
-              </dt>
+              <dt className="font-medium text-gray-900">Payment information</dt>
               <dd className="mt-3 flex">
                 <div>
                   {card?.brand?.toLowerCase() === "visa" ? (
@@ -341,9 +345,7 @@ export function OrderDetail({ order }: { order: StoreOrderDetail }) {
                 <div className="ml-4">
                   {card ? (
                     <>
-                      <p className="text-gray-900">
-                        Ending with {card.last4}
-                      </p>
+                      <p className="text-gray-900">Ending with {card.last4}</p>
                       {card.expMonth && card.expYear && (
                         <p className="text-gray-600">
                           Expires {String(card.expMonth).padStart(2, "0")} /{" "}
@@ -395,7 +397,7 @@ export function OrderDetail({ order }: { order: StoreOrderDetail }) {
             </div>
             <div className="flex items-center justify-between pt-4">
               <dt className="font-medium text-gray-900">Order total</dt>
-              <dd className="font-medium text-primary-600">
+              <dd className="text-primary-600 font-medium">
                 {formatMoney(order.total, currencyCode)}
               </dd>
             </div>

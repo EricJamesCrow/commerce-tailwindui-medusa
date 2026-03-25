@@ -29,7 +29,10 @@ function formatBrand(brand: string): string {
     jcb: "JCB",
     unionpay: "UnionPay",
   };
-  return brands[brand.toLowerCase()] || brand.charAt(0).toUpperCase() + brand.slice(1);
+  return (
+    brands[brand.toLowerCase()] ||
+    brand.charAt(0).toUpperCase() + brand.slice(1)
+  );
 }
 
 export function SavedPaymentMethods({
@@ -45,9 +48,9 @@ export function SavedPaymentMethods({
   const [error, setError] = useState<string | null>(null);
   const fetchedRef = useRef(false);
 
-  const accountHolderId =
-    (paymentSession?.context as { account_holder?: { id: string } } | undefined)
-      ?.account_holder?.id;
+  const accountHolderId = (
+    paymentSession?.context as { account_holder?: { id: string } } | undefined
+  )?.account_holder?.id;
 
   // Fetch saved payment methods on mount
   useEffect(() => {
@@ -157,7 +160,7 @@ export function SavedPaymentMethods({
               <label
                 key={method.id}
                 className={clsx(
-                  "group relative block cursor-pointer rounded-lg border border-gray-300 bg-white px-6 py-4 has-[:checked]:outline has-[:checked]:outline-2 has-[:checked]:-outline-offset-2 has-[:checked]:outline-primary-600",
+                  "group has-[:checked]:outline-primary-600 relative block cursor-pointer rounded-lg border border-gray-300 bg-white px-6 py-4 has-[:checked]:outline has-[:checked]:outline-2 has-[:checked]:-outline-offset-2",
                   isSwitching && "pointer-events-none opacity-60",
                 )}
               >
@@ -171,10 +174,12 @@ export function SavedPaymentMethods({
                 />
                 <span className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-900">
-                    {formatBrand(card.brand)} &bull;&bull;&bull;&bull; {card.last4}
+                    {formatBrand(card.brand)} &bull;&bull;&bull;&bull;{" "}
+                    {card.last4}
                   </span>
                   <span className="text-sm text-gray-500">
-                    Expires {String(card.exp_month).padStart(2, "0")}/{card.exp_year}
+                    Expires {String(card.exp_month).padStart(2, "0")}/
+                    {card.exp_year}
                   </span>
                 </span>
               </label>
@@ -184,7 +189,7 @@ export function SavedPaymentMethods({
           {/* Use a new card option */}
           <label
             className={clsx(
-              "group relative block cursor-pointer rounded-lg border border-gray-300 bg-white px-6 py-4 has-[:checked]:outline has-[:checked]:outline-2 has-[:checked]:-outline-offset-2 has-[:checked]:outline-primary-600",
+              "group has-[:checked]:outline-primary-600 relative block cursor-pointer rounded-lg border border-gray-300 bg-white px-6 py-4 has-[:checked]:outline has-[:checked]:outline-2 has-[:checked]:-outline-offset-2",
               isSwitching && "pointer-events-none opacity-60",
             )}
           >

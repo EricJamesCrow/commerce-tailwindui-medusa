@@ -1,11 +1,11 @@
-import "server-only"
-import { PostHog } from "posthog-node"
+import "server-only";
+import { PostHog } from "posthog-node";
 
-let client: PostHog | null = null
+let client: PostHog | null = null;
 
 export function getPostHogServer(): PostHog | null {
-  const apiKey = process.env.POSTHOG_API_KEY
-  if (!apiKey) return null
+  const apiKey = process.env.POSTHOG_API_KEY;
+  if (!apiKey) return null;
 
   if (!client) {
     client = new PostHog(apiKey, {
@@ -14,12 +14,12 @@ export function getPostHogServer(): PostHog | null {
       featureFlagsPollingInterval: 30000,
       flushAt: 1,
       flushInterval: 0,
-    })
+    });
 
     process.on("beforeExit", () => {
-      client?.shutdown()
-    })
+      client?.shutdown();
+    });
   }
 
-  return client
+  return client;
 }

@@ -88,7 +88,7 @@ export function SavedAddressPicker({
               className={clsx(
                 "group relative block cursor-pointer rounded-lg border bg-white px-6 py-4 sm:flex sm:justify-between",
                 isChecked
-                  ? "border-transparent outline outline-2 -outline-offset-2 outline-primary-600"
+                  ? "outline-primary-600 border-transparent outline outline-2 -outline-offset-2"
                   : "border-gray-300",
               )}
             >
@@ -105,9 +105,7 @@ export function SavedAddressPicker({
                   <span className="font-medium text-gray-900">{name}</span>
                   <span className="text-gray-500">{line}</span>
                   <span className="text-gray-500">{cityStateZip}</span>
-                  {phone && (
-                    <span className="text-gray-500">{phone}</span>
-                  )}
+                  {phone && <span className="text-gray-500">{phone}</span>}
                 </span>
               </span>
             </label>
@@ -119,7 +117,7 @@ export function SavedAddressPicker({
           className={clsx(
             "group relative block cursor-pointer rounded-lg border bg-white px-6 py-4 sm:flex sm:justify-between",
             selected === "new"
-              ? "border-transparent outline outline-2 -outline-offset-2 outline-primary-600"
+              ? "outline-primary-600 border-transparent outline outline-2 -outline-offset-2"
               : "border-gray-300",
           )}
         >

@@ -119,11 +119,7 @@ export default async function ProductPage(props: {
   );
 }
 
-function ProductStructuredData({
-  product,
-}: {
-  product: Product;
-}) {
+function ProductStructuredData({ product }: { product: Product }) {
   const productJsonLd = buildProductJsonLd(product, null);
 
   return <JsonLdScript data={productJsonLd} />;

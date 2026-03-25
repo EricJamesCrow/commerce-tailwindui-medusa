@@ -1,45 +1,45 @@
-"use client"
+"use client";
 
-import { useActionState, useEffect, useRef } from "react"
-import { subscribeToNewsletter, type NewsletterResult } from "./actions"
-import { useNotification } from "components/notifications/notification-context"
+import { useActionState, useEffect, useRef } from "react";
+import { subscribeToNewsletter, type NewsletterResult } from "./actions";
+import { useNotification } from "components/notifications/notification-context";
 
 export function FooterNewsletter({
   customerEmail,
 }: {
-  customerEmail?: string | null
+  customerEmail?: string | null;
 }) {
-  const { showNotification } = useNotification()
-  const hasNotified = useRef(false)
+  const { showNotification } = useNotification();
+  const hasNotified = useRef(false);
 
   const [state, formAction, isPending] = useActionState<
     NewsletterResult,
     FormData
   >(async (_prev, formData) => {
-    const email = formData.get("email") as string
-    if (!email) return { error: "Email is required" }
-    hasNotified.current = false
-    return subscribeToNewsletter(email)
-  }, null)
+    const email = formData.get("email") as string;
+    if (!email) return { error: "Email is required" };
+    hasNotified.current = false;
+    return subscribeToNewsletter(email);
+  }, null);
 
   useEffect(() => {
-    if (hasNotified.current) return
+    if (hasNotified.current) return;
     if (state?.success) {
-      hasNotified.current = true
+      hasNotified.current = true;
       showNotification(
         "success",
         "You're subscribed!",
-        "A welcome email is on its way to your inbox."
-      )
+        "A welcome email is on its way to your inbox.",
+      );
     } else if (state?.error) {
-      hasNotified.current = true
+      hasNotified.current = true;
       showNotification(
         "error",
         "Subscription failed",
-        "Something went wrong. Please try again."
-      )
+        "Something went wrong. Please try again.",
+      );
     }
-  }, [state, showNotification])
+  }, [state, showNotification]);
 
   return (
     <div className="mt-12 md:col-span-8 md:col-start-3 md:row-start-2 md:mt-0 lg:col-span-4 lg:col-start-9 lg:row-start-1">
@@ -51,9 +51,7 @@ export function FooterNewsletter({
       </p>
 
       {state?.success ? (
-        <p className="mt-2 text-sm text-green-600">
-          Thanks! Check your inbox.
-        </p>
+        <p className="mt-2 text-sm text-green-600">Thanks! Check your inbox.</p>
       ) : (
         <form action={formAction} className="mt-2 flex sm:max-w-md">
           <input
@@ -66,7 +64,7 @@ export function FooterNewsletter({
             defaultValue={customerEmail ?? ""}
             disabled={isPending}
             placeholder="Enter your email"
-            className="block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600 disabled:opacity-50 sm:text-sm/6"
+            className="focus:outline-primary-600 block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 disabled:opacity-50 sm:text-sm/6"
           />
           <div className="ml-4 shrink-0">
             <button
@@ -86,5 +84,5 @@ export function FooterNewsletter({
         </p>
       )}
     </div>
-  )
+  );
 }

@@ -9,9 +9,9 @@ test.describe("Review Form", () => {
     await page.goto(`/product/${testProductHandle}`);
     await page.waitForLoadState("networkidle");
 
-    await expect(
-      page.locator(sel.WRITE_REVIEW_BUTTON),
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator(sel.WRITE_REVIEW_BUTTON)).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test("opens review form dialog when clicking write review", async ({
@@ -23,9 +23,9 @@ test.describe("Review Form", () => {
 
     await page.locator(sel.WRITE_REVIEW_BUTTON).click();
 
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).toBeVisible({
+      timeout: 5_000,
+    });
     await expect(page.locator(sel.REVIEW_TITLE_INPUT)).toBeVisible();
     await expect(page.locator(sel.REVIEW_CONTENT_INPUT)).toBeVisible();
   });
@@ -38,9 +38,9 @@ test.describe("Review Form", () => {
     await page.waitForLoadState("networkidle");
 
     await page.locator(sel.WRITE_REVIEW_BUTTON).click();
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).toBeVisible({
+      timeout: 5_000,
+    });
 
     // Click the 4th star
     await page.locator(sel.REVIEW_STAR_BUTTON(4)).click();
@@ -58,9 +58,9 @@ test.describe("Review Form", () => {
     await page.waitForLoadState("networkidle");
 
     await page.locator(sel.WRITE_REVIEW_BUTTON).click();
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).toBeVisible({
+      timeout: 5_000,
+    });
 
     const submitBtn = page.locator(sel.REVIEW_SUBMIT_BUTTON).last();
     await expect(submitBtn).toBeDisabled();
@@ -74,9 +74,9 @@ test.describe("Review Form", () => {
     await page.waitForLoadState("networkidle");
 
     await page.locator(sel.WRITE_REVIEW_BUTTON).click();
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).toBeVisible({
+      timeout: 5_000,
+    });
 
     // Set rating
     await page.locator(sel.REVIEW_STAR_BUTTON(5)).click();
@@ -95,9 +95,9 @@ test.describe("Review Form", () => {
     await submitBtn.click();
 
     // Dialog closes immediately (optimistic submission)
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).not.toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).not.toBeVisible({
+      timeout: 5_000,
+    });
 
     // Review appears in the list
     await expect(
@@ -115,9 +115,9 @@ test.describe("Review Form", () => {
     await page.waitForLoadState("networkidle");
 
     await page.locator(sel.WRITE_REVIEW_BUTTON).click();
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).toBeVisible({
+      timeout: 5_000,
+    });
 
     // Set rating but leave content empty
     await page.locator(sel.REVIEW_STAR_BUTTON(3)).click();
@@ -137,15 +137,15 @@ test.describe("Review Form", () => {
     await page.waitForLoadState("networkidle");
 
     // The write review button should be visible (canReview is always true)
-    await expect(
-      page.locator(sel.WRITE_REVIEW_BUTTON),
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator(sel.WRITE_REVIEW_BUTTON)).toBeVisible({
+      timeout: 15_000,
+    });
 
     // Open form
     await page.locator(sel.WRITE_REVIEW_BUTTON).click();
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).toBeVisible({
+      timeout: 5_000,
+    });
 
     // Fill form
     await page.locator(sel.REVIEW_STAR_BUTTON(4)).click();
@@ -169,15 +169,15 @@ test.describe("Review Form", () => {
     await page.waitForLoadState("networkidle");
 
     await page.locator(sel.WRITE_REVIEW_BUTTON).click();
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).toBeVisible({
+      timeout: 5_000,
+    });
 
     // Close with the X button (sr-only "Close" label)
     await page.locator('button:has(span:has-text("Close"))').click();
 
-    await expect(
-      page.locator(sel.REVIEW_DIALOG_TITLE),
-    ).not.toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).not.toBeVisible({
+      timeout: 5_000,
+    });
   });
 });

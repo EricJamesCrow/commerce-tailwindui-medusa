@@ -43,10 +43,7 @@ function deriveCompletedSteps(cart: HttpTypes.StoreCart): Set<CheckoutStep> {
   return completed;
 }
 
-function getStepSummary(
-  step: CheckoutStep,
-  cart: HttpTypes.StoreCart,
-): string {
+function getStepSummary(step: CheckoutStep, cart: HttpTypes.StoreCart): string {
   switch (step) {
     case "email":
       return cart.email || "";
@@ -91,19 +88,17 @@ export function CheckoutForm({
 
   // Stripe refs for payment confirmation in review step
   const [stripeInstance, setStripeInstance] = useState<Stripe | null>(null);
-  const [elementsInstance, setElementsInstance] = useState<StripeElements | null>(null);
+  const [elementsInstance, setElementsInstance] =
+    useState<StripeElements | null>(null);
 
-  const onStepComplete = useCallback(
-    (step: CheckoutStep) => {
-      const currentIndex = STEP_ORDER.indexOf(step);
-      const nextStep =
-        currentIndex < STEP_ORDER.length - 1
-          ? STEP_ORDER[currentIndex + 1]!
-          : "review";
-      setActiveStep(nextStep);
-    },
-    [],
-  );
+  const onStepComplete = useCallback((step: CheckoutStep) => {
+    const currentIndex = STEP_ORDER.indexOf(step);
+    const nextStep =
+      currentIndex < STEP_ORDER.length - 1
+        ? STEP_ORDER[currentIndex + 1]!
+        : "review";
+    setActiveStep(nextStep);
+  }, []);
 
   const onEditStep = useCallback((step: CheckoutStep) => {
     setActiveStep(step);
@@ -162,72 +157,76 @@ export function CheckoutForm({
     <div>
       <ExpressCheckout cart={cart} />
 
-      <div className="divide-y divide-gray-200 border-b border-t border-gray-200">
-      {STEP_ORDER.map((step) => {
-        const isCompleted = completedSteps.has(step);
-        const isActive = step === activeStep;
-        const isFuture = !isCompleted && !isActive;
+      <div className="divide-y divide-gray-200 border-t border-b border-gray-200">
+        {STEP_ORDER.map((step) => {
+          const isCompleted = completedSteps.has(step);
+          const isActive = step === activeStep;
+          const isFuture = !isCompleted && !isActive;
 
-        // Payment step needs a persistent render to keep Stripe Elements mounted.
-        // Once Stripe refs are captured, keep the payment DOM alive (hidden) on
-        // any step so refs remain valid when the user returns or proceeds to review.
-        const isPaymentPersisted =
-          step === "payment" && (isActive || stripeInstance !== null);
+          // Payment step needs a persistent render to keep Stripe Elements mounted.
+          // Once Stripe refs are captured, keep the payment DOM alive (hidden) on
+          // any step so refs remain valid when the user returns or proceeds to review.
+          const isPaymentPersisted =
+            step === "payment" && (isActive || stripeInstance !== null);
 
-        const isCollapsed = isCompleted && !isActive;
+          const isCollapsed = isCompleted && !isActive;
 
-        return (
-          <div key={step} className="py-6">
-            {/* Future/disabled step */}
-            {isFuture && (
-              <button
-                type="button"
-                disabled
-                className="w-full cursor-auto text-left text-lg font-medium text-gray-500"
-              >
-                {STEP_LABELS[step]}
-              </button>
-            )}
+          return (
+            <div key={step} className="py-6">
+              {/* Future/disabled step */}
+              {isFuture && (
+                <button
+                  type="button"
+                  disabled
+                  className="w-full cursor-auto text-left text-lg font-medium text-gray-500"
+                >
+                  {STEP_LABELS[step]}
+                </button>
+              )}
 
-            {/* Active or completed step heading */}
-            {!isFuture && (
-              <div className={clsx(isCollapsed && "flex items-center justify-between")}>
-                <div>
-                  <h2 className="text-lg font-medium text-gray-900">
-                    {STEP_LABELS[step]}
-                  </h2>
+              {/* Active or completed step heading */}
+              {!isFuture && (
+                <div
+                  className={clsx(
+                    isCollapsed && "flex items-center justify-between",
+                  )}
+                >
+                  <div>
+                    <h2 className="text-lg font-medium text-gray-900">
+                      {STEP_LABELS[step]}
+                    </h2>
+                    {isCollapsed && (
+                      <p className="mt-1 text-sm text-gray-500">
+                        {getStepSummary(step, cart)}
+                      </p>
+                    )}
+                  </div>
                   {isCollapsed && (
-                    <p className="mt-1 text-sm text-gray-500">
-                      {getStepSummary(step, cart)}
-                    </p>
+                    <button
+                      type="button"
+                      onClick={() => onEditStep(step)}
+                      className="text-primary-600 hover:text-primary-500 text-sm font-medium"
+                    >
+                      Edit
+                    </button>
                   )}
                 </div>
-                {isCollapsed && (
-                  <button
-                    type="button"
-                    onClick={() => onEditStep(step)}
-                    className="text-sm font-medium text-primary-600 hover:text-primary-500"
-                  >
-                    Edit
-                  </button>
-                )}
-              </div>
-            )}
+              )}
 
-            {/* Active step content (non-payment) */}
-            {isActive && !isPaymentPersisted && (
-              <div className="mt-6">{renderStepContent(step)}</div>
-            )}
+              {/* Active step content (non-payment) */}
+              {isActive && !isPaymentPersisted && (
+                <div className="mt-6">{renderStepContent(step)}</div>
+              )}
 
-            {/* Payment step: persistent render — visible when active, hidden during review */}
-            {isPaymentPersisted && (
-              <div className={clsx(isActive ? "mt-6" : "hidden")}>
-                {renderStepContent(step)}
-              </div>
-            )}
-          </div>
-        );
-      })}
+              {/* Payment step: persistent render — visible when active, hidden during review */}
+              {isPaymentPersisted && (
+                <div className={clsx(isActive ? "mt-6" : "hidden")}>
+                  {renderStepContent(step)}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

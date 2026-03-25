@@ -1,4 +1,5 @@
-export const BACKEND_URL = process.env.MEDUSA_BACKEND_URL || "http://localhost:9000";
+export const BACKEND_URL =
+  process.env.MEDUSA_BACKEND_URL || "http://localhost:9000";
 export const PUBLISHABLE_KEY =
   process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "";
 
@@ -74,14 +75,11 @@ export class MedusaApiClient {
     });
 
     // Step 3: Login for a fresh token bound to the customer
-    const loginRes = await fetch(
-      `${BACKEND_URL}/auth/customer/emailpass`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: data.email, password: data.password }),
-      },
-    );
+    const loginRes = await fetch(`${BACKEND_URL}/auth/customer/emailpass`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: data.email, password: data.password }),
+    });
 
     if (!loginRes.ok) {
       throw new Error(`Login after register failed (${loginRes.status})`);
@@ -129,17 +127,11 @@ export class MedusaApiClient {
   }
 
   /** Add a variant to a customer wishlist */
-  async addWishlistItem(
-    wishlistId: string,
-    variantId: string,
-  ): Promise<void> {
-    await this.fetch(
-      `/store/customers/me/wishlists/${wishlistId}/items`,
-      {
-        method: "POST",
-        body: JSON.stringify({ variant_id: variantId }),
-      },
-    );
+  async addWishlistItem(wishlistId: string, variantId: string): Promise<void> {
+    await this.fetch(`/store/customers/me/wishlists/${wishlistId}/items`, {
+      method: "POST",
+      body: JSON.stringify({ variant_id: variantId }),
+    });
   }
 
   /** Delete a customer wishlist */

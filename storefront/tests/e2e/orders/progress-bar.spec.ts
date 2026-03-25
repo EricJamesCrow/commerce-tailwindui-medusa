@@ -202,9 +202,7 @@ test.describe("Progress Bar — Fulfillment Stages", () => {
     await expect(page.locator('p:has-text("Order placed")')).toBeVisible();
   });
 
-  test("step 1 — Processing (fulfilled)", async ({
-    authedPage: page,
-  }) => {
+  test("step 1 — Processing (fulfilled)", async ({ authedPage: page }) => {
     await loginAndGoToOrders(page, "fulfilled", "captured");
     await goToFirstOrderDetail(page);
 

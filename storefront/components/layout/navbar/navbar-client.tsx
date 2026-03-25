@@ -10,11 +10,7 @@ import {
   TabPanel,
   TabPanels,
 } from "@headlessui/react";
-import {
-  Bars3Icon,
-  HeartIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { Bars3Icon, HeartIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { AccountDropdown } from "components/account/account-dropdown";
 import { Cart } from "components/cart";
 import { SearchButton } from "components/search-command";
@@ -399,7 +395,7 @@ export function NavbarClient({
                         ? `Wishlist, ${wishlistCount} item${wishlistCount === 1 ? "" : "s"}`
                         : "Wishlist"
                     }
-                    className="group -m-2 flex items-center rounded-md p-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+                    className="group focus-visible:outline-primary-600 -m-2 flex items-center rounded-md p-2 focus-visible:outline-2 focus-visible:outline-offset-2"
                   >
                     <HeartIcon
                       aria-hidden="true"

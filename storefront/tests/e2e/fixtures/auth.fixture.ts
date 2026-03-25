@@ -31,9 +31,12 @@ function testCustomer(workerId: number): TestCredentials {
 }
 
 export const test = base.extend<AuthFixtures>({
-  testCredentials: [async ({}, use, testInfo) => {
-    await use(testCustomer(testInfo.parallelIndex));
-  }, { scope: "test" }],
+  testCredentials: [
+    async ({}, use, testInfo) => {
+      await use(testCustomer(testInfo.parallelIndex));
+    },
+    { scope: "test" },
+  ],
 
   api: async ({ testCredentials }, use) => {
     const api = new MedusaApiClient();

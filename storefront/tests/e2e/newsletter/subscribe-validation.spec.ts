@@ -5,12 +5,14 @@ import { gotoHomepageNewsletter, newsletterFooter } from "./helpers";
 async function expectHtml5ValidationMessage(page: Page): Promise<void> {
   const { emailInput, successMessage } = newsletterFooter(page);
 
-  await expect.poll(async () => {
-    return emailInput.evaluate((element) => {
-      const input = element as HTMLInputElement;
-      return !input.checkValidity() && input.validationMessage.length > 0;
-    });
-  }).toBe(true);
+  await expect
+    .poll(async () => {
+      return emailInput.evaluate((element) => {
+        const input = element as HTMLInputElement;
+        return !input.checkValidity() && input.validationMessage.length > 0;
+      });
+    })
+    .toBe(true);
 
   await expect(successMessage).toHaveCount(0);
   await expect(emailInput).toBeVisible();

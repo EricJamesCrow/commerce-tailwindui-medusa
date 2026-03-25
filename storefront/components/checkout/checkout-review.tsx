@@ -107,9 +107,7 @@ export function CheckoutReview({
 
   const isZeroTotal = cart.total === 0;
 
-  function isPaymentCapturable(
-    status: string | undefined,
-  ): boolean {
+  function isPaymentCapturable(status: string | undefined): boolean {
     return status === "requires_capture" || status === "succeeded";
   }
 
@@ -129,8 +127,8 @@ export function CheckoutReview({
       });
       setError(
         "Your payment was processed but we couldn't confirm your order. " +
-        "Please contact support with your payment reference. " +
-        "Do not retry the payment.",
+          "Please contact support with your payment reference. " +
+          "Do not retry the payment.",
       );
     } else {
       setError(result.error);
@@ -164,16 +162,16 @@ export function CheckoutReview({
             error_code: confirmError.code ?? "unknown",
             error_message: confirmError.message ?? "",
           });
-          setError(
-            confirmError.message || "Payment failed. Please try again.",
-          );
+          setError(confirmError.message || "Payment failed. Please try again.");
           return;
         }
 
         if (isPaymentCapturable(paymentIntent?.status)) {
           await handleOrderComplete(true, paymentIntent?.id);
         } else if (paymentIntent) {
-          setError(`Unexpected payment status: ${paymentIntent.status}. Please try again.`);
+          setError(
+            `Unexpected payment status: ${paymentIntent.status}. Please try again.`,
+          );
         }
         return;
       }
@@ -188,7 +186,13 @@ export function CheckoutReview({
               return_url: `${window.location.origin}/checkout/capture/${cart.id}`,
               payment_method_data: {
                 billing_details: {
-                  name: [cart.billing_address?.first_name, cart.billing_address?.last_name].filter(Boolean).join(" ") || undefined,
+                  name:
+                    [
+                      cart.billing_address?.first_name,
+                      cart.billing_address?.last_name,
+                    ]
+                      .filter(Boolean)
+                      .join(" ") || undefined,
                   address: {
                     city: cart.billing_address?.city ?? "",
                     country: cart.billing_address?.country_code ?? "",
@@ -214,16 +218,16 @@ export function CheckoutReview({
             error_code: confirmError.code ?? "unknown",
             error_message: confirmError.message ?? "",
           });
-          setError(
-            confirmError.message || "Payment failed. Please try again.",
-          );
+          setError(confirmError.message || "Payment failed. Please try again.");
           return;
         }
 
         if (isPaymentCapturable(paymentIntent?.status)) {
           await handleOrderComplete(true, paymentIntent?.id);
         } else if (paymentIntent) {
-          setError(`Unexpected payment status: ${paymentIntent.status}. Please try again.`);
+          setError(
+            `Unexpected payment status: ${paymentIntent.status}. Please try again.`,
+          );
         }
         return;
       }
@@ -336,7 +340,7 @@ export function CheckoutReview({
           type="button"
           onClick={handlePlaceOrder}
           disabled={isSubmitting}
-          className="w-full rounded-md border border-transparent bg-primary-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
+          className="bg-primary-600 hover:bg-primary-700 focus:ring-primary-500 w-full rounded-md border border-transparent px-6 py-3 text-base font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
         >
           {isSubmitting ? "Placing order..." : "Place Order"}
         </button>

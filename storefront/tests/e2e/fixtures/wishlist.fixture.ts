@@ -69,9 +69,7 @@ export const test = authTest.extend<WishlistFixtures>({
   testVariantId: async ({ api }, use) => {
     const products = await api.getProducts();
     if (products.length < 1 || !products[0]!.variants?.[0]) {
-      throw new Error(
-        "No products/variants found. Run seed script.",
-      );
+      throw new Error("No products/variants found. Run seed script.");
     }
     await use(products[0]!.variants[0]!.id);
   },

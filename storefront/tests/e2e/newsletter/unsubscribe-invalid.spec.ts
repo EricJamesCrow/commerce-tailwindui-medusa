@@ -15,9 +15,7 @@ test.describe("Newsletter Unsubscribe Invalid Token", () => {
     ).toBeVisible();
 
     await waitForNewsletterRequestSlot();
-    await page
-      .getByRole("button", { name: "Confirm unsubscribe" })
-      .click();
+    await page.getByRole("button", { name: "Confirm unsubscribe" }).click();
 
     await expect(
       page.getByRole("heading", { name: "Something went wrong" }),

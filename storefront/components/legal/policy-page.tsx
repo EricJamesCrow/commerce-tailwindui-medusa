@@ -27,7 +27,7 @@ export function PolicyPage({
         </h1>
         <p className="mt-6 text-xl/8 text-gray-700">{description}</p>
 
-        <div className="prose prose-gray mt-10 max-w-2xl prose-headings:tracking-tight">
+        <div className="prose prose-gray prose-headings:tracking-tight mt-10 max-w-2xl">
           {sections.map((section) => (
             <div key={section.heading} className="mt-16 first:mt-0">
               <h2>{section.heading}</h2>

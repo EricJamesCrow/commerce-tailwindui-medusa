@@ -23,9 +23,9 @@ test.describe("Guest Checkout Flow", () => {
     await page.locator(sel.CHECKOUT_CONTINUE_BUTTON).click();
 
     // Wait for email step to collapse (summary shows email)
-    await expect(
-      page.locator(`p:has-text("${testEmail}")`),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator(`p:has-text("${testEmail}")`)).toBeVisible({
+      timeout: 10_000,
+    });
 
     // ---------------------------------------------------------------
     // Step 2: Shipping Address
@@ -42,7 +42,9 @@ test.describe("Guest Checkout Flow", () => {
     await page.locator(sel.ADDR_POSTAL_CODE).fill(TEST_ADDRESS.postal_code);
 
     // Select country
-    await page.locator(sel.ADDR_COUNTRY).selectOption(TEST_ADDRESS.country_code);
+    await page
+      .locator(sel.ADDR_COUNTRY)
+      .selectOption(TEST_ADDRESS.country_code);
 
     // Click Continue for address step
     await page.locator(sel.CHECKOUT_CONTINUE_BUTTON).click();
@@ -55,9 +57,9 @@ test.describe("Guest Checkout Flow", () => {
     await selectShippingOption(page);
 
     // Wait for payment step to become active
-    await expect(
-      page.getByRole("heading", { name: "Payment" }),
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("heading", { name: "Payment" })).toBeVisible({
+      timeout: 15_000,
+    });
 
     // ---------------------------------------------------------------
     // Step 4: Payment
@@ -81,9 +83,7 @@ test.describe("Guest Checkout Flow", () => {
     await expect(page.locator(sel.CHECKOUT_REVIEW_PAYMENT_DT)).toBeVisible();
 
     // Verify email is shown in the review
-    await expect(
-      page.locator(`dd:has-text("${testEmail}")`),
-    ).toBeVisible();
+    await expect(page.locator(`dd:has-text("${testEmail}")`)).toBeVisible();
 
     // Click Place Order
     const placeOrderButton = page.locator(sel.PLACE_ORDER_BUTTON);

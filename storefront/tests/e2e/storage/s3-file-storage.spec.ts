@@ -1,5 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { MedusaApiClient, BACKEND_URL, PUBLISHABLE_KEY } from "../fixtures/api.fixture";
+import {
+  MedusaApiClient,
+  BACKEND_URL,
+  PUBLISHABLE_KEY,
+} from "../fixtures/api.fixture";
 import { TEST_JPEG } from "../helpers/test-jpeg";
 
 /**
@@ -45,7 +49,10 @@ async function uploadTestImage(
 }
 
 test.describe("S3 File Storage (Cloudflare R2)", () => {
-  test.skip(!PUBLISHABLE_KEY, "Skipping — NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY not set");
+  test.skip(
+    !PUBLISHABLE_KEY,
+    "Skipping — NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY not set",
+  );
 
   let authToken: string;
 

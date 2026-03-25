@@ -32,7 +32,9 @@ export function WishlistButton({
   size = "md",
   className,
 }: WishlistButtonProps) {
-  const [isWishlisted, setIsWishlisted] = useState(initialIsInWishlist ?? false);
+  const [isWishlisted, setIsWishlisted] = useState(
+    initialIsInWishlist ?? false,
+  );
   const [wishlistId, setWishlistId] = useState(initialWishlistId);
   const [wishlistItemId, setWishlistItemId] = useState(initialWishlistItemId);
   const [isPending, startTransition] = useTransition();
@@ -48,14 +50,28 @@ export function WishlistButton({
 
     // Auto-check wishlist state when not provided by server
     let cancelled = false;
-    getVariantWishlistState(variantId).then((state) => {
-      if (cancelled) return;
-      setIsWishlisted(state.isInWishlist);
-      setWishlistId(state.wishlistId);
-      setWishlistItemId(state.wishlistItemId);
-    }).catch((e: unknown) => { Sentry.captureException(e, { tags: { action: "get_variant_wishlist_state" }, level: "warning" }) });
-    return () => { cancelled = true; };
-  }, [variantId, initialIsInWishlist, initialWishlistId, initialWishlistItemId]);
+    getVariantWishlistState(variantId)
+      .then((state) => {
+        if (cancelled) return;
+        setIsWishlisted(state.isInWishlist);
+        setWishlistId(state.wishlistId);
+        setWishlistItemId(state.wishlistItemId);
+      })
+      .catch((e: unknown) => {
+        Sentry.captureException(e, {
+          tags: { action: "get_variant_wishlist_state" },
+          level: "warning",
+        });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    variantId,
+    initialIsInWishlist,
+    initialWishlistId,
+    initialWishlistItemId,
+  ]);
 
   function handleClick() {
     startTransition(async () => {
@@ -67,7 +83,11 @@ export function WishlistButton({
         formData.set("variant_id", variantId);
         const result = await removeFromWishlist(null, formData);
         if (result?.error) {
-          showNotification("error", "Could not remove from wishlist", result.error);
+          showNotification(
+            "error",
+            "Could not remove from wishlist",
+            result.error,
+          );
         } else {
           setIsWishlisted(false);
           setWishlistId(undefined);
@@ -114,7 +134,9 @@ export function WishlistButton({
       {isWishlisted ? (
         <HeartSolid className={clsx(iconSize, isPending && "animate-pulse")} />
       ) : (
-        <HeartOutline className={clsx(iconSize, "group-hover/heart:fill-red-100")} />
+        <HeartOutline
+          className={clsx(iconSize, "group-hover/heart:fill-red-100")}
+        />
       )}
     </button>
   );

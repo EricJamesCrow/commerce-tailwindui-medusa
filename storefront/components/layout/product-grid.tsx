@@ -2,7 +2,11 @@ import { ProductCardWithQuickView } from "components/product/product-card-with-q
 import { getVariantsWishlistStates } from "lib/medusa/wishlist";
 import { Product } from "lib/types";
 
-export default async function ProductGrid({ products }: { products: Product[] }) {
+export default async function ProductGrid({
+  products,
+}: {
+  products: Product[];
+}) {
   const variantIds = products
     .map((p) => p.variants?.[0]?.id)
     .filter((id): id is string => Boolean(id));

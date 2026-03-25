@@ -27,7 +27,7 @@ export function ReviewList({ reviews }: { reviews: Review[] }) {
         <div className="-my-12 divide-y divide-gray-200">
           {reviews.map((review) => {
             const sortedImages = [...(review.images || [])].sort(
-              (a, b) => a.sort_order - b.sort_order
+              (a, b) => a.sort_order - b.sort_order,
             );
 
             return (
@@ -109,7 +109,7 @@ export function ReviewList({ reviews }: { reviews: Review[] }) {
                 {/* Admin Response */}
                 {review.response && (
                   <div className="mt-4 rounded-lg bg-gray-50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <p className="text-xs font-semibold tracking-wide text-gray-500 uppercase">
                       Store response
                     </p>
                     <p className="mt-1 text-sm text-gray-700">
@@ -119,13 +119,14 @@ export function ReviewList({ reviews }: { reviews: Review[] }) {
                       dateTime={review.response.created_at}
                       className="mt-1 block text-xs text-gray-400"
                     >
-                      {new Date(
-                        review.response.created_at,
-                      ).toLocaleDateString(DEFAULT_LOCALE, {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
+                      {new Date(review.response.created_at).toLocaleDateString(
+                        DEFAULT_LOCALE,
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        },
+                      )}
                     </time>
                   </div>
                 )}

@@ -50,8 +50,8 @@ const NavigationSkeleton = () => (
 );
 
 async function NewsletterWithCustomer() {
-  const customer = await retrieveCustomer().catch(() => null)
-  return <FooterNewsletter customerEmail={customer?.email} />
+  const customer = await retrieveCustomer().catch(() => null);
+  return <FooterNewsletter customerEmail={customer?.email} />;
 }
 
 export default function Footer() {

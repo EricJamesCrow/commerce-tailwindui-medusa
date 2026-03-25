@@ -17,25 +17,21 @@ export const WISHLIST_TABS = 'nav[aria-label="Wishlists"]';
 export const WISHLIST_TAB = 'nav[aria-label="Wishlists"] button';
 export const SHARE_BUTTON = 'button:has-text("Share")';
 export const NEW_WISHLIST_BUTTON = 'button:has-text("New Wishlist")';
-export const REMOVE_ITEM_BUTTON =
-  'button[aria-label="Remove from wishlist"]';
+export const REMOVE_ITEM_BUTTON = 'button[aria-label="Remove from wishlist"]';
 export const ADD_TO_CART_BUTTON = 'button:has-text("Add to Cart")';
 export const EMPTY_STATE_HEADING = 'h3:has-text("No saved items yet")';
 export const BROWSE_PRODUCTS_LINK = 'a:has-text("Browse Products")';
 
 // New wishlist dialog
 export const WISHLIST_NAME_INPUT = "#wishlist-name";
-export const CREATE_BUTTON =
-  'button[type="submit"]:has-text("Create")';
+export const CREATE_BUTTON = 'button[type="submit"]:has-text("Create")';
 export const CANCEL_BUTTON = 'button:has-text("Cancel")';
 
 // Shared wishlist page
 export const SHARED_WISHLIST_TITLE = "h1";
-export const IMPORT_BUTTON =
-  'button:has-text("Import to My Wishlist")';
+export const IMPORT_BUTTON = 'button:has-text("Import to My Wishlist")';
 export const SIGN_IN_LINK = 'main a:has-text("Sign In")';
-export const WISHLIST_NOT_AVAILABLE =
-  'h1:has-text("Wishlist Not Available")';
+export const WISHLIST_NOT_AVAILABLE = 'h1:has-text("Wishlist Not Available")';
 
 // Wishlist actions menu (rename/delete)
 export const ACTIONS_MENU_BUTTON =
@@ -46,7 +42,8 @@ export const RENAME_DIALOG_TITLE = 'h3:has-text("Rename Wishlist")';
 export const RENAME_INPUT = "#rename-wishlist";
 export const RENAME_SUBMIT = 'button[type="submit"]:has-text("Rename")';
 export const DELETE_DIALOG_TITLE = 'h3:has-text("Delete Wishlist")';
-export const DELETE_CONFIRM = 'button:has-text("Delete"):not([class*="text-red-600"])';
+export const DELETE_CONFIRM =
+  'button:has-text("Delete"):not([class*="text-red-600"])';
 
 // Nav wishlist badge
 export const NAV_WISHLIST_LINK = 'header a[href="/account/wishlist"]';
@@ -85,9 +82,9 @@ export const REVIEW_STAR_BUTTON = (n: number) =>
 export const REVIEW_PHOTO_LABEL = 'label:has-text("Photos")';
 export const REVIEW_FILE_INPUT = 'input[type="file"][accept*="image"]';
 export const REVIEW_IMAGE_THUMBNAIL = "form img.size-16";
-export const REVIEW_IMAGE_REMOVE = "form img.size-16 + button, form div.relative button";
-export const REVIEW_ADD_PHOTO_LABEL =
-  "label.flex.size-16.cursor-pointer";
+export const REVIEW_IMAGE_REMOVE =
+  "form img.size-16 + button, form div.relative button";
+export const REVIEW_ADD_PHOTO_LABEL = "label.flex.size-16.cursor-pointer";
 
 // Reviews — list
 export const REVIEW_LIST_ITEM = "div.py-12";
@@ -96,9 +93,9 @@ export const REVIEW_CONTENT_TEXT = "div.py-12 p.text-sm.text-gray-600";
 export const REVIEW_TITLE_TEXT = "div.py-12 h5.text-sm.font-semibold";
 
 // Reviews — admin response (in list)
-export const REVIEW_STORE_RESPONSE = 'div.bg-gray-50:has(p:has-text("Store response"))';
-export const REVIEW_STORE_RESPONSE_LABEL =
-  'p:has-text("Store response")';
+export const REVIEW_STORE_RESPONSE =
+  'div.bg-gray-50:has(p:has-text("Store response"))';
+export const REVIEW_STORE_RESPONSE_LABEL = 'p:has-text("Store response")';
 
 // Reviews — image thumbnails (in list)
 export const REVIEW_LIST_THUMBNAIL = "div.mt-3 button img";
@@ -145,7 +142,8 @@ export const PLACE_ORDER_BUTTON = 'button:has-text("Place Order")';
 export const CHECKOUT_REVIEW_CONTACT_DT = 'dt:has-text("Contact")';
 export const CHECKOUT_REVIEW_SHIP_TO_DT = 'dt:has-text("Ship to")';
 export const CHECKOUT_REVIEW_BILL_TO_DT = 'dt:has-text("Bill to")';
-export const CHECKOUT_REVIEW_SHIPPING_METHOD_DT = 'dt:has-text("Shipping method")';
+export const CHECKOUT_REVIEW_SHIPPING_METHOD_DT =
+  'dt:has-text("Shipping method")';
 export const CHECKOUT_REVIEW_PAYMENT_DT = 'dt:has-text("Payment")';
 
 // Order summary (left column)
@@ -161,14 +159,12 @@ export const ORDER_SUMMARY_TOTAL = 'dt:has-text("Total")';
 export const STEP_HEADING_ACTIVE = "h2.text-lg.font-medium.text-gray-900";
 export const STEP_DISABLED_BUTTON =
   "button:disabled.text-lg.font-medium.text-gray-500";
-export const STEP_EDIT_BUTTON =
-  'button.text-primary-600:has-text("Edit")';
+export const STEP_EDIT_BUTTON = 'button.text-primary-600:has-text("Edit")';
 
 // Express Checkout
 export const EXPRESS_CHECKOUT_DIVIDER = 'span:has-text("or")';
 
 // Order confirmation
 export const ORDER_CONFIRMED_HEADING = 'h1:has-text("Thank you!")';
-export const ORDER_CONFIRMED_SUBTITLE =
-  'p:has-text("Your order is confirmed")';
+export const ORDER_CONFIRMED_SUBTITLE = 'p:has-text("Your order is confirmed")';
 export const CONTINUE_SHOPPING_LINK = 'a:has-text("Continue Shopping")';

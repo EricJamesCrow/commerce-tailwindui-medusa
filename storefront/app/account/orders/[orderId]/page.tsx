@@ -41,7 +41,7 @@ export default async function OrderDetailPage({
       <div className="mb-8">
         <Link
           href="/account/orders"
-          className="text-sm font-medium text-primary-600 hover:text-primary-500"
+          className="text-primary-600 hover:text-primary-500 text-sm font-medium"
         >
           <span aria-hidden="true">&larr;</span> Back to orders
         </Link>

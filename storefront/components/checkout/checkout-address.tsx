@@ -132,7 +132,11 @@ export function CheckoutAddress({
         setError(result);
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : "An unexpected error occurred.");
+      setError(
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -178,7 +182,7 @@ export function CheckoutAddress({
             type="checkbox"
             checked={billingSameAsShipping}
             onChange={(e) => setBillingSameAsShipping(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-600"
+            className="text-primary-600 focus:ring-primary-600 h-4 w-4 rounded border-gray-300"
           />
           <span className="text-sm text-gray-700">
             Billing address same as shipping
@@ -209,7 +213,7 @@ export function CheckoutAddress({
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
+        className="bg-primary-600 hover:bg-primary-700 focus:ring-primary-500 w-full rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
       >
         {isSubmitting ? "Processing..." : "Continue"}
       </button>

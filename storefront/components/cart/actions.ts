@@ -1,6 +1,6 @@
 "use server";
 
-import * as Sentry from "@sentry/nextjs"
+import * as Sentry from "@sentry/nextjs";
 import { TAGS } from "lib/constants";
 import {
   addToCart,
@@ -30,10 +30,17 @@ export async function addItem(
 
   try {
     await addToCart([{ merchandiseId: selectedVariantId, quantity: 1 }]);
-    try { await trackServer("product_added_to_cart", { product_id: "", variant_id: selectedVariantId, quantity: 1, price: 0 }) } catch {}
+    try {
+      await trackServer("product_added_to_cart", {
+        product_id: "",
+        variant_id: selectedVariantId,
+        quantity: 1,
+        price: 0,
+      });
+    } catch {}
     return null;
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "add_to_cart" } })
+    Sentry.captureException(e, { tags: { action: "add_to_cart" } });
     return e instanceof Error ? e.message : "Error adding item to cart";
   } finally {
     revalidateCart();
@@ -50,10 +57,15 @@ export async function removeItem(
 
   try {
     await removeFromCart([lineItemId]);
-    try { await trackServer("cart_item_removed", { product_id: "", variant_id: "" }) } catch {}
+    try {
+      await trackServer("cart_item_removed", {
+        product_id: "",
+        variant_id: "",
+      });
+    } catch {}
     return null;
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "remove_from_cart" } })
+    Sentry.captureException(e, { tags: { action: "remove_from_cart" } });
     return e instanceof Error ? e.message : "Error removing item from cart";
   } finally {
     revalidateCart();
@@ -97,11 +109,17 @@ export async function updateItemQuantity(
       await addToCart([{ merchandiseId, quantity }]);
     }
 
-    try { await trackServer("cart_item_updated", { product_id: "", variant_id: merchandiseId, new_quantity: quantity }) } catch {}
+    try {
+      await trackServer("cart_item_updated", {
+        product_id: "",
+        variant_id: merchandiseId,
+        new_quantity: quantity,
+      });
+    } catch {}
 
     return null;
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "update_cart_quantity" } })
+    Sentry.captureException(e, { tags: { action: "update_cart_quantity" } });
     return e instanceof Error ? e.message : "Error updating item quantity";
   } finally {
     revalidateCart();
@@ -116,7 +134,7 @@ export async function createCartAndSetCookie() {
   try {
     await createCart();
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "create_cart" } })
+    Sentry.captureException(e, { tags: { action: "create_cart" } });
     throw e;
   }
 }

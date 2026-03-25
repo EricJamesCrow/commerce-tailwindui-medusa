@@ -36,7 +36,9 @@ test.describe("Checkout Accordion", () => {
   }) => {
     // The redesign removed numbered circles — verify they don't exist
     // Use the specific checkout accordion (has border-b + border-t, unlike the order summary ul)
-    const accordion = page.locator("div.divide-y.divide-gray-200.border-b.border-t");
+    const accordion = page.locator(
+      "div.divide-y.divide-gray-200.border-b.border-t",
+    );
     await expect(accordion).toBeVisible({ timeout: 15_000 });
 
     // No numbered circle badges (1-5 inside rounded-full spans)

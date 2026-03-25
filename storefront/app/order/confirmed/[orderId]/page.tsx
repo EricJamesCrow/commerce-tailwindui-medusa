@@ -28,16 +28,16 @@ export const metadata = {
 async function getOrder(orderId: string) {
   const headers = await getAuthHeaders();
   try {
-    const { order } = await sdk.client.fetch<{ order: StoreOrder }>(
-      `/store/orders/${orderId}`,
-      {
+    const { order } = await sdk.client
+      .fetch<{ order: StoreOrder }>(`/store/orders/${orderId}`, {
         method: "GET",
         headers,
         query: {
-          fields: "*items,*items.variant,*items.product,*shipping_address,*billing_address,*shipping_methods,*payment_collections,*payment_collections.payments,*payment_collections.payment_sessions,+promotions",
+          fields:
+            "*items,*items.variant,*items.product,*shipping_address,*billing_address,*shipping_methods,*payment_collections,*payment_collections.payments,*payment_collections.payment_sessions,+promotions",
         },
-      },
-    ).catch(medusaError);
+      })
+      .catch(medusaError);
     return order;
   } catch (err) {
     console.error("[Order] Failed to retrieve order:", err);
@@ -101,7 +101,7 @@ export default async function OrderConfirmedPage({
     <div className="bg-white">
       <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
         <div className="max-w-xl">
-          <h1 className="text-base font-medium text-primary-600">Thank you!</h1>
+          <h1 className="text-primary-600 text-base font-medium">Thank you!</h1>
           <p className="mt-2 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
             Your order is confirmed
           </p>
@@ -115,51 +115,53 @@ export default async function OrderConfirmedPage({
 
           {/* Items */}
           <h3 className="sr-only">Items</h3>
-          {(order.items || []).map((item: NonNullable<StoreOrder["items"]>[number]) => (
-            <div
-              key={item.id}
-              className="flex space-x-6 border-b border-gray-200 py-10"
-            >
-              {(item.thumbnail || item.product?.thumbnail) ? (
-                <img
-                  alt={item.product?.title || item.title || ""}
-                  src={item.thumbnail || item.product?.thumbnail || ""}
-                  className="size-20 flex-none rounded-lg bg-gray-100 object-cover sm:size-40"
-                />
-              ) : (
-                <div className="flex size-20 flex-none items-center justify-center rounded-lg bg-gray-100 text-sm text-gray-400 sm:size-40">
-                  No image
-                </div>
-              )}
-              <div className="flex flex-auto flex-col">
-                <div>
-                  <h4 className="font-medium text-gray-900">
-                    {item.product?.title || item.title}
-                  </h4>
-                  {item.variant?.title &&
-                    item.variant.title !== "Default" && (
-                      <p className="mt-2 text-sm text-gray-600">
-                        {item.variant.title}
-                      </p>
-                    )}
-                </div>
-                <div className="mt-6 flex flex-1 items-end">
-                  <dl className="flex divide-x divide-gray-200 text-sm">
-                    <div className="flex pr-4 sm:pr-6">
-                      <dt className="font-medium text-gray-900">Quantity</dt>
-                      <dd className="ml-2 text-gray-700">{item.quantity}</dd>
-                    </div>
-                    <div className="flex pl-4 sm:pl-6">
-                      <dt className="font-medium text-gray-900">Price</dt>
-                      <dd className="ml-2 text-gray-700">
-                        {formatMoney(item.total, currencyCode)}
-                      </dd>
-                    </div>
-                  </dl>
+          {(order.items || []).map(
+            (item: NonNullable<StoreOrder["items"]>[number]) => (
+              <div
+                key={item.id}
+                className="flex space-x-6 border-b border-gray-200 py-10"
+              >
+                {item.thumbnail || item.product?.thumbnail ? (
+                  <img
+                    alt={item.product?.title || item.title || ""}
+                    src={item.thumbnail || item.product?.thumbnail || ""}
+                    className="size-20 flex-none rounded-lg bg-gray-100 object-cover sm:size-40"
+                  />
+                ) : (
+                  <div className="flex size-20 flex-none items-center justify-center rounded-lg bg-gray-100 text-sm text-gray-400 sm:size-40">
+                    No image
+                  </div>
+                )}
+                <div className="flex flex-auto flex-col">
+                  <div>
+                    <h4 className="font-medium text-gray-900">
+                      {item.product?.title || item.title}
+                    </h4>
+                    {item.variant?.title &&
+                      item.variant.title !== "Default" && (
+                        <p className="mt-2 text-sm text-gray-600">
+                          {item.variant.title}
+                        </p>
+                      )}
+                  </div>
+                  <div className="mt-6 flex flex-1 items-end">
+                    <dl className="flex divide-x divide-gray-200 text-sm">
+                      <div className="flex pr-4 sm:pr-6">
+                        <dt className="font-medium text-gray-900">Quantity</dt>
+                        <dd className="ml-2 text-gray-700">{item.quantity}</dd>
+                      </div>
+                      <div className="flex pl-4 sm:pl-6">
+                        <dt className="font-medium text-gray-900">Price</dt>
+                        <dd className="ml-2 text-gray-700">
+                          {formatMoney(item.total, currencyCode)}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ),
+          )}
 
           <div className="sm:ml-40 sm:pl-6">
             {/* Addresses */}
@@ -217,7 +219,9 @@ export default async function OrderConfirmedPage({
               <div>
                 <dt className="font-medium text-gray-900">Shipping method</dt>
                 <dd className="mt-2 text-gray-700">
-                  <p>{order.shipping_methods?.[0]?.name || "Standard Shipping"}</p>
+                  <p>
+                    {order.shipping_methods?.[0]?.name || "Standard Shipping"}
+                  </p>
                 </dd>
               </div>
             </dl>
@@ -272,7 +276,7 @@ export default async function OrderConfirmedPage({
         <div className="mt-16 border-t border-gray-200 py-6 text-right">
           <Link
             href="/"
-            className="text-sm font-medium text-primary-600 hover:text-primary-500"
+            className="text-primary-600 hover:text-primary-500 text-sm font-medium"
           >
             Continue Shopping
             <span aria-hidden="true"> &rarr;</span>

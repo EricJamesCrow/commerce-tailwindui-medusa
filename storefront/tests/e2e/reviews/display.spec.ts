@@ -92,19 +92,14 @@ test.describe("Review Display", () => {
     });
 
     // The sr-only text is visually hidden but present in the DOM
-    await expect(
-      page.getByText("5 out of 5 stars").first(),
-    ).toBeAttached();
+    await expect(page.getByText("5 out of 5 stars").first()).toBeAttached();
 
     // Star icons should be visible (yellow stars for rating)
     const stars = page.locator("div.py-12 svg.text-yellow-400").first();
     await expect(stars).toBeVisible();
   });
 
-  test("shows review date", async ({
-    guestPage: page,
-    approvedReview,
-  }) => {
+  test("shows review date", async ({ guestPage: page, approvedReview }) => {
     await gotoProductWithReviews(page, approvedReview.productHandle);
 
     await expect(page.locator(sel.REVIEW_LIST_ITEM).first()).toBeVisible({
@@ -127,7 +122,8 @@ test.describe("Review Display", () => {
       timeout: 15_000,
     });
 
-    const text = await page.locator(sel.REVIEW_COUNT_TEXT).textContent() ?? "";
+    const text =
+      (await page.locator(sel.REVIEW_COUNT_TEXT).textContent()) ?? "";
     expect(text).toMatch(/Based on \d+ reviews?/);
   });
 
@@ -196,9 +192,7 @@ test.describe("Review Display", () => {
     const reviewItem = reviewContent.locator(
       "xpath=ancestor::div[contains(@class, 'py-12')]",
     );
-    const responseInItem = reviewItem.locator(
-      'p:has-text("Store response")',
-    );
+    const responseInItem = reviewItem.locator('p:has-text("Store response")');
     await expect(responseInItem).toHaveCount(0);
   });
 });

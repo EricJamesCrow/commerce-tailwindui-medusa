@@ -1,6 +1,6 @@
 "use client";
 
-import * as Sentry from "@sentry/nextjs"
+import * as Sentry from "@sentry/nextjs";
 import type { HttpTypes } from "@medusajs/types";
 import {
   Elements,
@@ -15,10 +15,7 @@ import type {
 import { loadStripe } from "@stripe/stripe-js";
 import { useCallback, useState } from "react";
 
-import {
-  applyExpressCheckoutData,
-  completeCart,
-} from "lib/medusa/checkout";
+import { applyExpressCheckoutData, completeCart } from "lib/medusa/checkout";
 import type { AddressPayload } from "lib/types";
 
 const stripePromise = process.env.NEXT_PUBLIC_STRIPE_KEY
@@ -109,16 +106,17 @@ function ExpressCheckoutInner({ cart }: { cart: HttpTypes.StoreCart }) {
         const billingPayload: AddressPayload = {
           first_name: billingName.firstName,
           last_name: billingName.lastName,
-          address_1: billingDetails?.address?.line1 || shippingPayload.address_1,
-          address_2: billingDetails?.address?.line2 || shippingPayload.address_2,
+          address_1:
+            billingDetails?.address?.line1 || shippingPayload.address_1,
+          address_2:
+            billingDetails?.address?.line2 || shippingPayload.address_2,
           city: billingDetails?.address?.city || shippingPayload.city,
           country_code: (
             billingDetails?.address?.country || "US"
           ).toLowerCase(),
           province: billingDetails?.address?.state || shippingPayload.province,
           postal_code:
-            billingDetails?.address?.postal_code ||
-            shippingPayload.postal_code,
+            billingDetails?.address?.postal_code || shippingPayload.postal_code,
           phone: billingDetails?.phone || undefined,
         };
 
@@ -141,9 +139,16 @@ function ExpressCheckoutInner({ cart }: { cart: HttpTypes.StoreCart }) {
         });
 
         if (error) {
-          Sentry.captureException(error, { tags: { action: "express_checkout_payment", } })
-          console.error("[Express Checkout] Payment confirmation error:", error);
-          setOrderError(error.message || "Payment confirmation failed. Please try again.");
+          Sentry.captureException(error, {
+            tags: { action: "express_checkout_payment" },
+          });
+          console.error(
+            "[Express Checkout] Payment confirmation error:",
+            error,
+          );
+          setOrderError(
+            error.message || "Payment confirmation failed. Please try again.",
+          );
           return;
         }
 
@@ -164,16 +169,24 @@ function ExpressCheckoutInner({ cart }: { cart: HttpTypes.StoreCart }) {
         if (result.type === "order") {
           window.location.href = `/order/confirmed/${result.order.id}`;
         } else {
-          Sentry.captureException(new Error(result.error || "Express checkout cart completion failed"), { tags: { action: "express_checkout_complete", } })
-          console.error("[Express Checkout] Cart completion error:", result.error);
+          Sentry.captureException(
+            new Error(
+              result.error || "Express checkout cart completion failed",
+            ),
+            { tags: { action: "express_checkout_complete" } },
+          );
+          console.error(
+            "[Express Checkout] Cart completion error:",
+            result.error,
+          );
           setOrderError(
             "Your payment was processed but we couldn't confirm your order. " +
-            "Please contact support with your payment reference. " +
-            "Do not retry the payment.",
+              "Please contact support with your payment reference. " +
+              "Do not retry the payment.",
           );
         }
       } catch (err) {
-        Sentry.captureException(err, { tags: { action: "express_checkout", } })
+        Sentry.captureException(err, { tags: { action: "express_checkout" } });
         console.error("[Express Checkout] Error:", err);
         setOrderError(
           err instanceof Error ? err.message : "An unexpected error occurred.",

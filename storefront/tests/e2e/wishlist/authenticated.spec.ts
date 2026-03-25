@@ -14,9 +14,7 @@ test.describe("Authenticated Wishlist", () => {
     await page.locator(sel.WISHLIST_NAME_INPUT).fill("Gift Ideas");
     await page.locator(sel.CREATE_BUTTON).click();
 
-    await expect(
-      page.getByText("Gift Ideas"),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("Gift Ideas")).toBeVisible({ timeout: 10_000 });
   });
 
   test("shows wishlist items with product info", async ({
