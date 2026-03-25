@@ -31,6 +31,21 @@ async function gotoProductWithReviews(
   await expect(reviewItem).toBeVisible({ timeout: 10_000 });
 }
 
+/**
+ * Helper: reload the page until specific content appears, to handle
+ * Next.js cache propagation delay after fixture data is inserted.
+ */
+async function waitUntilVisible(
+  page: import("@playwright/test").Page,
+  locator: import("@playwright/test").Locator,
+  maxReloads = 3,
+): Promise<void> {
+  for (let i = 0; i < maxReloads; i++) {
+    if (await locator.isVisible().catch(() => false)) return;
+    await page.reload({ waitUntil: "networkidle" });
+  }
+}
+
 test.describe("Review Display", () => {
   test("shows approved reviews on product page", async ({
     guestPage: page,
@@ -50,15 +65,11 @@ test.describe("Review Display", () => {
   }) => {
     await gotoProductWithReviews(page, approvedReview.productHandle);
 
-    // Wait for reviews to load
-    await expect(page.locator(sel.REVIEW_LIST_ITEM).first()).toBeVisible({
-      timeout: 10_000,
-    });
+    // The fixture's review may appear after cache revalidation — retry until visible
+    const reviewContentLocator = page.getByText("E2E test review", { exact: false }).first();
+    await waitUntilVisible(page, reviewContentLocator);
 
-    // Check for the review content we created in the fixture
-    await expect(
-      page.getByText("E2E test review", { exact: false }).first(),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(reviewContentLocator).toBeVisible({ timeout: 10_000 });
 
     // Check for reviewer name display (first_name + last initial)
     await expect(
@@ -142,10 +153,16 @@ test.describe("Review Display", () => {
       timeout: 15_000,
     });
 
+    // The response label may appear after a cache revalidation cycle.
+    // Retry with page reloads to handle Next.js cache propagation timing.
+    const responseLabel = page.locator(sel.REVIEW_STORE_RESPONSE_LABEL).first();
+    for (let i = 0; i < 3; i++) {
+      if (await responseLabel.isVisible().catch(() => false)) break;
+      await page.reload({ waitUntil: "networkidle" });
+    }
+
     // Should show the "Store response" label
-    await expect(
-      page.locator(sel.REVIEW_STORE_RESPONSE_LABEL).first(),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(responseLabel).toBeVisible({ timeout: 10_000 });
 
     // Should show the response content
     await expect(
@@ -167,8 +184,14 @@ test.describe("Review Display", () => {
       timeout: 15_000,
     });
 
-    // Response card should have bg-gray-50 background
+    // Retry with reloads to handle Next.js cache propagation timing
     const responseCard = page.locator(sel.REVIEW_STORE_RESPONSE).first();
+    for (let i = 0; i < 3; i++) {
+      if (await responseCard.isVisible().catch(() => false)) break;
+      await page.reload({ waitUntil: "networkidle" });
+    }
+
+    // Response card should have bg-gray-50 background
     await expect(responseCard).toBeVisible({ timeout: 10_000 });
 
     // Verify the response is inside a rounded-lg container with gray background
@@ -186,10 +209,12 @@ test.describe("Review Display", () => {
       timeout: 15_000,
     });
 
-    // Find the review item that matches our fixture review (without response)
+    // Find the review item that matches our fixture review (without response).
+    // May need a reload if cache hasn't propagated yet.
     const reviewContent = page
       .getByText("E2E test review", { exact: false })
       .first();
+    await waitUntilVisible(page, reviewContent);
     await expect(reviewContent).toBeVisible({ timeout: 10_000 });
 
     // The review item containing this text should NOT have a store response

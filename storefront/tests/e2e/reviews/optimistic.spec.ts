@@ -33,10 +33,11 @@ test.describe("Optimistic Review Submission", () => {
     ).not.toBeVisible({ timeout: 5_000 });
 
     // Review should appear in the list without refreshing
+    // Use .first() since accumulated test data may leave multiple matching elements
     await expect(
       page.locator(sel.REVIEW_CONTENT_TEXT).filter({
         hasText: "This review should appear instantly",
-      }),
+      }).first(),
     ).toBeVisible({ timeout: 5_000 });
   });
 
@@ -113,10 +114,11 @@ test.describe("Optimistic Review Submission", () => {
     // Scroll to reviews section and verify the review is still visible
     await page.locator(sel.REVIEW_SECTION_HEADING).scrollIntoViewIfNeeded();
 
+    // Use .first() since accumulated test data may leave multiple matching elements
     await expect(
       page.locator(sel.REVIEW_CONTENT_TEXT).filter({
         hasText: "This review should persist after the dialog closes",
-      }),
+      }).first(),
     ).toBeVisible({ timeout: 5_000 });
   });
 });

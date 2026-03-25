@@ -33,11 +33,12 @@ export function ReviewImageLightbox({
     <Dialog open={open} onClose={onClose} className="relative z-50">
       <DialogBackdrop className="fixed inset-0 bg-black/80" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel className="relative max-h-[90vh] max-w-3xl">
+        <DialogPanel className="relative max-h-[90vh] max-w-3xl" data-testid="review-lightbox">
           <button
             type="button"
             onClick={onClose}
             aria-label="Close image"
+            data-testid="review-lightbox-close"
             className="absolute -top-10 right-0 text-white hover:text-gray-300"
           >
             <XMarkIcon className="size-8" />
@@ -48,6 +49,7 @@ export function ReviewImageLightbox({
             alt={`Review image ${index + 1} of ${images.length}`}
             width={800}
             height={600}
+            data-testid="review-lightbox-image"
             className="max-h-[80vh] rounded-lg object-contain"
           />
 
@@ -57,6 +59,7 @@ export function ReviewImageLightbox({
                 type="button"
                 onClick={() => setIndex((i) => (i > 0 ? i - 1 : images.length - 1))}
                 aria-label="Previous image"
+                data-testid="review-lightbox-prev"
                 className="rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
               >
                 <ChevronLeftIcon className="size-6" />
@@ -65,6 +68,7 @@ export function ReviewImageLightbox({
                 type="button"
                 onClick={() => setIndex((i) => (i < images.length - 1 ? i + 1 : 0))}
                 aria-label="Next image"
+                data-testid="review-lightbox-next"
                 className="rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
               >
                 <ChevronRightIcon className="size-6" />

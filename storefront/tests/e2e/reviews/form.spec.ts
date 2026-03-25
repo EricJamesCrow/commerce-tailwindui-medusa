@@ -99,11 +99,11 @@ test.describe("Review Form", () => {
       page.locator(sel.REVIEW_DIALOG_TITLE),
     ).not.toBeVisible({ timeout: 5_000 });
 
-    // Review appears in the list
+    // Review appears in the list (use .first() since prior runs may leave matching reviews)
     await expect(
       page.locator(sel.REVIEW_CONTENT_TEXT).filter({
         hasText: "This product exceeded my expectations",
-      }),
+      }).first(),
     ).toBeVisible({ timeout: 5_000 });
   });
 

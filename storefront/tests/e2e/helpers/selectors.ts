@@ -69,52 +69,45 @@ export const WRITE_REVIEW_BUTTON = 'button:has-text("Write a review")';
 export const REVIEW_COUNT_TEXT = 'p:has-text("Based on")';
 
 // Reviews — form dialog
-export const REVIEW_DIALOG_TITLE = 'h2:has-text("Write a review")';
-export const REVIEW_TITLE_INPUT = "#review-title";
-export const REVIEW_CONTENT_INPUT = "#review-content";
-export const REVIEW_SUBMIT_BUTTON = 'button[type="submit"]';
-export const REVIEW_SUCCESS_TITLE = 'h2:has-text("Thank you!")';
-export const REVIEW_SUCCESS_DONE = 'button:has-text("Done")';
-export const REVIEW_ERROR_MESSAGE = "p.text-red-600";
+export const REVIEW_FORM = '[data-testid="review-form"]';
+export const REVIEW_DIALOG_TITLE = 'h2:has-text("Write a review")'; // keep text-based (DialogTitle)
+export const REVIEW_TITLE_INPUT = '[data-testid="review-title-input"]';
+export const REVIEW_CONTENT_INPUT = '[data-testid="review-content-input"]';
+export const REVIEW_SUBMIT_BUTTON = '[data-testid="review-submit-button"]';
+export const REVIEW_SUCCESS_TITLE = 'h2:has-text("Thank you!")'; // keep text-based
+export const REVIEW_SUCCESS_DONE = 'button:has-text("Done")'; // keep text-based
+export const REVIEW_ERROR_MESSAGE = '[data-testid="review-error-message"]';
 
 // Reviews — star rating (form dialog)
-export const REVIEW_STAR_BUTTON = (n: number) =>
-  `button:has(span:has-text("${n} star"))`;
+export const REVIEW_STAR_BUTTON = (n: number) => `[data-testid="review-star-${n}"]`;
 
 // Reviews — image upload (form dialog)
-export const REVIEW_PHOTO_LABEL = 'label:has-text("Photos")';
-export const REVIEW_FILE_INPUT = 'input[type="file"][accept*="image"]';
-export const REVIEW_IMAGE_THUMBNAIL = "form img.size-16";
-export const REVIEW_IMAGE_REMOVE = "form img.size-16 + button, form div.relative button";
-export const REVIEW_ADD_PHOTO_LABEL =
-  "label.flex.size-16.cursor-pointer";
+export const REVIEW_PHOTO_LABEL = 'label:has-text("Photos")'; // keep text-based
+export const REVIEW_FILE_INPUT = '[data-testid="review-file-input"]';
+export const REVIEW_IMAGE_THUMBNAIL = '[data-testid="review-image-preview"]';
+export const REVIEW_IMAGE_REMOVE = '[data-testid="review-image-remove"]';
+export const REVIEW_ADD_PHOTO_LABEL = '[data-testid="review-add-photo-label"]';
 
 // Reviews — list
-export const REVIEW_LIST_ITEM = "div.py-12";
-export const REVIEW_REVIEWER_NAME = "h4.text-sm.font-bold";
-export const REVIEW_CONTENT_TEXT = "div.py-12 p.text-sm.text-gray-600";
-export const REVIEW_TITLE_TEXT = "div.py-12 h5.text-sm.font-semibold";
+export const REVIEW_LIST_ITEM = '[data-testid="review-item"]';
+export const REVIEW_REVIEWER_NAME = '[data-testid="review-author-name"]';
+export const REVIEW_CONTENT_TEXT = '[data-testid="review-content-text"]';
+export const REVIEW_TITLE_TEXT = '[data-testid="review-title-text"]';
 
 // Reviews — admin response (in list)
-export const REVIEW_STORE_RESPONSE = 'div.bg-gray-50:has(p:has-text("Store response"))';
-export const REVIEW_STORE_RESPONSE_LABEL =
-  'p:has-text("Store response")';
+export const REVIEW_STORE_RESPONSE = '[data-testid="review-store-response"]';
+export const REVIEW_STORE_RESPONSE_LABEL = 'p:has-text("Store response")'; // keep text-based
 
 // Reviews — image thumbnails (in list)
-export const REVIEW_LIST_THUMBNAIL = "div.mt-3 button img";
+export const REVIEW_LIST_THUMBNAIL = '[data-testid="review-image-thumbnail"]';
 
 // Reviews — lightbox
-// Target the DialogPanel (has dimensions) not the Dialog wrapper (zero dimensions)
-export const REVIEW_LIGHTBOX_DIALOG =
-  '[role="dialog"][data-headlessui-state="open"]';
-export const REVIEW_LIGHTBOX_PANEL =
-  '[role="dialog"] div.max-w-3xl, [role="dialog"] [class*="max-w-3xl"]';
-export const REVIEW_LIGHTBOX_IMAGE = '[role="dialog"] img';
-export const REVIEW_LIGHTBOX_CLOSE = '[role="dialog"] button:has(svg.size-8)';
-export const REVIEW_LIGHTBOX_PREV =
-  '[role="dialog"] button:has(svg.size-6):first-of-type';
-export const REVIEW_LIGHTBOX_NEXT =
-  '[role="dialog"] button:has(svg.size-6):last-of-type';
+export const REVIEW_LIGHTBOX_DIALOG = '[data-testid="review-lightbox"]';
+export const REVIEW_LIGHTBOX_PANEL = '[data-testid="review-lightbox"]';
+export const REVIEW_LIGHTBOX_IMAGE = '[data-testid="review-lightbox-image"]';
+export const REVIEW_LIGHTBOX_CLOSE = '[data-testid="review-lightbox-close"]';
+export const REVIEW_LIGHTBOX_PREV = '[data-testid="review-lightbox-prev"]';
+export const REVIEW_LIGHTBOX_NEXT = '[data-testid="review-lightbox-next"]';
 
 // ---------------------------------------------------------------------------
 // Checkout

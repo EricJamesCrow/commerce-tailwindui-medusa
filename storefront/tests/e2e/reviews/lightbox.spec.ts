@@ -5,11 +5,13 @@ import {
   revalidateReviewsCache,
   cleanupReview,
   createReview,
+  createReviewImages,
 } from "../fixtures/review.fixture";
 import * as sel from "../helpers/selectors";
 
 /**
- * Create a review with images via API.
+ * Create a review with images, inserting images directly via SQL to bypass
+ * API hostname validation (which rejects placeholder URLs when S3_FILE_URL is set).
  */
 async function createReviewWithImages(
   api: { getAuthToken(): string },
@@ -22,21 +24,13 @@ async function createReviewWithImages(
     rating: 5,
     first_name: "E2E",
     last_name: "PhotoReviewer",
-    images: [
-      {
-        url: "https://placehold.co/400x300/orange/white?text=Review+Image+1",
-        sort_order: 0,
-      },
-      {
-        url: "https://placehold.co/400x300/blue/white?text=Review+Image+2",
-        sort_order: 1,
-      },
-      {
-        url: "https://placehold.co/400x300/green/white?text=Review+Image+3",
-        sort_order: 2,
-      },
-    ],
   });
+
+  createReviewImages(reviewId, [
+    { url: "https://placehold.co/400x300/orange/white?text=Review+Image+1", sort_order: 0 },
+    { url: "https://placehold.co/400x300/blue/white?text=Review+Image+2", sort_order: 1 },
+    { url: "https://placehold.co/400x300/green/white?text=Review+Image+3", sort_order: 2 },
+  ]);
 
   approveReview(reviewId);
   await revalidateReviewsCache();
@@ -44,9 +38,10 @@ async function createReviewWithImages(
 }
 
 /**
- * Navigate to product page and ensure reviews are loaded.
+ * Navigate to product page and ensure reviews WITH images are loaded.
+ * Retries with reloads to handle Next.js cache propagation timing.
  */
-async function gotoProductWithReviews(
+async function gotoProductWithImageReviews(
   page: import("@playwright/test").Page,
   handle: string,
 ) {
@@ -54,12 +49,20 @@ async function gotoProductWithReviews(
   await page.waitForLoadState("networkidle");
 
   const heading = page.locator(sel.REVIEW_SECTION_HEADING);
-  try {
-    await heading.waitFor({ state: "visible", timeout: 5_000 });
-  } catch {
-    await page.reload({ waitUntil: "networkidle" });
+  const thumbnail = page.locator("div.mt-3 button").first();
+
+  // Retry until a review with image thumbnails is visible
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      await heading.waitFor({ state: "visible", timeout: 5_000 });
+      await thumbnail.waitFor({ state: "visible", timeout: 3_000 });
+      return;
+    } catch {
+      await page.reload({ waitUntil: "networkidle" });
+    }
   }
   await expect(heading).toBeVisible({ timeout: 15_000 });
+  await expect(thumbnail).toBeVisible({ timeout: 10_000 });
 }
 
 /**
@@ -95,7 +98,7 @@ test.describe("Review Image Lightbox", () => {
     testProductHandle,
   }) => {
     createdReviewIds.push(await createReviewWithImages(api, testProductId));
-    await gotoProductWithReviews(page, testProductHandle);
+    await gotoProductWithImageReviews(page, testProductHandle);
 
     // Wait for review list
     await expect(page.locator(sel.REVIEW_LIST_ITEM).first()).toBeVisible({
@@ -122,7 +125,7 @@ test.describe("Review Image Lightbox", () => {
     testProductHandle,
   }) => {
     createdReviewIds.push(await createReviewWithImages(api, testProductId));
-    await gotoProductWithReviews(page, testProductHandle);
+    await gotoProductWithImageReviews(page, testProductHandle);
 
     await expect(page.locator(sel.REVIEW_LIST_ITEM).first()).toBeVisible({
       timeout: 15_000,
@@ -144,7 +147,7 @@ test.describe("Review Image Lightbox", () => {
     testProductHandle,
   }) => {
     createdReviewIds.push(await createReviewWithImages(api, testProductId));
-    await gotoProductWithReviews(page, testProductHandle);
+    await gotoProductWithImageReviews(page, testProductHandle);
 
     await expect(page.locator(sel.REVIEW_LIST_ITEM).first()).toBeVisible({
       timeout: 15_000,
@@ -173,7 +176,7 @@ test.describe("Review Image Lightbox", () => {
     testProductHandle,
   }) => {
     createdReviewIds.push(await createReviewWithImages(api, testProductId));
-    await gotoProductWithReviews(page, testProductHandle);
+    await gotoProductWithImageReviews(page, testProductHandle);
 
     await expect(page.locator(sel.REVIEW_LIST_ITEM).first()).toBeVisible({
       timeout: 15_000,
@@ -210,7 +213,7 @@ test.describe("Review Image Lightbox", () => {
     testProductHandle,
   }) => {
     createdReviewIds.push(await createReviewWithImages(api, testProductId));
-    await gotoProductWithReviews(page, testProductHandle);
+    await gotoProductWithImageReviews(page, testProductHandle);
 
     await expect(page.locator(sel.REVIEW_LIST_ITEM).first()).toBeVisible({
       timeout: 15_000,

@@ -12,6 +12,10 @@ import {
   toast,
   DataTablePaginationState,
   DataTableRowSelectionState,
+  Drawer,
+  Button,
+  Textarea,
+  Label,
 } from "@medusajs/ui"
 import { HttpTypes } from "@medusajs/framework/types"
 import { useQuery } from "@tanstack/react-query"
@@ -80,10 +84,12 @@ const statusColor = (status: Review["status"]): "green" | "red" | "grey" => {
 
 const ReviewDetailDrawer = ({
   review,
+  open,
   onClose,
   onResponseChange,
 }: {
   review: Review | null
+  open: boolean
   onClose: () => void
   onResponseChange: () => void
 }) => {
@@ -92,9 +98,8 @@ const ReviewDetailDrawer = ({
   )
   const [isSaving, setIsSaving] = useState(false)
 
-  if (!review) return null
-
   const handleSave = async () => {
+    if (!review) return
     setIsSaving(true)
     try {
       await sdk.client.fetch(`/admin/reviews/${review.id}/response`, {
@@ -112,6 +117,7 @@ const ReviewDetailDrawer = ({
   }
 
   const handleDelete = async () => {
+    if (!review) return
     setIsSaving(true)
     try {
       await sdk.client.fetch(`/admin/reviews/${review.id}/response`, {
@@ -128,61 +134,70 @@ const ReviewDetailDrawer = ({
   }
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl">
-      <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between border-b px-6 py-4">
-          <Heading level="h2">Review Detail</Heading>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            ✕
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-          <div>
-            <p className="text-sm font-medium text-gray-500">Rating</p>
-            <p className="text-sm">{review.rating}/5</p>
-          </div>
-          {review.title && (
-            <div>
-              <p className="text-sm font-medium text-gray-500">Title</p>
-              <p className="text-sm">{review.title}</p>
-            </div>
-          )}
-          <div>
-            <p className="text-sm font-medium text-gray-500">Content</p>
-            <p className="text-sm">{review.content}</p>
-          </div>
-          <hr />
-          <div>
-            <p className="text-sm font-medium text-gray-500">Admin Response</p>
-            <textarea
-              value={responseContent}
-              onChange={(e) => setResponseContent(e.target.value)}
-              rows={4}
-              className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-              placeholder="Write a response to this review..."
-            />
-            <div className="mt-2 flex gap-2">
-              <button
-                onClick={handleSave}
-                disabled={isSaving || !responseContent.trim()}
-                className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-500 disabled:opacity-50"
-              >
-                {review.response ? "Update" : "Save"} Response
-              </button>
-              {review.response && (
-                <button
-                  onClick={handleDelete}
-                  disabled={isSaving}
-                  className="rounded-md bg-red-50 px-3 py-1.5 text-sm text-red-600 hover:bg-red-100 disabled:opacity-50"
-                >
-                  Delete
-                </button>
+    <Drawer open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
+      <Drawer.Content>
+        <Drawer.Header>
+          <Drawer.Title>Review Detail</Drawer.Title>
+        </Drawer.Header>
+        <Drawer.Body className="space-y-4">
+          {review && (
+            <>
+              <div>
+                <Label>Rating</Label>
+                <p className="txt-compact-small">{review.rating}/5</p>
+              </div>
+              {review.title && (
+                <div>
+                  <Label>Title</Label>
+                  <p className="txt-compact-small">{review.title}</p>
+                </div>
               )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+              <div>
+                <Label>Content</Label>
+                <p className="txt-compact-small">{review.content}</p>
+              </div>
+              <div className="border-t pt-4">
+                <Label htmlFor="admin-response">Admin Response</Label>
+                <Textarea
+                  id="admin-response"
+                  value={responseContent}
+                  onChange={(e) => setResponseContent(e.target.value)}
+                  rows={4}
+                  className="mt-2"
+                  placeholder="Write a response to this review..."
+                />
+              </div>
+            </>
+          )}
+        </Drawer.Body>
+        <Drawer.Footer>
+          <Drawer.Close asChild>
+            <Button variant="secondary" size="small">
+              Cancel
+            </Button>
+          </Drawer.Close>
+          {review?.response && (
+            <Button
+              variant="danger"
+              size="small"
+              onClick={handleDelete}
+              isLoading={isSaving}
+            >
+              Delete
+            </Button>
+          )}
+          <Button
+            variant="primary"
+            size="small"
+            onClick={handleSave}
+            disabled={isSaving || !responseContent.trim()}
+            isLoading={isSaving}
+          >
+            {review?.response ? "Update" : "Save"} Response
+          </Button>
+        </Drawer.Footer>
+      </Drawer.Content>
+    </Drawer>
   )
 }
 
@@ -298,14 +313,13 @@ const ReviewsPage = () => {
         <DataTable.CommandBar selectedLabel={(count) => `${count} selected`} />
       </DataTable>
       <Toaster />
-      {selectedReview && (
-        <ReviewDetailDrawer
-          key={selectedReview.id}
-          review={selectedReview}
-          onClose={() => setSelectedReview(null)}
-          onResponseChange={refetch}
-        />
-      )}
+      <ReviewDetailDrawer
+        key={selectedReview?.id}
+        review={selectedReview}
+        open={!!selectedReview}
+        onClose={() => setSelectedReview(null)}
+        onResponseChange={refetch}
+      />
     </Container>
   )
 }

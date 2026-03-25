@@ -1,21 +1,22 @@
-"use client";
-
 import { StarIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
 import type { Review } from "lib/types";
 import { DEFAULT_LOCALE } from "lib/constants";
-import { useState } from "react";
-import { ReviewImageLightbox } from "./ReviewImageLightbox";
 
-export function ReviewList({ reviews }: { reviews: Review[] }) {
-  const [lightbox, setLightbox] = useState<{
-    images: { url: string }[];
-    index: number;
-  } | null>(null);
+export function ReviewList({
+  reviews,
+  onImageClick,
+}: {
+  reviews: Review[];
+  onImageClick: (
+    images: { url: string; id: string; sort_order: number }[],
+    index: number,
+  ) => void;
+}) {
 
   if (reviews.length === 0) {
     return (
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-gray-500" data-testid="review-empty-state">
         No reviews yet. Be the first to share your thoughts!
       </p>
     );
@@ -23,7 +24,7 @@ export function ReviewList({ reviews }: { reviews: Review[] }) {
 
   return (
     <>
-      <div className="flow-root">
+      <div className="flow-root" data-testid="review-list">
         <div className="-my-12 divide-y divide-gray-200">
           {reviews.map((review) => {
             const sortedImages = [...(review.images || [])].sort(
@@ -31,14 +32,14 @@ export function ReviewList({ reviews }: { reviews: Review[] }) {
             );
 
             return (
-              <div key={review.id} className="py-12">
+              <div key={review.id} className="py-12" data-testid="review-item">
                 <div className="flex items-center">
                   <div className="flex size-12 items-center justify-center rounded-full bg-gray-100 text-sm font-medium text-gray-600">
                     {review.first_name.charAt(0)}
                     {review.last_name.charAt(0)}
                   </div>
                   <div className="ml-4">
-                    <h4 className="text-sm font-bold text-gray-900">
+                    <h4 className="text-sm font-bold text-gray-900" data-testid="review-author-name">
                       {review.first_name} {review.last_name.charAt(0)}.
                     </h4>
                     <div className="mt-1 flex items-center">
@@ -60,12 +61,12 @@ export function ReviewList({ reviews }: { reviews: Review[] }) {
                 </div>
 
                 {review.title && (
-                  <h5 className="mt-4 text-sm font-semibold text-gray-900">
+                  <h5 className="mt-4 text-sm font-semibold text-gray-900" data-testid="review-title-text">
                     {review.title}
                   </h5>
                 )}
 
-                <p className="mt-2 text-sm text-gray-600">{review.content}</p>
+                <p className="mt-2 text-sm text-gray-600" data-testid="review-content-text">{review.content}</p>
 
                 {/* Review Images */}
                 {sortedImages.length > 0 && (
@@ -74,9 +75,8 @@ export function ReviewList({ reviews }: { reviews: Review[] }) {
                       <button
                         key={img.id}
                         type="button"
-                        onClick={() =>
-                          setLightbox({ images: sortedImages, index: i })
-                        }
+                        onClick={() => onImageClick(sortedImages, i)}
+                        data-testid="review-image-thumbnail"
                         className="overflow-hidden rounded-md"
                       >
                         <img
@@ -108,7 +108,7 @@ export function ReviewList({ reviews }: { reviews: Review[] }) {
 
                 {/* Admin Response */}
                 {review.response && (
-                  <div className="mt-4 rounded-lg bg-gray-50 p-4">
+                  <div className="mt-4 rounded-lg bg-gray-50 p-4" data-testid="review-store-response">
                     <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                       Store response
                     </p>
@@ -135,14 +135,6 @@ export function ReviewList({ reviews }: { reviews: Review[] }) {
         </div>
       </div>
 
-      {lightbox && (
-        <ReviewImageLightbox
-          images={lightbox.images}
-          initialIndex={lightbox.index}
-          open={true}
-          onClose={() => setLightbox(null)}
-        />
-      )}
     </>
   );
 }

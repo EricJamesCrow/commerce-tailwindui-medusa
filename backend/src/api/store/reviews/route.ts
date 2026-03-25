@@ -5,6 +5,17 @@ import type {
 import { createReviewWorkflow } from "../../../workflows/create-review"
 import { z } from "@medusajs/framework/zod"
 
+/** Returns the allowed image hostname from S3_FILE_URL, or null if not configured. */
+function getAllowedImageHostname(): string | null {
+  const fileUrl = process.env.S3_FILE_URL
+  if (!fileUrl) return null
+  try {
+    return new URL(fileUrl).hostname
+  } catch {
+    return null
+  }
+}
+
 export const PostStoreReviewSchema = z.object({
   title: z.string().optional(),
   content: z.string(),
@@ -23,7 +34,21 @@ export const PostStoreReviewSchema = z.object({
   images: z
     .array(
       z.object({
-        url: z.string().url(),
+        url: z
+          .string()
+          .url()
+          .refine(
+            (val) => {
+              const allowed = getAllowedImageHostname()
+              if (!allowed) return true // graceful degradation when env not set
+              try {
+                return new URL(val).hostname === allowed
+              } catch {
+                return false
+              }
+            },
+            { message: "Image URL hostname is not allowed" }
+          ),
         sort_order: z.number().int().min(0),
       })
     )
