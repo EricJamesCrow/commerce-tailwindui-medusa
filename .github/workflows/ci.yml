@@ -47,6 +47,9 @@ jobs:
       - name: Unit tests
         run: cd storefront && bun run test:unit
 
+      - name: Production build (compile mode)
+        run: cd storefront && bunx next build --experimental-build-mode compile
+
   ci-backend:
     name: ci-backend
     runs-on: ubuntu-latest

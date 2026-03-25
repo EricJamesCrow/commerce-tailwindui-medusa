@@ -4,10 +4,19 @@ import { randomUUID } from "node:crypto";
 const PH_ANON_COOKIE = "_ph_anon_id";
 export const PH_ANON_HEADER = "x-ph-anon-id";
 
+function sanitizeEnvUrl(value: string | undefined, fallback = ""): string {
+  return value?.replace(/[\r\n]+/g, "").trim() || fallback;
+}
+
 function buildCsp(nonce: string): string {
   const isDev = process.env.NODE_ENV !== "production";
-  const backendUrl = process.env.MEDUSA_BACKEND_URL || "http://localhost:9000";
-  const meilisearchHost = process.env.NEXT_PUBLIC_MEILISEARCH_HOST || "";
+  const backendUrl = sanitizeEnvUrl(
+    process.env.MEDUSA_BACKEND_URL,
+    "http://localhost:9000",
+  );
+  const meilisearchHost = sanitizeEnvUrl(
+    process.env.NEXT_PUBLIC_MEILISEARCH_HOST,
+  );
 
   const scriptSrc = [
     "'self'",
