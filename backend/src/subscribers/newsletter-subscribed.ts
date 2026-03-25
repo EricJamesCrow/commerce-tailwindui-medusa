@@ -1,6 +1,7 @@
 import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework";
 import * as Sentry from "@sentry/node";
 import { syncNewsletterToResendWorkflow } from "../workflows/newsletter/sync-newsletter-to-resend";
+import { syncNewsletterToButtondownWorkflow } from "../workflows/newsletter/sync-newsletter-to-buttondown";
 import { sendNewsletterWelcomeWorkflow } from "../workflows/notifications/send-newsletter-welcome";
 import { EmailTemplates } from "../modules/resend/templates/template-registry";
 
@@ -32,6 +33,24 @@ export default async function newsletterSubscribedHandler({
     });
     logger.warn(
       `[newsletter] Failed to sync subscriber ${data.id} to Resend: ${error}`,
+    );
+  }
+
+  try {
+    await syncNewsletterToButtondownWorkflow(container).run({
+      input: { email: data.email, subscriber_id: data.id },
+    });
+    logger.info(`[newsletter] Synced subscriber ${data.id} to Buttondown`);
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: {
+        subscriber: "newsletter_subscribed",
+        step: "buttondown_sync",
+        subscriber_id: data.id,
+      },
+    });
+    logger.warn(
+      `[newsletter] Failed to sync subscriber ${data.id} to Buttondown: ${error}`,
     );
   }
 

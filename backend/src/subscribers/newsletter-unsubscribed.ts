@@ -1,6 +1,7 @@
 import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework";
 import * as Sentry from "@sentry/node";
 import { removeNewsletterFromResendWorkflow } from "../workflows/newsletter/remove-newsletter-from-resend";
+import { removeNewsletterFromButtondownWorkflow } from "../workflows/newsletter/remove-newsletter-from-buttondown";
 
 type NewsletterUnsubscribedData = {
   id: string;
@@ -25,6 +26,23 @@ export default async function newsletterUnsubscribedHandler({
     });
     logger.warn(
       `[newsletter] Failed to remove subscriber ${data.id} from Resend: ${error}`,
+    );
+  }
+
+  try {
+    await removeNewsletterFromButtondownWorkflow(container).run({
+      input: { subscriber_id: data.id },
+    });
+    logger.info(`[newsletter] Removed subscriber ${data.id} from Buttondown`);
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: {
+        subscriber: "newsletter_unsubscribed",
+        step: "buttondown_remove",
+      },
+    });
+    logger.warn(
+      `[newsletter] Failed to remove subscriber ${data.id} from Buttondown: ${error}`,
     );
   }
 }

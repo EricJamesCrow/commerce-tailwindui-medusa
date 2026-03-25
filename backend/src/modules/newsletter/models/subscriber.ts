@@ -8,6 +8,7 @@ export const Subscriber = model
     source: model.enum(["footer", "checkout", "account", "import"]),
     customer_id: model.text().nullable(),
     resend_contact_id: model.text().nullable(),
+    buttondown_subscriber_id: model.text().nullable(),
     unsubscribed_at: model.dateTime().nullable(),
   })
   .indexes([

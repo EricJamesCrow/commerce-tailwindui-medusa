@@ -61,6 +61,15 @@
           "nullable": true,
           "mappedType": "text"
         },
+        "buttondown_subscriber_id": {
+          "name": "buttondown_subscriber_id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
         "unsubscribed_at": {
           "name": "unsubscribed_at",
           "type": "timestamptz",
