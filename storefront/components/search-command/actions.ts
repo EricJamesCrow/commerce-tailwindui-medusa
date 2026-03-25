@@ -2,6 +2,7 @@
 
 import { getProducts } from "lib/medusa";
 import { Product } from "lib/types";
+import { redactPiiFromQuery } from "lib/analytics";
 import { trackServer } from "lib/analytics-server";
 import * as Sentry from "@sentry/nextjs";
 
@@ -20,13 +21,22 @@ export async function searchProducts(
       reverse: false,
       limit: 8,
     });
-    try { await trackServer("search_performed", { query: sanitizedQuery, result_count: products.length, source: "medusa" }) } catch {}
+    try {
+      await trackServer("search_performed", {
+        query: redactPiiFromQuery(sanitizedQuery),
+        result_count: products.length,
+        source: "medusa",
+      });
+    } catch {}
     return {
       results: products,
       totalCount: products.length,
     };
   } catch (error) {
-    Sentry.captureException(error, { tags: { action: "search_products" }, level: "warning" });
+    Sentry.captureException(error, {
+      tags: { action: "search_products" },
+      level: "warning",
+    });
     console.error("Search error:", error);
     return { results: [], totalCount: 0 };
   }
