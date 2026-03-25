@@ -10,6 +10,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Abandoned cart recovery emails with HMAC-signed recovery links
 - Product thumbnail images in email templates
 
+## [2026-03-24]
+
+### Security
+- HTTP security headers: HSTS (2yr + preload), `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` via `next.config.ts`
+- Content Security Policy with per-request nonce (`'strict-dynamic'`) via `proxy.ts`, covering Stripe, Sentry, Medusa backend, Meilisearch, and PostHog (proxied same-origin)
+
 ## [2026-03-16]
 
 ### Added
