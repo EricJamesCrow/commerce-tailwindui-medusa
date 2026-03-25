@@ -511,9 +511,13 @@ export type StoreOrderDetail = HttpTypes.StoreOrder & {
 };
 
 async function getE2EOrders(): Promise<StoreOrderDetail[] | null> {
-  if (process.env.E2E_ORDER_FIXTURES !== "1") return null;
-
   const cookieStore = await cookies();
+  const fixturesEnabled =
+    process.env.NODE_ENV !== "production" &&
+    cookieStore.get("__e2e_orders_enabled")?.value === "1";
+
+  if (!fixturesEnabled) return null;
+
   const encodedFixture = cookieStore.get("__e2e_orders")?.value;
   if (!encodedFixture) return null;
 

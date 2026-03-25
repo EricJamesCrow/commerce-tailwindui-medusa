@@ -2,6 +2,14 @@ import { defineConfig, devices } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+function getWebServerEnv(): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(process.env).filter(
+      (entry): entry is [string, string] => typeof entry[1] === "string",
+    ),
+  );
+}
+
 // Load .env.local so NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY is available to fixtures
 const envPath = resolve(__dirname, ".env.local");
 try {
@@ -47,15 +55,9 @@ export default defineConfig({
   ],
   webServer: {
     command: "cd .. && bun run dev",
-    env: {
-      ...process.env,
-      E2E_ORDER_FIXTURES: "1",
-    },
+    env: getWebServerEnv(),
     url: "http://localhost:3000",
-    // E2E order-progress fixtures are enabled via webServer env vars.
-    // Reusing an already-running dev server bypasses those env vars and
-    // makes the mocked order tests hit the real API instead.
-    reuseExistingServer: false,
+    reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },
 });

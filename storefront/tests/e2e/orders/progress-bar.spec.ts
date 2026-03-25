@@ -125,6 +125,11 @@ async function installMockOrders(
 
   await page.context().addCookies([
     {
+      name: "__e2e_orders_enabled",
+      value: "1",
+      url: "http://localhost:3000",
+    },
+    {
       name: "__e2e_orders",
       value: encodeURIComponent(JSON.stringify(fixture)),
       url: "http://localhost:3000",
