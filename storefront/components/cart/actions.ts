@@ -36,7 +36,7 @@ export async function addItem(
         product_id: addedLine?.merchandise.product.id ?? "",
         variant_id: selectedVariantId,
         quantity: 1,
-        price: Number(addedLine?.cost.totalAmount.amount ?? 0),
+        price: Number(addedLine?.cost.totalAmount.amount ?? 0) / (addedLine?.quantity ?? 1),
       });
     } catch {}
     return null;

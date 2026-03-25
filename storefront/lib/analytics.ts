@@ -167,9 +167,9 @@ const PHONE_PATTERN = /(?:\+?1[\s\-.]?)?(?:\(?\d{3}\)?[\s\-.]?)\d{3}[\s\-.]?\d{4
 export function redactPiiFromQuery(query: string): string {
   return query
     .trim()
-    .slice(0, 80)
     .replace(EMAIL_PATTERN, "[email]")
     .replace(PHONE_PATTERN, "[phone]")
+    .slice(0, 80)
 }
 
 // ---------------------------------------------------------------------------
