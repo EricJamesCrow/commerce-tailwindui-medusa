@@ -59,11 +59,12 @@ export async function generateMetadata(props: {
 }
 
 export async function generateStaticParams() {
-  const products = await getProducts({});
-
-  return products.map((product) => ({
-    handle: product.handle,
-  }));
+  try {
+    const products = await getProducts({});
+    return products.map((product) => ({ handle: product.handle }));
+  } catch {
+    return [];
+  }
 }
 
 export default async function ProductPage(props: {

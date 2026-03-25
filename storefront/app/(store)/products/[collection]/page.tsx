@@ -14,11 +14,12 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 export async function generateStaticParams() {
-  const collections = await getCollections();
-
-  return collections.map((collection) => ({
-    collection: collection.handle,
-  }));
+  try {
+    const collections = await getCollections();
+    return collections.map((collection) => ({ collection: collection.handle }));
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata(props: {
