@@ -1,4 +1,10 @@
-import { Container, Html, Preview, Row, Section } from "@react-email/components";
+import {
+  Container,
+  Html,
+  Preview,
+  Row,
+  Section,
+} from "@react-email/components";
 import { Body } from "./_components/body";
 import { Button } from "./_components/button";
 import { LeftAligned as Footer } from "./_components/footer";
@@ -15,11 +21,8 @@ export interface InviteUserProps extends BaseTemplateProps {
 }
 
 export function isValidInviteUserData(data: unknown): data is InviteUserProps {
-  const d = data as Record<string, any>
-  return (
-    typeof d?.inviteUrl === "string" &&
-    typeof d?.storeName === "string"
-  )
+  const d = data as Record<string, any>;
+  return typeof d?.inviteUrl === "string" && typeof d?.storeName === "string";
 }
 
 export const InviteUser = ({
@@ -36,7 +39,10 @@ export const InviteUser = ({
         <Head />
         <Preview>You've been invited to join {storeName}</Preview>
         <Body>
-          <Container align="center" className="w-full max-w-160 bg-primary md:p-8">
+          <Container
+            align="center"
+            className="w-full max-w-160 bg-primary md:p-8"
+          >
             <Header logoUrl={config.logoUrl} logoAlt={config.logoAlt} />
             <Section align="left" className="max-w-full px-6 py-8">
               <Row className="mb-6">
@@ -46,8 +52,8 @@ export const InviteUser = ({
               </Row>
               <Row className="mb-6">
                 <Text className="text-tertiary">
-                  You've been invited to join {storeName} as an admin. Click
-                  the button below to accept your invitation and set up your
+                  You've been invited to join {storeName} as an admin. Click the
+                  button below to accept your invitation and set up your
                   account.
                 </Text>
               </Row>

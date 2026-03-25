@@ -128,9 +128,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Black"
-          ]
+          "values": ["Black"]
         }
       ],
       "variants": [
@@ -161,9 +159,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Iso Dots"
-          ]
+          "values": ["Iso Dots"]
         }
       ],
       "variants": [
@@ -194,9 +190,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Peach"
-          ]
+          "values": ["Peach"]
         }
       ],
       "variants": [
@@ -227,9 +221,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Charcoal"
-          ]
+          "values": ["Charcoal"]
         }
       ],
       "variants": [
@@ -282,9 +274,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Natural"
-          ]
+          "values": ["Natural"]
         }
       ],
       "variants": [
@@ -381,9 +371,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "White and Black"
-          ]
+          "values": ["White and Black"]
         }
       ],
       "variants": [
@@ -502,10 +490,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Matte Black",
-            "Natural"
-          ]
+          "values": ["Matte Black", "Natural"]
         }
       ],
       "variants": [
@@ -570,9 +555,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Sand"
-          ]
+          "values": ["Sand"]
         }
       ],
       "variants": [
@@ -757,9 +740,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Clay"
-          ]
+          "values": ["Clay"]
         }
       ],
       "variants": [
@@ -790,9 +771,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "White and black"
-          ]
+          "values": ["White and black"]
         }
       ],
       "variants": [
@@ -867,9 +846,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Natural"
-          ]
+          "values": ["Natural"]
         }
       ],
       "variants": [
@@ -900,11 +877,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Black",
-            "Brown",
-            "Natural"
-          ]
+          "values": ["Black", "Brown", "Natural"]
         }
       ],
       "variants": [
@@ -959,11 +932,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Natural",
-            "Black",
-            "Brown"
-          ]
+          "values": ["Natural", "Black", "Brown"]
         }
       ],
       "variants": [
@@ -1062,11 +1031,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Black",
-            "Brass",
-            "Chrome"
-          ]
+          "values": ["Black", "Brass", "Chrome"]
         }
       ],
       "variants": [
@@ -1121,9 +1086,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Black"
-          ]
+          "values": ["Black"]
         }
       ],
       "variants": [
@@ -1154,9 +1117,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Black"
-          ]
+          "values": ["Black"]
         }
       ],
       "variants": [
@@ -1231,9 +1192,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Moss"
-          ]
+          "values": ["Moss"]
         }
       ],
       "variants": [
@@ -1264,9 +1223,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Tan and Charcoal"
-          ]
+          "values": ["Tan and Charcoal"]
         }
       ],
       "variants": [
@@ -1297,9 +1254,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Light Brown"
-          ]
+          "values": ["Light Brown"]
         }
       ],
       "variants": [
@@ -1352,9 +1307,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Birch"
-          ]
+          "values": ["Birch"]
         }
       ],
       "variants": [
@@ -1561,9 +1514,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Walnut"
-          ]
+          "values": ["Walnut"]
         }
       ],
       "variants": [
@@ -1638,9 +1589,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Walnut"
-          ]
+          "values": ["Walnut"]
         }
       ],
       "variants": [
@@ -1737,9 +1686,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Sand"
-          ]
+          "values": ["Sand"]
         }
       ],
       "variants": [
@@ -1792,9 +1739,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Sienna"
-          ]
+          "values": ["Sienna"]
         }
       ],
       "variants": [
@@ -1825,9 +1770,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Salmon"
-          ]
+          "values": ["Salmon"]
         }
       ],
       "variants": [
@@ -1858,9 +1801,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "Light gray"
-          ]
+          "values": ["Light gray"]
         }
       ],
       "variants": [
@@ -1891,9 +1832,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "White and blue"
-          ]
+          "values": ["White and blue"]
         }
       ],
       "variants": [
@@ -1924,9 +1863,7 @@
       "options": [
         {
           "title": "Color",
-          "values": [
-            "White and black"
-          ]
+          "values": ["White and black"]
         }
       ],
       "variants": [

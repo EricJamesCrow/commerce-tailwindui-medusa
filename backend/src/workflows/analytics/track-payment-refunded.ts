@@ -2,13 +2,13 @@ import {
   createWorkflow,
   transform,
   WorkflowResponse,
-} from "@medusajs/framework/workflows-sdk"
-import { useQueryGraphStep } from "@medusajs/medusa/core-flows"
-import { trackAnalyticsEventStep } from "../steps/track-analytics-event"
+} from "@medusajs/framework/workflows-sdk";
+import { useQueryGraphStep } from "@medusajs/medusa/core-flows";
+import { trackAnalyticsEventStep } from "../steps/track-analytics-event";
 
 type TrackPaymentRefundedInput = {
-  payment_id: string
-}
+  payment_id: string;
+};
 
 export const trackPaymentRefundedWorkflow = createWorkflow(
   "track-payment-refunded",
@@ -25,14 +25,14 @@ export const trackPaymentRefundedWorkflow = createWorkflow(
         "payment_collection.order.email",
       ],
       filters: { id: input.payment_id },
-    })
+    });
 
     const trackingInput = transform({ payments }, ({ payments: result }) => {
       // Cast: Medusa WorkflowData union too complex for nested step result types
-      const payment = result[0] as Record<string, any> | undefined
-      if (!payment) return null
+      const payment = result[0] as Record<string, any> | undefined;
+      if (!payment) return null;
 
-      const order = payment.payment_collection?.order
+      const order = payment.payment_collection?.order;
       return {
         event: "payment_refunded",
         actor_id: order?.customer_id ?? null,
@@ -43,11 +43,11 @@ export const trackPaymentRefundedWorkflow = createWorkflow(
           amount: payment.amount,
           currency_code: payment.currency_code,
         },
-      }
-    })
+      };
+    });
 
-    trackAnalyticsEventStep(trackingInput)
+    trackAnalyticsEventStep(trackingInput);
 
-    return new WorkflowResponse({})
-  }
-)
+    return new WorkflowResponse({});
+  },
+);

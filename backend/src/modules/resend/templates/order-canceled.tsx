@@ -1,5 +1,11 @@
 // backend/src/modules/resend/templates/order-canceled.tsx
-import { Container, Html, Preview, Row, Section } from "@react-email/components";
+import {
+  Container,
+  Html,
+  Preview,
+  Row,
+  Section,
+} from "@react-email/components";
 import { Body } from "./_components/body";
 import { Button } from "./_components/button";
 import { LeftAligned as Footer } from "./_components/footer";
@@ -26,8 +32,10 @@ export interface OrderCanceledProps extends BaseTemplateProps {
   shopUrl?: string;
 }
 
-export function isValidOrderCanceledData(data: unknown): data is OrderCanceledProps {
-  const d = data as Record<string, any>
+export function isValidOrderCanceledData(
+  data: unknown,
+): data is OrderCanceledProps {
+  const d = data as Record<string, any>;
   return (
     typeof d?.orderNumber === "string" &&
     typeof d?.orderDate === "string" &&
@@ -36,7 +44,7 @@ export function isValidOrderCanceledData(data: unknown): data is OrderCanceledPr
     typeof d?.shipping === "string" &&
     typeof d?.total === "string" &&
     typeof d?.refundMessage === "string"
-  )
+  );
 }
 
 export const OrderCanceled = ({
@@ -63,7 +71,10 @@ export const OrderCanceled = ({
         <Head />
         <Preview>Your order #{orderNumber} has been canceled</Preview>
         <Body>
-          <Container align="center" className="w-full max-w-160 bg-primary md:p-8">
+          <Container
+            align="center"
+            className="w-full max-w-160 bg-primary md:p-8"
+          >
             <Header logoUrl={config.logoUrl} logoAlt={config.logoAlt} />
             <Section align="left" className="max-w-full px-6 py-8">
               <Row className="mb-6">
@@ -76,7 +87,10 @@ export const OrderCanceled = ({
                   {greeting}
                   <br />
                   <br />
-                  We're sorry to let you know that your order #{orderNumber} placed on {orderDate} has been canceled.
+                  We're sorry to let you know that your order #{
+                    orderNumber
+                  }{" "}
+                  placed on {orderDate} has been canceled.
                 </Text>
               </Row>
 
@@ -104,7 +118,8 @@ export const OrderCanceled = ({
 
               <Row className="mb-6">
                 <Text className="text-md text-tertiary">
-                  If you have any questions about your cancellation or refund, contact us at{" "}
+                  If you have any questions about your cancellation or refund,
+                  contact us at{" "}
                   <a
                     href={`mailto:${config.supportEmail}`}
                     className="text-brand-secondary"
@@ -117,7 +132,9 @@ export const OrderCanceled = ({
 
               <Row className="mt-2 mb-6">
                 <Button href={shopUrl || config.websiteUrl}>
-                  <Text className="text-md font-semibold">Continue shopping</Text>
+                  <Text className="text-md font-semibold">
+                    Continue shopping
+                  </Text>
                 </Button>
               </Row>
             </Section>
@@ -138,15 +155,28 @@ OrderCanceled.PreviewProps = {
   orderNumber: "1042",
   orderDate: "March 14, 2026",
   items: [
-    { name: "Leather Crossbody Bag", variant: "Tan / One Size", quantity: 1, price: "$128.00", imageUrl: "https://placehold.co/128x128?text=Product" },
-    { name: "Merino Wool Scarf", variant: "Charcoal", quantity: 2, price: "$98.00", imageUrl: "https://placehold.co/128x128?text=Product" },
+    {
+      name: "Leather Crossbody Bag",
+      variant: "Tan / One Size",
+      quantity: 1,
+      price: "$128.00",
+      imageUrl: "https://placehold.co/128x128?text=Product",
+    },
+    {
+      name: "Merino Wool Scarf",
+      variant: "Charcoal",
+      quantity: 2,
+      price: "$98.00",
+      imageUrl: "https://placehold.co/128x128?text=Product",
+    },
   ],
   subtotal: "$226.00",
   shipping: "$8.00",
   tax: "$18.72",
   discount: "$10.00",
   total: "$242.72",
-  refundMessage: "A refund of $242.72 has been issued to your original payment method and should appear within 5-10 business days.",
+  refundMessage:
+    "A refund of $242.72 has been issued to your original payment method and should appear within 5-10 business days.",
   shopUrl: "http://localhost:3000",
 } satisfies OrderCanceledProps;
 

@@ -1,5 +1,5 @@
-import { defineRouteConfig } from "@medusajs/admin-sdk"
-import { DocumentText } from "@medusajs/icons"
+import { defineRouteConfig } from "@medusajs/admin-sdk";
+import { DocumentText } from "@medusajs/icons";
 import {
   Container,
   Heading,
@@ -11,61 +11,61 @@ import {
   Text,
   Toaster,
   toast,
-} from "@medusajs/ui"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { useState, useEffect, useRef } from "react"
-import { sdk } from "../../../lib/sdk"
+} from "@medusajs/ui";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useRef } from "react";
+import { sdk } from "../../../lib/sdk";
 
 type InvoiceConfig = {
-  id: string
-  company_name: string
-  company_address: string
-  company_phone: string | null
-  company_email: string
-  company_logo: string | null
-  tax_id: string | null
-  notes: string | null
-  attach_to_email: boolean
-}
+  id: string;
+  company_name: string;
+  company_address: string;
+  company_phone: string | null;
+  company_email: string;
+  company_logo: string | null;
+  tax_id: string | null;
+  notes: string | null;
+  attach_to_email: boolean;
+};
 
 type InvoiceConfigResponse = {
-  invoice_config: InvoiceConfig | null
-}
+  invoice_config: InvoiceConfig | null;
+};
 
 const InvoiceConfigPage = () => {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
-  const [companyName, setCompanyName] = useState("")
-  const [companyAddress, setCompanyAddress] = useState("")
-  const [companyPhone, setCompanyPhone] = useState("")
-  const [companyEmail, setCompanyEmail] = useState("")
-  const [companyLogo, setCompanyLogo] = useState("")
-  const [taxId, setTaxId] = useState("")
-  const [notes, setNotes] = useState("")
-  const [attachToEmail, setAttachToEmail] = useState(false)
+  const [companyName, setCompanyName] = useState("");
+  const [companyAddress, setCompanyAddress] = useState("");
+  const [companyPhone, setCompanyPhone] = useState("");
+  const [companyEmail, setCompanyEmail] = useState("");
+  const [companyLogo, setCompanyLogo] = useState("");
+  const [taxId, setTaxId] = useState("");
+  const [notes, setNotes] = useState("");
+  const [attachToEmail, setAttachToEmail] = useState(false);
 
-  const [isUploading, setIsUploading] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading, isError, error } = useQuery<InvoiceConfigResponse>({
     queryKey: ["invoice-config"],
     queryFn: () => sdk.client.fetch("/admin/invoice-config"),
-  })
+  });
 
   // Populate form when data loads
   useEffect(() => {
     if (data?.invoice_config) {
-      const cfg = data.invoice_config
-      setCompanyName(cfg.company_name || "")
-      setCompanyAddress(cfg.company_address || "")
-      setCompanyPhone(cfg.company_phone || "")
-      setCompanyEmail(cfg.company_email || "")
-      setCompanyLogo(cfg.company_logo || "")
-      setTaxId(cfg.tax_id || "")
-      setNotes(cfg.notes || "")
-      setAttachToEmail(cfg.attach_to_email ?? false)
+      const cfg = data.invoice_config;
+      setCompanyName(cfg.company_name || "");
+      setCompanyAddress(cfg.company_address || "");
+      setCompanyPhone(cfg.company_phone || "");
+      setCompanyEmail(cfg.company_email || "");
+      setCompanyLogo(cfg.company_logo || "");
+      setTaxId(cfg.tax_id || "");
+      setNotes(cfg.notes || "");
+      setAttachToEmail(cfg.attach_to_email ?? false);
     }
-  }, [data])
+  }, [data]);
 
   const { mutate: saveConfig, isPending: isSaving } = useMutation({
     mutationFn: (body: Record<string, unknown>) =>
@@ -74,46 +74,46 @@ const InvoiceConfigPage = () => {
         body,
       }),
     onSuccess: () => {
-      toast.success("Invoice configuration saved")
-      queryClient.invalidateQueries({ queryKey: ["invoice-config"] })
+      toast.success("Invoice configuration saved");
+      queryClient.invalidateQueries({ queryKey: ["invoice-config"] });
     },
     onError: () => {
-      toast.error("Failed to save invoice configuration")
+      toast.error("Failed to save invoice configuration");
     },
-  })
+  });
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    setIsUploading(true)
+    setIsUploading(true);
     try {
-      const { files } = await sdk.admin.upload.create({ files: [file] })
+      const { files } = await sdk.admin.upload.create({ files: [file] });
       if (files?.[0]?.url) {
-        setCompanyLogo(files[0].url)
-        toast.success("Logo uploaded")
+        setCompanyLogo(files[0].url);
+        toast.success("Logo uploaded");
       }
     } catch {
-      toast.error("Failed to upload logo")
+      toast.error("Failed to upload logo");
     } finally {
-      setIsUploading(false)
+      setIsUploading(false);
     }
-  }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!companyName.trim()) {
-      toast.error("Company name is required")
-      return
+      toast.error("Company name is required");
+      return;
     }
     if (!companyEmail.trim()) {
-      toast.error("Company email is required")
-      return
+      toast.error("Company email is required");
+      return;
     }
     if (!companyAddress.trim()) {
-      toast.error("Company address is required")
-      return
+      toast.error("Company address is required");
+      return;
     }
 
     saveConfig({
@@ -125,31 +125,34 @@ const InvoiceConfigPage = () => {
       tax_id: taxId.trim() || null,
       notes: notes.trim() || null,
       attach_to_email: attachToEmail,
-    })
-  }
+    });
+  };
 
   if (isLoading) {
     return (
       <Container>
         <Text>Loading configuration...</Text>
       </Container>
-    )
+    );
   }
 
   if (isError) {
     return (
       <Container className="flex flex-col items-center gap-4 p-6">
         <Text className="text-ui-fg-error">
-          Failed to load configuration: {error instanceof Error ? error.message : "Unknown error"}
+          Failed to load configuration:{" "}
+          {error instanceof Error ? error.message : "Unknown error"}
         </Text>
         <Button
           variant="secondary"
-          onClick={() => queryClient.invalidateQueries({ queryKey: ["invoice-config"] })}
+          onClick={() =>
+            queryClient.invalidateQueries({ queryKey: ["invoice-config"] })
+          }
         >
           Retry
         </Button>
       </Container>
-    )
+    );
   }
 
   return (
@@ -303,12 +306,12 @@ const InvoiceConfigPage = () => {
       </Container>
       <Toaster />
     </form>
-  )
-}
+  );
+};
 
 export const config = defineRouteConfig({
   label: "Invoice Configuration",
   icon: DocumentText,
-})
+});
 
-export default InvoiceConfigPage
+export default InvoiceConfigPage;

@@ -1,5 +1,5 @@
-import { model } from "@medusajs/framework/utils"
-import { Wishlist } from "./wishlist"
+import { model } from "@medusajs/framework/utils";
+import { Wishlist } from "./wishlist";
 
 export const WishlistItem = model
   .define("wishlist_item", {
@@ -14,4 +14,4 @@ export const WishlistItem = model
       on: ["product_variant_id", "wishlist_id"],
       unique: true,
     },
-  ])
+  ]);

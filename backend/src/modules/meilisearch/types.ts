@@ -1,5 +1,5 @@
 export type MeilisearchOptions = {
-  host: string
-  apiKey: string
-  productIndexName: string
-}
+  host: string;
+  apiKey: string;
+  productIndexName: string;
+};

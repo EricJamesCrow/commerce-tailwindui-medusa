@@ -1,9 +1,9 @@
-import { View, Text } from "@react-pdf/renderer"
-import { styles } from "../styles"
+import { View, Text } from "@react-pdf/renderer";
+import { styles } from "../styles";
 
 interface FooterProps {
-  companyEmail: string
-  notes?: string
+  companyEmail: string;
+  notes?: string;
 }
 
 export function Footer({ companyEmail, notes }: FooterProps) {
@@ -16,5 +16,5 @@ export function Footer({ companyEmail, notes }: FooterProps) {
         Questions? Contact {companyEmail}
       </Text>
     </View>
-  )
+  );
 }

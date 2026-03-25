@@ -3,19 +3,19 @@ import {
   transform,
   when,
   WorkflowResponse,
-} from "@medusajs/framework/workflows-sdk"
-import { MedusaError } from "@medusajs/framework/utils"
+} from "@medusajs/framework/workflows-sdk";
+import { MedusaError } from "@medusajs/framework/utils";
 import {
   useQueryGraphStep,
   sendNotificationsStep,
-} from "@medusajs/medusa/core-flows"
-import { formatOrderForEmailStep } from "../steps/format-order-for-email"
-import { tryGenerateInvoicePdfStep } from "../steps/try-generate-invoice-pdf"
-import { EmailTemplates } from "../../modules/resend/templates/template-registry"
+} from "@medusajs/medusa/core-flows";
+import { formatOrderForEmailStep } from "../steps/format-order-for-email";
+import { tryGenerateInvoicePdfStep } from "../steps/try-generate-invoice-pdf";
+import { EmailTemplates } from "../../modules/resend/templates/template-registry";
 
 type SendOrderConfirmationInput = {
-  id: string
-}
+  id: string;
+};
 
 export const sendOrderConfirmationWorkflow = createWorkflow(
   "send-order-confirmation",
@@ -40,48 +40,48 @@ export const sendOrderConfirmationWorkflow = createWorkflow(
         "discount_total",
       ],
       filters: { id: input.id },
-    })
+    });
 
     const order = transform({ orders }, ({ orders: result }) => {
-      const o = result[0]
+      const o = result[0];
       if (!o?.email) {
         throw new MedusaError(
           MedusaError.Types.INVALID_DATA,
-          "Order has no email address, cannot send confirmation"
-        )
+          "Order has no email address, cannot send confirmation",
+        );
       }
-      return o
-    })
+      return o;
+    });
 
-    const formatted = formatOrderForEmailStep({ order })
+    const formatted = formatOrderForEmailStep({ order });
 
     // Fetch invoice config to check attach_to_email toggle
     const { data: invoiceConfigs } = useQueryGraphStep({
       entity: "invoice_config",
       fields: ["attach_to_email"],
-    }).config({ name: "fetch-invoice-config-for-email" })
+    }).config({ name: "fetch-invoice-config-for-email" });
 
     const attachToEmail = transform(
       { invoiceConfigs },
       ({ invoiceConfigs: configs }) => {
-        const config = configs[0] as Record<string, any> | undefined
-        return config?.attach_to_email === true
-      }
-    )
+        const config = configs[0] as Record<string, any> | undefined;
+        return config?.attach_to_email === true;
+      },
+    );
 
     // Conditionally generate invoice PDF when attach_to_email is enabled.
     // tryGenerateInvoicePdfStep handles all errors internally and returns
     // { buffer: null } on failure, so this never blocks the confirmation email.
     const invoicePdfResult = when(
       { attachToEmail },
-      (data) => data.attachToEmail === true
+      (data) => data.attachToEmail === true,
     ).then(function () {
       return tryGenerateInvoicePdfStep({
         order_id: input.id,
         order,
         delivery_method: "attachment",
-      })
-    })
+      });
+    });
 
     const notifications = transform(
       { formatted, attachToEmail, invoicePdfResult },
@@ -91,13 +91,15 @@ export const sendOrderConfirmationWorkflow = createWorkflow(
         invoicePdfResult: pdfResult,
       }) => {
         const storefrontUrl =
-          process.env.STOREFRONT_URL || "http://localhost:3000"
+          process.env.STOREFRONT_URL || "http://localhost:3000";
 
-        const invoiceDownloadUrl = `${storefrontUrl}/api/orders/${data.orderId}/invoice`
+        const invoiceDownloadUrl = `${storefrontUrl}/api/orders/${data.orderId}/invoice`;
 
         // Determine invoice mode based on whether we have a PDF buffer
-        const hasPdf = shouldAttach && pdfResult?.buffer != null
-        const invoiceMode = hasPdf ? ("attachment" as const) : ("link" as const)
+        const hasPdf = shouldAttach && pdfResult?.buffer != null;
+        const invoiceMode = hasPdf
+          ? ("attachment" as const)
+          : ("link" as const);
 
         // Build base notification data
         const notificationData: Record<string, unknown> = {
@@ -116,7 +118,7 @@ export const sendOrderConfirmationWorkflow = createWorkflow(
           orderStatusUrl: `${storefrontUrl}/account/orders/${data.orderId}`,
           invoiceMode,
           invoiceDownloadUrl,
-        }
+        };
 
         // When mode is "attachment", include the PDF via data.attachments
         // (handled by our Resend notification service)
@@ -126,7 +128,7 @@ export const sendOrderConfirmationWorkflow = createWorkflow(
               content: pdfResult.buffer,
               filename: `invoice-${pdfResult.invoiceNumber || data.orderNumber}.pdf`,
             },
-          ]
+          ];
         }
 
         return [
@@ -139,14 +141,14 @@ export const sendOrderConfirmationWorkflow = createWorkflow(
             resource_id: data.orderId,
             resource_type: "order",
           },
-        ]
-      }
-    )
+        ];
+      },
+    );
 
-    sendNotificationsStep(notifications)
+    sendNotificationsStep(notifications);
 
     return new WorkflowResponse({
       orderId: input.id,
-    })
-  }
-)
+    });
+  },
+);

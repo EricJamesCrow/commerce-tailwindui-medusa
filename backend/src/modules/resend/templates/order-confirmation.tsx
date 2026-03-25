@@ -1,5 +1,12 @@
 // backend/src/modules/resend/templates/order-confirmation.tsx
-import { Container, Html, Preview, Row, Section, Column } from "@react-email/components";
+import {
+  Container,
+  Html,
+  Preview,
+  Row,
+  Section,
+  Column,
+} from "@react-email/components";
 import { Body } from "./_components/body";
 import { Button } from "./_components/button";
 import { LeftAligned as Footer } from "./_components/footer";
@@ -33,8 +40,10 @@ export interface OrderConfirmationProps extends BaseTemplateProps {
   invoiceDownloadUrl?: string;
 }
 
-export function isValidOrderConfirmationData(data: unknown): data is OrderConfirmationProps {
-  const d = data as Record<string, any>
+export function isValidOrderConfirmationData(
+  data: unknown,
+): data is OrderConfirmationProps {
+  const d = data as Record<string, any>;
   return (
     typeof d?.orderNumber === "string" &&
     typeof d?.orderDate === "string" &&
@@ -45,7 +54,7 @@ export function isValidOrderConfirmationData(data: unknown): data is OrderConfir
     typeof d?.paymentMethod === "string" &&
     typeof d?.shippingAddress === "object" &&
     d?.shippingAddress !== null
-  )
+  );
 }
 
 export const OrderConfirmation = ({
@@ -79,7 +88,10 @@ export const OrderConfirmation = ({
           Order #{orderNumber} confirmed - {total}
         </Preview>
         <Body>
-          <Container align="center" className="w-full max-w-160 bg-primary md:p-8">
+          <Container
+            align="center"
+            className="w-full max-w-160 bg-primary md:p-8"
+          >
             <Header logoUrl={config.logoUrl} logoAlt={config.logoAlt} />
             <Section align="left" className="max-w-full px-6 py-8">
               <Row className="mb-6">
@@ -92,8 +104,8 @@ export const OrderConfirmation = ({
                   {greeting}
                   <br />
                   <br />
-                  Thank you for your order! We've received your order and
-                  will begin processing it shortly.
+                  Thank you for your order! We've received your order and will
+                  begin processing it shortly.
                 </Text>
               </Row>
 
@@ -126,18 +138,21 @@ export const OrderConfirmation = ({
                 total={total}
               />
 
-              <PaymentDetails
-                method={paymentMethod}
-                cardLast4={cardLast4}
-              />
+              <PaymentDetails method={paymentMethod} cardLast4={cardLast4} />
 
               <Row>
                 <Column className="w-1/2">
-                  <AddressBlock label="Shipping Address" address={shippingAddress} />
+                  <AddressBlock
+                    label="Shipping Address"
+                    address={shippingAddress}
+                  />
                 </Column>
                 {billingAddress && (
                   <Column className="w-1/2">
-                    <AddressBlock label="Billing Address" address={billingAddress} />
+                    <AddressBlock
+                      label="Billing Address"
+                      address={billingAddress}
+                    />
                   </Column>
                 )}
               </Row>
@@ -145,7 +160,9 @@ export const OrderConfirmation = ({
               {orderStatusUrl && (
                 <Row className="mt-6 mb-6">
                   <Button href={orderStatusUrl}>
-                    <Text className="text-md font-semibold">View your order</Text>
+                    <Text className="text-md font-semibold">
+                      View your order
+                    </Text>
                   </Button>
                 </Row>
               )}
@@ -153,7 +170,9 @@ export const OrderConfirmation = ({
               {invoiceMode === "link" && invoiceDownloadUrl && (
                 <Row className="mb-6">
                   <Button color="secondary" href={invoiceDownloadUrl}>
-                    <Text className="text-md font-semibold">Download Invoice</Text>
+                    <Text className="text-md font-semibold">
+                      Download Invoice
+                    </Text>
                   </Button>
                 </Row>
               )}
@@ -201,8 +220,20 @@ OrderConfirmation.PreviewProps = {
   orderNumber: "1042",
   orderDate: "March 14, 2026",
   items: [
-    { name: "Leather Crossbody Bag", variant: "Tan / One Size", quantity: 1, price: "$128.00", imageUrl: "https://placehold.co/128x128?text=Product" },
-    { name: "Merino Wool Scarf", variant: "Charcoal", quantity: 2, price: "$98.00", imageUrl: "https://placehold.co/128x128?text=Product" },
+    {
+      name: "Leather Crossbody Bag",
+      variant: "Tan / One Size",
+      quantity: 1,
+      price: "$128.00",
+      imageUrl: "https://placehold.co/128x128?text=Product",
+    },
+    {
+      name: "Merino Wool Scarf",
+      variant: "Charcoal",
+      quantity: 2,
+      price: "$98.00",
+      imageUrl: "https://placehold.co/128x128?text=Product",
+    },
     { name: "Gift Wrapping", quantity: 1, price: "$5.00" },
   ],
   subtotal: "$226.00",

@@ -1,8 +1,8 @@
-import { defineWidgetConfig } from "@medusajs/admin-sdk"
-import { Container, Heading, Text } from "@medusajs/ui"
-import { useQuery } from "@tanstack/react-query"
-import { sdk } from "../lib/sdk"
-import type { DetailWidgetProps, AdminProduct } from "@medusajs/types"
+import { defineWidgetConfig } from "@medusajs/admin-sdk";
+import { Container, Heading, Text } from "@medusajs/ui";
+import { useQuery } from "@tanstack/react-query";
+import { sdk } from "../lib/sdk";
+import type { DetailWidgetProps, AdminProduct } from "@medusajs/types";
 
 const ProductWishlistWidget = ({
   data: product,
@@ -10,7 +10,7 @@ const ProductWishlistWidget = ({
   const { data, isLoading } = useQuery<{ count: number }>({
     queryFn: () => sdk.client.fetch(`/admin/products/${product.id}/wishlist`),
     queryKey: ["products", product.id, "wishlist"],
-  })
+  });
 
   return (
     <Container className="divide-y p-0">
@@ -23,11 +23,11 @@ const ProductWishlistWidget = ({
           : `This product is in ${data?.count ?? 0} wishlist(s).`}
       </Text>
     </Container>
-  )
-}
+  );
+};
 
 export const config = defineWidgetConfig({
   zone: "product.details.before",
-})
+});
 
-export default ProductWishlistWidget
+export default ProductWishlistWidget;

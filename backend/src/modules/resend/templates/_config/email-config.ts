@@ -52,7 +52,7 @@ export const defaultEmailConfig: EmailBrandConfig = {
 };
 
 export function getEmailConfig(
-  overrides?: Partial<EmailBrandConfig>
+  overrides?: Partial<EmailBrandConfig>,
 ): EmailBrandConfig {
   return {
     ...defaultEmailConfig,

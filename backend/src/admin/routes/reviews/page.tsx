@@ -1,5 +1,5 @@
-import { defineRouteConfig } from "@medusajs/admin-sdk"
-import { ChatBubbleLeftRight } from "@medusajs/icons"
+import { defineRouteConfig } from "@medusajs/admin-sdk";
+import { ChatBubbleLeftRight } from "@medusajs/icons";
 import {
   createDataTableColumnHelper,
   createDataTableCommandHelper,
@@ -12,39 +12,39 @@ import {
   toast,
   DataTablePaginationState,
   DataTableRowSelectionState,
-} from "@medusajs/ui"
-import { HttpTypes } from "@medusajs/framework/types"
-import { useQuery } from "@tanstack/react-query"
-import { useMemo, useState } from "react"
-import { Link } from "react-router-dom"
-import { sdk } from "../../lib/sdk"
+} from "@medusajs/ui";
+import { HttpTypes } from "@medusajs/framework/types";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { sdk } from "../../lib/sdk";
 
 type Review = {
-  id: string
-  title?: string
-  content: string
-  rating: number
-  product_id: string
-  customer_id?: string
-  status: "pending" | "approved" | "flagged"
-  created_at: Date
-  updated_at: Date
-  product?: HttpTypes.AdminProduct
+  id: string;
+  title?: string;
+  content: string;
+  rating: number;
+  product_id: string;
+  customer_id?: string;
+  status: "pending" | "approved" | "flagged";
+  created_at: Date;
+  updated_at: Date;
+  product?: HttpTypes.AdminProduct;
   response?: {
-    id: string
-    content: string
-    created_at: string
-  } | null
-}
+    id: string;
+    content: string;
+    created_at: string;
+  } | null;
+};
 
-const columnHelper = createDataTableColumnHelper<Review>()
+const columnHelper = createDataTableColumnHelper<Review>();
 
-const commandHelper = createDataTableCommandHelper()
+const commandHelper = createDataTableCommandHelper();
 
 const statusCommands = [
   { label: "Approve", shortcut: "A", status: "approved" },
   { label: "Flag", shortcut: "F", status: "flagged" },
-] as const
+] as const;
 
 const useCommands = (refetch: () => void) => {
   return statusCommands.map(({ label, shortcut, status }) =>
@@ -52,87 +52,93 @@ const useCommands = (refetch: () => void) => {
       label,
       shortcut,
       action: async (selection) => {
-        const ids = Object.keys(selection)
+        const ids = Object.keys(selection);
         try {
           await sdk.client.fetch("/admin/reviews/status", {
             method: "POST",
             body: { ids, status },
-          })
-          toast.success(`Reviews ${status}`)
-          refetch()
+          });
+          toast.success(`Reviews ${status}`);
+          refetch();
         } catch {
-          toast.error(`Failed to ${label.toLowerCase()} reviews`)
+          toast.error(`Failed to ${label.toLowerCase()} reviews`);
         }
       },
     }),
-  )
-}
+  );
+};
 
-const limit = 15
+const limit = 15;
 
 const statusColor = (status: Review["status"]): "green" | "red" | "grey" => {
   switch (status) {
-    case "approved": return "green"
-    case "flagged": return "red"
-    default: return "grey"
+    case "approved":
+      return "green";
+    case "flagged":
+      return "red";
+    default:
+      return "grey";
   }
-}
+};
 
 const ReviewDetailDrawer = ({
   review,
   onClose,
   onResponseChange,
 }: {
-  review: Review | null
-  onClose: () => void
-  onResponseChange: () => void
+  review: Review | null;
+  onClose: () => void;
+  onResponseChange: () => void;
 }) => {
   const [responseContent, setResponseContent] = useState(
-    review?.response?.content || ""
-  )
-  const [isSaving, setIsSaving] = useState(false)
+    review?.response?.content || "",
+  );
+  const [isSaving, setIsSaving] = useState(false);
 
-  if (!review) return null
+  if (!review) return null;
 
   const handleSave = async () => {
-    setIsSaving(true)
+    setIsSaving(true);
     try {
       await sdk.client.fetch(`/admin/reviews/${review.id}/response`, {
         method: "POST",
         body: { content: responseContent },
-      })
-      toast.success("Response saved")
-      onResponseChange()
-      onClose()
+      });
+      toast.success("Response saved");
+      onResponseChange();
+      onClose();
     } catch {
-      toast.error("Failed to save response")
+      toast.error("Failed to save response");
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleDelete = async () => {
-    setIsSaving(true)
+    setIsSaving(true);
     try {
       await sdk.client.fetch(`/admin/reviews/${review.id}/response`, {
         method: "DELETE",
-      })
-      toast.success("Response deleted")
-      onResponseChange()
-      onClose()
+      });
+      toast.success("Response deleted");
+      onResponseChange();
+      onClose();
     } catch {
-      toast.error("Failed to delete response")
+      toast.error("Failed to delete response");
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   return (
     <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl">
       <div className="flex h-full flex-col">
         <div className="flex items-center justify-between border-b px-6 py-4">
           <Heading level="h2">Review Detail</Heading>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
             ✕
           </button>
         </div>
@@ -183,92 +189,99 @@ const ReviewDetailDrawer = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const ReviewsPage = () => {
   const [pagination, setPagination] = useState<DataTablePaginationState>({
     pageSize: limit,
     pageIndex: 0,
-  })
+  });
 
-  const [rowSelection, setRowSelection] = useState<DataTableRowSelectionState>({})
-  const [selectedReview, setSelectedReview] = useState<Review | null>(null)
+  const [rowSelection, setRowSelection] = useState<DataTableRowSelectionState>(
+    {},
+  );
+  const [selectedReview, setSelectedReview] = useState<Review | null>(null);
 
-  const columns = useMemo(() => [
-    columnHelper.select(),
-    columnHelper.accessor("id", {
-      header: "ID",
-    }),
-    columnHelper.accessor("title", {
-      header: "Title",
-    }),
-    columnHelper.accessor("rating", {
-      header: "Rating",
-    }),
-    columnHelper.accessor("content", {
-      header: "Content",
-    }),
-    columnHelper.accessor("status", {
-      header: "Status",
-      cell: ({ row }) => (
-        <StatusBadge color={statusColor(row.original.status)}>
-          {row.original.status.charAt(0).toUpperCase() + row.original.status.slice(1)}
-        </StatusBadge>
-      ),
-    }),
-    columnHelper.accessor("response", {
-      header: "Response",
-      cell: ({ row }) => {
-        return row.original.response ? (
-          <StatusBadge color="green">Responded</StatusBadge>
-        ) : (
-          <StatusBadge color="grey">No response</StatusBadge>
-        )
-      },
-    }),
-    columnHelper.accessor("product", {
-      header: "Product",
-      cell: ({ row }) => {
-        return (
-          <Link to={`/products/${row.original.product_id}`}>
-            {row.original.product?.title}
-          </Link>
-        )
-      },
-    }),
-    columnHelper.display({
-      id: "actions",
-      cell: ({ row }) => (
-        <button
-          onClick={() => setSelectedReview(row.original)}
-          className="text-sm text-blue-600 hover:underline"
-        >
-          View
-        </button>
-      ),
-    }),
-  ], [])
+  const columns = useMemo(
+    () => [
+      columnHelper.select(),
+      columnHelper.accessor("id", {
+        header: "ID",
+      }),
+      columnHelper.accessor("title", {
+        header: "Title",
+      }),
+      columnHelper.accessor("rating", {
+        header: "Rating",
+      }),
+      columnHelper.accessor("content", {
+        header: "Content",
+      }),
+      columnHelper.accessor("status", {
+        header: "Status",
+        cell: ({ row }) => (
+          <StatusBadge color={statusColor(row.original.status)}>
+            {row.original.status.charAt(0).toUpperCase() +
+              row.original.status.slice(1)}
+          </StatusBadge>
+        ),
+      }),
+      columnHelper.accessor("response", {
+        header: "Response",
+        cell: ({ row }) => {
+          return row.original.response ? (
+            <StatusBadge color="green">Responded</StatusBadge>
+          ) : (
+            <StatusBadge color="grey">No response</StatusBadge>
+          );
+        },
+      }),
+      columnHelper.accessor("product", {
+        header: "Product",
+        cell: ({ row }) => {
+          return (
+            <Link to={`/products/${row.original.product_id}`}>
+              {row.original.product?.title}
+            </Link>
+          );
+        },
+      }),
+      columnHelper.display({
+        id: "actions",
+        cell: ({ row }) => (
+          <button
+            onClick={() => setSelectedReview(row.original)}
+            className="text-sm text-blue-600 hover:underline"
+          >
+            View
+          </button>
+        ),
+      }),
+    ],
+    [],
+  );
 
-  const offset = pagination.pageIndex * limit
+  const offset = pagination.pageIndex * limit;
 
   const { data, isLoading, refetch } = useQuery<{
-    reviews: Review[]
-    count: number
-    limit: number
-    offset: number
+    reviews: Review[];
+    count: number;
+    limit: number;
+    offset: number;
   }>({
     queryKey: ["reviews", offset, limit],
-    queryFn: () => sdk.client.fetch("/admin/reviews", {
-      query: {
-        offset,
-        limit,
-        order: "-created_at",
-      },
-    }),
-  })
+    queryFn: () =>
+      sdk.client.fetch("/admin/reviews", {
+        query: {
+          offset,
+          limit,
+          order: "-created_at",
+        },
+      }),
+  });
 
-  const commands = useCommands(refetch)
+  const commands = useCommands(refetch);
 
   const table = useDataTable({
     columns,
@@ -285,7 +298,7 @@ const ReviewsPage = () => {
       onRowSelectionChange: setRowSelection,
     },
     getRowId: (row) => row.id,
-  })
+  });
 
   return (
     <Container>
@@ -307,12 +320,12 @@ const ReviewsPage = () => {
         />
       )}
     </Container>
-  )
-}
+  );
+};
 
 export const config = defineRouteConfig({
   label: "Reviews",
   icon: ChatBubbleLeftRight,
-})
+});
 
-export default ReviewsPage
+export default ReviewsPage;

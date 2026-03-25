@@ -1,11 +1,11 @@
-import { View, Text, Image } from "@react-pdf/renderer"
-import { styles } from "../styles"
+import { View, Text, Image } from "@react-pdf/renderer";
+import { styles } from "../styles";
 
 interface HeaderProps {
-  invoiceNumber: string
-  issuedDate: string
-  orderDisplayId: string
-  logo?: string
+  invoiceNumber: string;
+  issuedDate: string;
+  orderDisplayId: string;
+  logo?: string;
 }
 
 export function Header({
@@ -17,7 +17,15 @@ export function Header({
   return (
     <View style={styles.headerSection}>
       {logo && (
-        <Image src={logo} style={{ width: 120, height: 40, marginBottom: 8, objectFit: "contain" }} />
+        <Image
+          src={logo}
+          style={{
+            width: 120,
+            height: 40,
+            marginBottom: 8,
+            objectFit: "contain",
+          }}
+        />
       )}
       <Text style={styles.invoiceLabel}>Invoice</Text>
       <Text style={styles.invoiceNumber}>{invoiceNumber}</Text>
@@ -25,5 +33,5 @@ export function Header({
         Issued {issuedDate} · Order {orderDisplayId}
       </Text>
     </View>
-  )
+  );
 }

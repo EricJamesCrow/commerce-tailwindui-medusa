@@ -1,4 +1,10 @@
-import { Container, Html, Preview, Row, Section } from "@react-email/components";
+import {
+  Container,
+  Html,
+  Preview,
+  Row,
+  Section,
+} from "@react-email/components";
 import { Body } from "./_components/body";
 import { Button } from "./_components/button";
 import { LeftAligned as Footer } from "./_components/footer";
@@ -18,13 +24,15 @@ export interface AbandonedCartProps extends BaseTemplateProps {
   currencyCode?: string;
 }
 
-export function isValidAbandonedCartData(data: unknown): data is AbandonedCartProps {
-  const d = data as Record<string, any>
+export function isValidAbandonedCartData(
+  data: unknown,
+): data is AbandonedCartProps {
+  const d = data as Record<string, any>;
   return (
     Array.isArray(d?.items) &&
     typeof d?.subtotal === "string" &&
     typeof d?.recoveryUrl === "string"
-  )
+  );
 }
 
 export const AbandonedCart = ({
@@ -44,7 +52,10 @@ export const AbandonedCart = ({
         <Head />
         <Preview>You left items in your cart - {subtotal}</Preview>
         <Body>
-          <Container align="center" className="w-full max-w-160 bg-primary md:p-8">
+          <Container
+            align="center"
+            className="w-full max-w-160 bg-primary md:p-8"
+          >
             <Header logoUrl={config.logoUrl} logoAlt={config.logoAlt} />
             <Section align="left" className="max-w-full px-6 py-8">
               <Row className="mb-6">
@@ -72,14 +83,16 @@ export const AbandonedCart = ({
 
               <Row className="mt-6 mb-6">
                 <Button href={recoveryUrl}>
-                  <Text className="text-md font-semibold">Return to your cart</Text>
+                  <Text className="text-md font-semibold">
+                    Return to your cart
+                  </Text>
                 </Button>
               </Row>
 
               <Row>
                 <Text className="text-md text-tertiary">
-                  If you've already completed your purchase, please ignore
-                  this email.
+                  If you've already completed your purchase, please ignore this
+                  email.
                   <br />
                   <br />
                   Questions? Contact us at{" "}
@@ -113,8 +126,20 @@ export const AbandonedCart = ({
 AbandonedCart.PreviewProps = {
   customerName: "Sarah",
   items: [
-    { name: "Leather Crossbody Bag", variant: "Tan / One Size", quantity: 1, price: "$128.00", imageUrl: "https://placehold.co/128x128?text=Product" },
-    { name: "Merino Wool Scarf", variant: "Charcoal", quantity: 2, price: "$98.00", imageUrl: "https://placehold.co/128x128?text=Product" },
+    {
+      name: "Leather Crossbody Bag",
+      variant: "Tan / One Size",
+      quantity: 1,
+      price: "$128.00",
+      imageUrl: "https://placehold.co/128x128?text=Product",
+    },
+    {
+      name: "Merino Wool Scarf",
+      variant: "Charcoal",
+      quantity: 2,
+      price: "$98.00",
+      imageUrl: "https://placehold.co/128x128?text=Product",
+    },
   ],
   subtotal: "$226.00",
   recoveryUrl: "http://localhost:3000/cart/recover/cart_01ABC?token=abc123",

@@ -1,16 +1,10 @@
-import {
-  MedusaRequest,
-  MedusaResponse,
-} from "@medusajs/framework/http"
-import { createFindParams } from "@medusajs/medusa/api/utils/validators"
+import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
+import { createFindParams } from "@medusajs/medusa/api/utils/validators";
 
-export const GetAdminReviewsSchema = createFindParams()
+export const GetAdminReviewsSchema = createFindParams();
 
-export const GET = async (
-  req: MedusaRequest,
-  res: MedusaResponse
-) => {
-  const query = req.scope.resolve("query")
+export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
+  const query = req.scope.resolve("query");
 
   const {
     data: reviews,
@@ -22,12 +16,12 @@ export const GET = async (
   } = await query.graph({
     entity: "review",
     ...req.queryConfig,
-  })
+  });
 
   res.json({
     reviews,
     count,
     limit: take,
     offset: skip,
-  })
-}
+  });
+};

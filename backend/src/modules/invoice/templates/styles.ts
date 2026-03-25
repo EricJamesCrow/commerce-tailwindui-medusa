@@ -1,4 +1,4 @@
-import { StyleSheet } from "@react-pdf/renderer"
+import { StyleSheet } from "@react-pdf/renderer";
 
 export const colors = {
   primary: "#111827", // gray-900
@@ -10,7 +10,7 @@ export const colors = {
   border: "#e5e7eb", // gray-200
   totalsBackground: "#f9fafb",
   white: "#ffffff",
-}
+};
 
 export const styles = StyleSheet.create({
   page: {
@@ -73,7 +73,11 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.tableHeader,
   },
-  tableRowLast: { flexDirection: "row", alignItems: "center", padding: "10 12" },
+  tableRowLast: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: "10 12",
+  },
   itemName: {
     fontSize: 10,
     fontFamily: "Helvetica-Bold",
@@ -133,4 +137,4 @@ export const styles = StyleSheet.create({
   },
   footerText: { fontSize: 8, color: colors.tertiary },
   footerContact: { fontSize: 8, color: colors.tertiary, marginTop: 2 },
-})
+});

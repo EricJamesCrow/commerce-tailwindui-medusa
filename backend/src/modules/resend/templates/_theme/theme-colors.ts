@@ -7,7 +7,9 @@ export const getThemeColors = (theme: "light" | "dark" = "light") => {
     backgroundColor: {
       primary: isLight ? primitiveColors.white : primitiveColors["gray-900"],
       secondary: {
-        DEFAULT: isLight ? primitiveColors["gray-50"] : primitiveColors["gray-800"],
+        DEFAULT: isLight
+          ? primitiveColors["gray-50"]
+          : primitiveColors["gray-800"],
       },
       "brand-solid": primitiveColors["brand-600"],
       "brand-secondary": primitiveColors["brand-100"],
@@ -17,10 +19,16 @@ export const getThemeColors = (theme: "light" | "dark" = "light") => {
     },
     textColor: {
       primary: {
-        DEFAULT: isLight ? primitiveColors["gray-900"] : primitiveColors["gray-50"],
+        DEFAULT: isLight
+          ? primitiveColors["gray-900"]
+          : primitiveColors["gray-50"],
       },
-      secondary: isLight ? primitiveColors["gray-700"] : primitiveColors["gray-200"],
-      tertiary: isLight ? primitiveColors["gray-600"] : primitiveColors["gray-300"],
+      secondary: isLight
+        ? primitiveColors["gray-700"]
+        : primitiveColors["gray-200"],
+      tertiary: isLight
+        ? primitiveColors["gray-600"]
+        : primitiveColors["gray-300"],
       brand: {
         secondary: primitiveColors["brand-700"],
       },
@@ -36,9 +44,13 @@ export const getThemeColors = (theme: "light" | "dark" = "light") => {
     },
     borderColor: {
       primary: {
-        DEFAULT: isLight ? primitiveColors["gray-300"] : primitiveColors["gray-600"],
+        DEFAULT: isLight
+          ? primitiveColors["gray-300"]
+          : primitiveColors["gray-600"],
       },
-      secondary: isLight ? primitiveColors["gray-200"] : primitiveColors["gray-700"],
+      secondary: isLight
+        ? primitiveColors["gray-200"]
+        : primitiveColors["gray-700"],
       brand: {
         DEFAULT: primitiveColors["brand-500"],
       },
@@ -51,9 +63,13 @@ export const getThemeColors = (theme: "light" | "dark" = "light") => {
           bg: primitiveColors["brand-600"],
         },
         secondary: {
-          fg: isLight ? primitiveColors["gray-700"] : primitiveColors["gray-200"],
+          fg: isLight
+            ? primitiveColors["gray-700"]
+            : primitiveColors["gray-200"],
           bg: isLight ? primitiveColors.white : primitiveColors["gray-800"],
-          border: isLight ? primitiveColors["gray-300"] : primitiveColors["gray-600"],
+          border: isLight
+            ? primitiveColors["gray-300"]
+            : primitiveColors["gray-600"],
         },
       },
     },

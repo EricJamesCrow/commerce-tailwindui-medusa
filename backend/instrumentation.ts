@@ -1,6 +1,6 @@
-import * as Sentry from "@sentry/node"
-import { nodeProfilingIntegration } from "@sentry/profiling-node"
-import { registerOtel } from "@medusajs/medusa"
+import * as Sentry from "@sentry/node";
+import { nodeProfilingIntegration } from "@sentry/profiling-node";
+import { registerOtel } from "@medusajs/medusa";
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
@@ -12,7 +12,7 @@ Sentry.init({
     process.env.RAILWAY_ENVIRONMENT ||
     process.env.NODE_ENV ||
     "development",
-})
+});
 
 export function register() {
   registerOtel({
@@ -23,5 +23,5 @@ export function register() {
       query: true,
       db: true,
     },
-  })
+  });
 }

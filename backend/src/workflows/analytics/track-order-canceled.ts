@@ -2,13 +2,13 @@ import {
   createWorkflow,
   transform,
   WorkflowResponse,
-} from "@medusajs/framework/workflows-sdk"
-import { useQueryGraphStep } from "@medusajs/medusa/core-flows"
-import { trackAnalyticsEventStep } from "../steps/track-analytics-event"
+} from "@medusajs/framework/workflows-sdk";
+import { useQueryGraphStep } from "@medusajs/medusa/core-flows";
+import { trackAnalyticsEventStep } from "../steps/track-analytics-event";
 
 type TrackOrderCanceledInput = {
-  order_id: string
-}
+  order_id: string;
+};
 
 export const trackOrderCanceledWorkflow = createWorkflow(
   "track-order-canceled",
@@ -17,11 +17,11 @@ export const trackOrderCanceledWorkflow = createWorkflow(
       entity: "order",
       fields: ["id", "customer_id", "email", "total", "currency_code"],
       filters: { id: input.order_id },
-    })
+    });
 
     const trackingInput = transform({ orders }, ({ orders: result }) => {
-      const order = result[0]
-      if (!order) return null
+      const order = result[0];
+      if (!order) return null;
 
       return {
         event: "order_canceled",
@@ -33,11 +33,11 @@ export const trackOrderCanceledWorkflow = createWorkflow(
           currency_code: order.currency_code,
           customer_id: order.customer_id ?? null,
         },
-      }
-    })
+      };
+    });
 
-    trackAnalyticsEventStep(trackingInput)
+    trackAnalyticsEventStep(trackingInput);
 
-    return new WorkflowResponse({})
-  }
-)
+    return new WorkflowResponse({});
+  },
+);

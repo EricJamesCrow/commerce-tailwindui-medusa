@@ -1,6 +1,6 @@
-import { defineLink } from "@medusajs/framework/utils"
-import WishlistModule from "../modules/wishlist"
-import ProductModule from "@medusajs/medusa/product"
+import { defineLink } from "@medusajs/framework/utils";
+import WishlistModule from "../modules/wishlist";
+import ProductModule from "@medusajs/medusa/product";
 
 export default defineLink(
   {
@@ -11,5 +11,5 @@ export default defineLink(
   ProductModule.linkable.productVariant,
   {
     readOnly: true,
-  }
-)
+  },
+);

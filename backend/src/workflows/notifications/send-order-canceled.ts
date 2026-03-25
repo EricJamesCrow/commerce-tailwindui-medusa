@@ -2,19 +2,19 @@ import {
   createWorkflow,
   transform,
   WorkflowResponse,
-} from "@medusajs/framework/workflows-sdk"
-import { MedusaError } from "@medusajs/framework/utils"
+} from "@medusajs/framework/workflows-sdk";
+import { MedusaError } from "@medusajs/framework/utils";
 import {
   useQueryGraphStep,
   sendNotificationsStep,
-} from "@medusajs/medusa/core-flows"
-import { formatOrderForEmailStep } from "../steps/format-order-for-email"
-import { createCurrencyFormatter } from "./_format-helpers"
-import { EmailTemplates } from "../../modules/resend/templates/template-registry"
+} from "@medusajs/medusa/core-flows";
+import { formatOrderForEmailStep } from "../steps/format-order-for-email";
+import { createCurrencyFormatter } from "./_format-helpers";
+import { EmailTemplates } from "../../modules/resend/templates/template-registry";
 
 type SendOrderCanceledInput = {
-  orderId: string
-}
+  orderId: string;
+};
 
 export const sendOrderCanceledWorkflow = createWorkflow(
   "send-order-canceled",
@@ -40,30 +40,30 @@ export const sendOrderCanceledWorkflow = createWorkflow(
         "payment_collections.payments.currency_code",
       ],
       filters: { id: input.orderId },
-    })
+    });
 
     // Extract order and compute refund message together from the raw query result
     // to avoid TypeScript union type complexity from chained transforms
     const { order, refundMessage } = transform(
       { orders },
       ({ orders: result }) => {
-        const o = result[0] as Record<string, any>
+        const o = result[0] as Record<string, any>;
         if (!o?.email) {
           throw new MedusaError(
             MedusaError.Types.INVALID_DATA,
-            "Order has no email, cannot send cancellation email"
-          )
+            "Order has no email, cannot send cancellation email",
+          );
         }
 
-        const currencyCode = o.currency_code || "USD"
-        const currencyFormatter = createCurrencyFormatter(currencyCode)
+        const currencyCode = o.currency_code || "USD";
+        const currencyFormatter = createCurrencyFormatter(currencyCode);
 
-        let refundTotal = 0
-        const paymentCollections = o.payment_collections || []
+        let refundTotal = 0;
+        const paymentCollections = o.payment_collections || [];
         for (const pc of paymentCollections) {
           for (const payment of pc.payments || []) {
             for (const refund of payment.refunds || []) {
-              refundTotal += Number(refund.amount) || 0
+              refundTotal += Number(refund.amount) || 0;
             }
           }
         }
@@ -71,19 +71,19 @@ export const sendOrderCanceledWorkflow = createWorkflow(
         const refundMessage =
           refundTotal > 0
             ? `A refund of ${currencyFormatter.format(refundTotal)} has been issued to your original payment method.`
-            : "If you were charged, a refund will be processed shortly."
+            : "If you were charged, a refund will be processed shortly.";
 
-        return { order: o, refundMessage }
-      }
-    )
+        return { order: o, refundMessage };
+      },
+    );
 
-    const formatted = formatOrderForEmailStep({ order })
+    const formatted = formatOrderForEmailStep({ order });
 
     const notifications = transform(
       { formatted, refundMessage },
       ({ formatted: data, refundMessage: msg }) => {
         const storefrontUrl =
-          process.env.STOREFRONT_URL || "http://localhost:3000"
+          process.env.STOREFRONT_URL || "http://localhost:3000";
 
         return [
           {
@@ -108,14 +108,14 @@ export const sendOrderCanceledWorkflow = createWorkflow(
             resource_id: data.orderId,
             resource_type: "order",
           },
-        ]
-      }
-    )
+        ];
+      },
+    );
 
-    sendNotificationsStep(notifications)
+    sendNotificationsStep(notifications);
 
     return new WorkflowResponse({
       orderId: input.orderId,
-    })
-  }
-)
+    });
+  },
+);

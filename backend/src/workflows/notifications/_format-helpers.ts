@@ -5,17 +5,19 @@
  * to format Medusa order data into email-friendly shapes.
  */
 
-import type { Address } from "../steps/format-order-for-email"
+import type { Address } from "../steps/format-order-for-email";
 
 /**
  * Create a currency formatter for Intl.NumberFormat.
  */
-export function createCurrencyFormatter(currencyCode: string): Intl.NumberFormat {
+export function createCurrencyFormatter(
+  currencyCode: string,
+): Intl.NumberFormat {
   return new Intl.NumberFormat([], {
     style: "currency",
     currency: currencyCode || "USD",
     currencyDisplay: "narrowSymbol",
-  })
+  });
 }
 
 /**
@@ -23,23 +25,34 @@ export function createCurrencyFormatter(currencyCode: string): Intl.NumberFormat
  */
 export function formatItem(
   item: Record<string, any>,
-  formatMoney: (amount: number) => string
-): { name: string; variant?: string; quantity: number; price: string; imageUrl?: string } {
+  formatMoney: (amount: number) => string,
+): {
+  name: string;
+  variant?: string;
+  quantity: number;
+  price: string;
+  imageUrl?: string;
+} {
   return {
     name: (item.product_title || item.title) as string,
     variant: (item.variant_title as string) || undefined,
     quantity: item.quantity as number,
-    price: formatMoney((item.total as number) ?? (item.unit_price as number) * (item.quantity as number)),
+    price: formatMoney(
+      (item.total as number) ??
+        (item.unit_price as number) * (item.quantity as number),
+    ),
     imageUrl: (item.thumbnail as string) || undefined,
-  }
+  };
 }
 
 /**
  * Format a Medusa address record into the Address shape used by email templates.
  */
-export function formatAddress(raw: Record<string, any> | undefined | null): Address {
+export function formatAddress(
+  raw: Record<string, any> | undefined | null,
+): Address {
   if (!raw) {
-    return { name: "", line1: "", city: "", postalCode: "", country: "" }
+    return { name: "", line1: "", city: "", postalCode: "", country: "" };
   }
 
   return {
@@ -51,7 +64,7 @@ export function formatAddress(raw: Record<string, any> | undefined | null): Addr
     postalCode: (raw.postal_code as string) || "",
     country: ((raw.country_code as string) || "").toUpperCase(),
     phone: (raw.phone as string) || undefined,
-  }
+  };
 }
 
 /**
@@ -62,5 +75,5 @@ export function formatOrderDate(createdAt: string): string {
     year: "numeric",
     month: "long",
     day: "numeric",
-  })
+  });
 }

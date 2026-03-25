@@ -1,10 +1,10 @@
-import type { MedusaContainer } from "@medusajs/framework/types"
+import type { MedusaContainer } from "@medusajs/framework/types";
 
 /**
  * Strip trailing slash from a URL string.
  */
 function stripTrailingSlash(url: string): string {
-  return url.replace(/\/$/, "")
+  return url.replace(/\/$/, "");
 }
 
 /**
@@ -12,9 +12,9 @@ function stripTrailingSlash(url: string): string {
  * Returns null if not configured.
  */
 export function resolveStorefrontUrl(): string | null {
-  const raw = process.env.STOREFRONT_URL
-  if (!raw) return null
-  return stripTrailingSlash(raw)
+  const raw = process.env.STOREFRONT_URL;
+  if (!raw) return null;
+  return stripTrailingSlash(raw);
 }
 
 /**
@@ -23,13 +23,13 @@ export function resolveStorefrontUrl(): string | null {
  * Returns null if backendUrl is not configured.
  */
 export function resolveAdminUrl(container: MedusaContainer): string | null {
-  const configModule = container.resolve("configModule")
-  const rawBackendUrl = configModule.admin?.backendUrl
+  const configModule = container.resolve("configModule");
+  const rawBackendUrl = configModule.admin?.backendUrl;
 
-  if (!rawBackendUrl || rawBackendUrl === "/") return null
+  if (!rawBackendUrl || rawBackendUrl === "/") return null;
 
-  const backendUrl = stripTrailingSlash(rawBackendUrl)
-  const adminPath = configModule.admin?.path || "/app"
+  const backendUrl = stripTrailingSlash(rawBackendUrl);
+  const adminPath = configModule.admin?.path || "/app";
 
-  return `${backendUrl}${adminPath}`
+  return `${backendUrl}${adminPath}`;
 }

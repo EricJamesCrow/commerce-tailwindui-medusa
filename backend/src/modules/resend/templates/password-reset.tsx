@@ -1,4 +1,10 @@
-import { Container, Html, Preview, Row, Section } from "@react-email/components";
+import {
+  Container,
+  Html,
+  Preview,
+  Row,
+  Section,
+} from "@react-email/components";
 import { Body } from "./_components/body";
 import { Button } from "./_components/button";
 import { LeftAligned as Footer } from "./_components/footer";
@@ -15,13 +21,15 @@ export interface PasswordResetProps extends BaseTemplateProps {
   actorType: "customer" | "user";
 }
 
-export function isValidPasswordResetData(data: unknown): data is PasswordResetProps {
-  const d = data as Record<string, any>
+export function isValidPasswordResetData(
+  data: unknown,
+): data is PasswordResetProps {
+  const d = data as Record<string, any>;
   return (
     typeof d?.resetUrl === "string" &&
     typeof d?.email === "string" &&
     (d?.actorType === "customer" || d?.actorType === "user")
-  )
+  );
 }
 
 export const PasswordReset = ({
@@ -40,7 +48,10 @@ export const PasswordReset = ({
         <Head />
         <Preview>Reset your {isAdmin ? "admin" : "account"} password</Preview>
         <Body>
-          <Container align="center" className="w-full max-w-160 bg-primary md:p-8">
+          <Container
+            align="center"
+            className="w-full max-w-160 bg-primary md:p-8"
+          >
             <Header logoUrl={config.logoUrl} logoAlt={config.logoAlt} />
             <Section align="left" className="max-w-full px-6 py-8">
               <Row className="mb-6">
@@ -51,8 +62,8 @@ export const PasswordReset = ({
               <Row className="mb-6">
                 <Text className="text-tertiary">
                   We received a request to reset the password for the{" "}
-                  {isAdmin ? "admin" : "store"} account associated with{" "}
-                  {email}. Click the button below to choose a new password.
+                  {isAdmin ? "admin" : "store"} account associated with {email}.
+                  Click the button below to choose a new password.
                 </Text>
               </Row>
               <Row className="mb-6">
@@ -88,7 +99,8 @@ export const PasswordReset = ({
 };
 
 PasswordReset.PreviewProps = {
-  resetUrl: "http://localhost:3000/reset-password?token=abc123&email=sarah@example.com",
+  resetUrl:
+    "http://localhost:3000/reset-password?token=abc123&email=sarah@example.com",
   email: "sarah@example.com",
   actorType: "customer",
 } satisfies PasswordResetProps;

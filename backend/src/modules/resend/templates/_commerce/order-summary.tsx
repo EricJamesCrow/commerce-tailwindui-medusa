@@ -41,7 +41,9 @@ export const OrderSummary = ({
             <Text className="m-0 text-sm text-tertiary">Discount</Text>
           </Column>
           <Column className="w-[30%]" align="right">
-            <Text className="m-0 text-sm text-success-primary">-{discount}</Text>
+            <Text className="m-0 text-sm text-success-primary">
+              -{discount}
+            </Text>
           </Column>
         </Row>
       )}
@@ -60,7 +62,9 @@ export const OrderSummary = ({
           <Text className="m-0 text-md font-semibold text-primary">Total</Text>
         </Column>
         <Column className="w-[30%]" align="right">
-          <Text className="m-0 text-md font-semibold text-primary">{total}</Text>
+          <Text className="m-0 text-md font-semibold text-primary">
+            {total}
+          </Text>
         </Column>
       </Row>
     </Section>

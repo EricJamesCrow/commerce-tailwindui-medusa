@@ -1,15 +1,21 @@
-import { View, Text } from "@react-pdf/renderer"
-import { styles } from "../styles"
+import { View, Text } from "@react-pdf/renderer";
+import { styles } from "../styles";
 
 interface TotalsProps {
-  subtotal: string
-  shipping: string
-  discount?: string
-  tax: string
-  total: string
+  subtotal: string;
+  shipping: string;
+  discount?: string;
+  tax: string;
+  total: string;
 }
 
-export function Totals({ subtotal, shipping, discount, tax, total }: TotalsProps) {
+export function Totals({
+  subtotal,
+  shipping,
+  discount,
+  tax,
+  total,
+}: TotalsProps) {
   return (
     <View style={styles.totalsContainer}>
       <View style={styles.totalsCard}>
@@ -37,5 +43,5 @@ export function Totals({ subtotal, shipping, discount, tax, total }: TotalsProps
         </View>
       </View>
     </View>
-  )
+  );
 }

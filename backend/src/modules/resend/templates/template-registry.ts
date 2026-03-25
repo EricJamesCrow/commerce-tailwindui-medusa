@@ -18,7 +18,7 @@ export const EmailTemplates = {
   ABANDONED_CART: "abandoned-cart",
   NEWSLETTER_WELCOME: "newsletter-welcome",
   NEWSLETTER_WELCOME_BACK: "newsletter-welcome-back",
-} as const
+} as const;
 
 export type EmailTemplateId =
-  (typeof EmailTemplates)[keyof typeof EmailTemplates]
+  (typeof EmailTemplates)[keyof typeof EmailTemplates];

@@ -1,62 +1,59 @@
-import {
-  createStep,
-  StepResponse,
-} from "@medusajs/framework/workflows-sdk"
+import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk";
 import {
   createCurrencyFormatter,
   formatAddress,
   formatItem,
   formatOrderDate,
-} from "../notifications/_format-helpers"
+} from "../notifications/_format-helpers";
 
 export type Address = {
-  name: string
-  line1: string
-  line2?: string
-  city: string
-  state?: string
-  postalCode: string
-  country: string
-  phone?: string
-}
+  name: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  state?: string;
+  postalCode: string;
+  country: string;
+  phone?: string;
+};
 
 export type FormattedOrderEmailData = {
-  orderId: string
-  orderNumber: string
-  email: string
-  customerName?: string
-  orderDate: string
+  orderId: string;
+  orderNumber: string;
+  email: string;
+  customerName?: string;
+  orderDate: string;
   items: {
-    name: string
-    variant?: string
-    quantity: number
-    price: string
-    imageUrl?: string
-  }[]
-  subtotal: string
-  shipping: string
-  tax?: string
-  discount?: string
-  total: string
-  paymentMethod: string
-  shippingAddress: Address
-}
+    name: string;
+    variant?: string;
+    quantity: number;
+    price: string;
+    imageUrl?: string;
+  }[];
+  subtotal: string;
+  shipping: string;
+  tax?: string;
+  discount?: string;
+  total: string;
+  paymentMethod: string;
+  shippingAddress: Address;
+};
 
 type FormatOrderForEmailInput = {
-  order: Record<string, any>
-}
+  order: Record<string, any>;
+};
 
 export const formatOrderForEmailStep = createStep(
   "format-order-for-email",
   async (input: FormatOrderForEmailInput) => {
-    const { order } = input
+    const { order } = input;
 
-    const fmt = createCurrencyFormatter(order.currency_code || "USD")
-    const formatMoney = (amount: number) => fmt.format(amount)
+    const fmt = createCurrencyFormatter(order.currency_code || "USD");
+    const formatMoney = (amount: number) => fmt.format(amount);
 
-    const items = ((order.items || []) as Record<string, any>[]).map(
-      (item) => formatItem(item, formatMoney)
-    )
+    const items = ((order.items || []) as Record<string, any>[]).map((item) =>
+      formatItem(item, formatMoney),
+    );
 
     const formatted: FormattedOrderEmailData = {
       orderId: order.id,
@@ -74,8 +71,8 @@ export const formatOrderForEmailStep = createStep(
       total: formatMoney(order.total || 0),
       paymentMethod: "Card",
       shippingAddress: formatAddress(order.shipping_address),
-    }
+    };
 
-    return new StepResponse(formatted)
-  }
-)
+    return new StepResponse(formatted);
+  },
+);

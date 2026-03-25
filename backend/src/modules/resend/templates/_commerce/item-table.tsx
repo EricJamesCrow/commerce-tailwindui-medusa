@@ -41,7 +41,13 @@ export const ItemTable = ({ items }: ItemTableProps) => {
               <tbody>
                 <tr>
                   {item.imageUrl && (
-                    <td style={{ verticalAlign: "middle", paddingRight: 12, width: 64 }}>
+                    <td
+                      style={{
+                        verticalAlign: "middle",
+                        paddingRight: 12,
+                        width: 64,
+                      }}
+                    >
                       <Img
                         src={item.imageUrl}
                         alt={item.name}
@@ -75,9 +81,7 @@ export const ItemTable = ({ items }: ItemTableProps) => {
             </Text>
           </Column>
           <Column className="w-[20%]" align="right">
-            <Text className="m-0 text-sm text-primary">
-              {item.price}
-            </Text>
+            <Text className="m-0 text-sm text-primary">{item.price}</Text>
           </Column>
         </Row>
       ))}

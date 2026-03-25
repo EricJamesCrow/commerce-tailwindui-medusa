@@ -1,24 +1,30 @@
-import { Container, Html, Preview, Row, Section } from "@react-email/components"
-import { Body } from "./_components/body"
-import { Button } from "./_components/button"
-import { LeftAligned as Footer } from "./_components/footer"
-import { Head } from "./_components/head"
-import { LeftAligned as Header } from "./_components/header"
-import { Tailwind } from "./_components/tailwind"
-import { Text } from "./_components/text"
-import { getEmailConfig } from "./_config/email-config"
-import type { BaseTemplateProps } from "./types"
+import {
+  Container,
+  Html,
+  Preview,
+  Row,
+  Section,
+} from "@react-email/components";
+import { Body } from "./_components/body";
+import { Button } from "./_components/button";
+import { LeftAligned as Footer } from "./_components/footer";
+import { Head } from "./_components/head";
+import { LeftAligned as Header } from "./_components/header";
+import { Tailwind } from "./_components/tailwind";
+import { Text } from "./_components/text";
+import { getEmailConfig } from "./_config/email-config";
+import type { BaseTemplateProps } from "./types";
 
 export interface NewsletterWelcomeProps extends BaseTemplateProps {
-  email: string
-  unsubscribeUrl: string
+  email: string;
+  unsubscribeUrl: string;
 }
 
 export function isValidNewsletterWelcomeData(
-  data: unknown
+  data: unknown,
 ): data is NewsletterWelcomeProps {
-  const d = data as Record<string, any>
-  return typeof d?.email === "string" && typeof d?.unsubscribeUrl === "string"
+  const d = data as Record<string, any>;
+  return typeof d?.email === "string" && typeof d?.unsubscribeUrl === "string";
 }
 
 export const NewsletterWelcome = ({
@@ -33,7 +39,7 @@ export const NewsletterWelcome = ({
       ...brandConfig?.legalLinks,
       unsubscribe: unsubscribeUrl,
     },
-  })
+  });
 
   return (
     <Html>
@@ -91,12 +97,12 @@ export const NewsletterWelcome = ({
         </Body>
       </Tailwind>
     </Html>
-  )
-}
+  );
+};
 
 NewsletterWelcome.PreviewProps = {
   email: "subscriber@example.com",
   unsubscribeUrl: "http://localhost:3000/newsletter/unsubscribe?token=test",
-} satisfies NewsletterWelcomeProps
+} satisfies NewsletterWelcomeProps;
 
-export default NewsletterWelcome
+export default NewsletterWelcome;

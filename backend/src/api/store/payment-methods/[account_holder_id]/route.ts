@@ -1,18 +1,18 @@
-import { MedusaError } from "@medusajs/framework/utils"
+import { MedusaError } from "@medusajs/framework/utils";
 import type {
   AuthenticatedMedusaRequest,
   MedusaResponse,
-} from "@medusajs/framework/http"
+} from "@medusajs/framework/http";
 
 export async function GET(
   req: AuthenticatedMedusaRequest,
-  res: MedusaResponse
+  res: MedusaResponse,
 ) {
-  const { account_holder_id } = req.params
-  const customerId = req.auth_context.actor_id
+  const { account_holder_id } = req.params;
+  const customerId = req.auth_context.actor_id;
 
-  const query = req.scope.resolve("query")
-  const paymentModuleService = req.scope.resolve("payment")
+  const query = req.scope.resolve("query");
+  const paymentModuleService = req.scope.resolve("payment");
 
   // Fetch account holder with its linked customer to verify ownership
   const {
@@ -21,29 +21,30 @@ export async function GET(
     entity: "account_holder",
     fields: ["data", "provider_id", "customer.*"],
     filters: { id: account_holder_id },
-  })
+  });
 
   if (!accountHolder) {
     throw new MedusaError(
       MedusaError.Types.NOT_FOUND,
-      "Account holder not found"
-    )
+      "Account holder not found",
+    );
   }
 
   // Verify the account holder belongs to the authenticated customer
-  const linkedCustomer = (accountHolder as { customer?: { id: string } }).customer
+  const linkedCustomer = (accountHolder as { customer?: { id: string } })
+    .customer;
   if (!linkedCustomer || linkedCustomer.id !== customerId) {
     throw new MedusaError(
       MedusaError.Types.NOT_FOUND,
-      "Account holder not found"
-    )
+      "Account holder not found",
+    );
   }
 
   if (!accountHolder.data) {
     throw new MedusaError(
       MedusaError.Types.NOT_FOUND,
-      "Account holder data not available"
-    )
+      "Account holder data not available",
+    );
   }
 
   const paymentMethods = await paymentModuleService.listPaymentMethods({
@@ -53,7 +54,7 @@ export async function GET(
         data: { id: accountHolder.data.id },
       },
     },
-  })
+  });
 
-  res.json({ payment_methods: paymentMethods })
+  res.json({ payment_methods: paymentMethods });
 }
