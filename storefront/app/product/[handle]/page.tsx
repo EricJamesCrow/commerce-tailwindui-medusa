@@ -85,12 +85,7 @@ export default async function ProductPage(props: {
   return (
     <>
       <JsonLdScript data={breadcrumbJsonLd} />
-      <Suspense fallback={null}>
-        <ProductStructuredData
-          product={product}
-          reviewsPromise={reviewsPromise}
-        />
-      </Suspense>
+      <ProductStructuredData product={product} />
       <ProductPageContent
         productPromise={productPromise}
         reviewsSlot={
@@ -123,15 +118,12 @@ export default async function ProductPage(props: {
   );
 }
 
-async function ProductStructuredData({
+function ProductStructuredData({
   product,
-  reviewsPromise,
 }: {
   product: Product;
-  reviewsPromise: Promise<Awaited<ReturnType<typeof getProductReviews>>>;
 }) {
-  const reviews = await reviewsPromise;
-  const productJsonLd = buildProductJsonLd(product, reviews);
+  const productJsonLd = buildProductJsonLd(product, null);
 
   return <JsonLdScript data={productJsonLd} />;
 }
