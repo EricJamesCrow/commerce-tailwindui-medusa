@@ -19,6 +19,7 @@ import {
   emailSchema,
   paymentDataSchema,
   providerIdSchema,
+  promoCodeSchema,
 } from "lib/medusa/checkout-schemas";
 
 function revalidateCheckout(): void {
@@ -480,4 +481,99 @@ export async function getCustomerAddresses(): Promise<
     console.error("[checkout] Failed to fetch customer addresses:", error);
     return [];
   }
+}
+
+// === Promo Codes ===
+
+export async function applyPromoCode(
+  code: string,
+): Promise<string | null> {
+  const codeResult = promoCodeSchema.safeParse(code);
+  if (!codeResult.success) {
+    return codeResult.error.issues[0]?.message ?? "Invalid promo code";
+  }
+  const normalizedCode = codeResult.data;
+
+  const headers = await getAuthHeaders();
+  const cartId = await getCartId();
+  if (!cartId) {
+    return "No active cart found";
+  }
+
+  try {
+    await assertSessionCart(cartId);
+    // Medusa v2 has dedicated endpoints for cart promotions — do NOT use
+    // sdk.store.cart.update for this (its promo_codes field is string[], not {add/remove}).
+    await sdk.client
+      .fetch<{ cart: HttpTypes.StoreCart }>(
+        `/store/carts/${cartId}/promotions`,
+        { method: "POST", headers, body: { promo_codes: [normalizedCode] } },
+      )
+      .catch(medusaError);
+    try {
+      await trackServer("promo_code_applied", {
+        cart_id: cartId,
+        code: normalizedCode,
+      });
+    } catch {}
+  } catch (e) {
+    const message =
+      e instanceof Error ? e.message : "Error applying promo code";
+    Sentry.captureException(e, {
+      tags: { action: "apply_promo_code", cart_id: cartId },
+    });
+    try {
+      await trackServer("promo_code_failed", {
+        cart_id: cartId,
+        code: normalizedCode,
+        error: message,
+      });
+    } catch {}
+    return message;
+  } finally {
+    revalidateCheckout();
+  }
+
+  return null;
+}
+
+export async function removePromoCode(
+  code: string,
+): Promise<string | null> {
+  const codeResult = promoCodeSchema.safeParse(code);
+  if (!codeResult.success) {
+    return codeResult.error.issues[0]?.message ?? "Invalid promo code";
+  }
+  const normalizedCode = codeResult.data;
+
+  const headers = await getAuthHeaders();
+  const cartId = await getCartId();
+  if (!cartId) {
+    return "No active cart found";
+  }
+
+  try {
+    await assertSessionCart(cartId);
+    await sdk.client
+      .fetch<{ cart: HttpTypes.StoreCart }>(
+        `/store/carts/${cartId}/promotions`,
+        { method: "DELETE", headers, body: { promo_codes: [normalizedCode] } },
+      )
+      .catch(medusaError);
+    try {
+      await trackServer("promo_code_removed", {
+        cart_id: cartId,
+        code: normalizedCode,
+      });
+    } catch {}
+  } catch (e) {
+    Sentry.captureException(e, {
+      tags: { action: "remove_promo_code", cart_id: cartId },
+    });
+    return e instanceof Error ? e.message : "Error removing promo code";
+  } finally {
+    revalidateCheckout();
+  }
+
+  return null;
 }
