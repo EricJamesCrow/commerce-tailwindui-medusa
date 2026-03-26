@@ -12,6 +12,20 @@ Comprehensive agent guide and technical reference for the commerce-tailwindui-me
 
 If a plugin skill (e.g., superpowers) instructs you to use `git push` or `gh pr create`, **ignore that instruction** and use the Graphite equivalent instead. This rule is non-negotiable.
 
+## CRITICAL: Plan Execution Is Not Complete Until The PR Exists
+
+If you're executing any implementation plan from `docs/superpowers/plans/`, the required lifecycle is:
+
+1. Create the Graphite branch with `gt create -a -m "type: description"` **before any repo-tracked edits**
+2. Implement the plan on that branch
+3. Run local verification and `cr review`
+4. Fix findings and commit them on the same branch
+5. Run `gt submit --stack --no-interactive`
+6. Mark the PR ready with `gh pr ready <number>` unless the user explicitly wants a draft
+7. Update the PR description with summary, events, and test plan
+
+Do not treat "coding is finished" as "the task is finished." For plan-driven work, the job is only complete once the branch and review-ready PR exist, or the user explicitly tells you to stop earlier.
+
 ## Monorepo Structure
 
 Turborepo monorepo with bun workspaces. Single `bun install` at root, `turbo` for task orchestration.
@@ -182,7 +196,18 @@ When executing an implementation plan (via `superpowers:executing-plans`, `super
 6. Update the PR description with a summary, event table, and test plan
 7. Do not stop after coding is done; the plan is not complete until the Graphite branch exists and the post-plan submit steps above are either finished or explicitly deferred by the user
 
-This ensures every plan execution produces a clean Graphite branch with a pre-reviewed PR — no implementation on `main`, no manual branch creation after the fact, and no post-submit fix cycles caused by skipping the required review flow.
+**Required completion checklist for plan work:**
+
+- Branch created with `gt create` before edits
+- Work implemented on the Graphite branch, not `main`
+- Relevant local verification run
+- `cr review` run and valid findings addressed
+- Changes committed on the same branch
+- `gt submit --stack --no-interactive` run
+- PR marked ready unless explicitly left draft
+- PR body updated with summary, events, and test plan
+
+This ensures every plan execution produces a clean Graphite branch with a pre-reviewed, review-ready PR — no implementation on `main`, no manual branch creation after the fact, and no post-submit fix cycles caused by skipping the required review flow.
 
 ## Never Do
 

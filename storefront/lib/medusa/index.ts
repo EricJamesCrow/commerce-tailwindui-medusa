@@ -134,6 +134,10 @@ function isHiddenProduct(product: HttpTypes.StoreProduct): boolean {
 
 // --- Products ---
 
+// These parameterized catalog loaders intentionally use unstable_cache instead
+// of "use cache" because Next 16 prerendering hit USE_CACHE_TIMEOUT on the
+// product route during Vercel builds. unstable_cache keeps explicit keys, tags,
+// and TTLs without tripping that cache-components timeout path.
 const getProductCached = unstable_cache(
   async (handle: string): Promise<Product | undefined> => {
     const region = await getDefaultRegion();
@@ -149,6 +153,7 @@ const getProductCached = unstable_cache(
         limit: 1,
       },
       cache: "force-cache",
+      next: { tags: [TAGS.products] },
     });
 
     const product = products[0];
@@ -197,6 +202,7 @@ const getProductsCached = unstable_cache(
       method: "GET",
       query: fetchQuery,
       cache: "force-cache",
+      next: { tags: [TAGS.products] },
     });
 
     return products.filter((p) => !isHiddenProduct(p)).map(transformProduct);
@@ -237,6 +243,7 @@ const getProductRecommendationsCached = unstable_cache(
         order: "-created_at",
       },
       cache: "force-cache",
+      next: { tags: [TAGS.products] },
     });
 
     return products
@@ -269,6 +276,7 @@ const getCollectionCached = unstable_cache(
       method: "GET",
       query: { handle, limit: 1 },
       cache: "force-cache",
+      next: { tags: [TAGS.collections] },
     });
 
     const collection = collections[0];
@@ -305,6 +313,7 @@ const getCollectionProductsCached = unstable_cache(
       method: "GET",
       query: { handle: collection, fields: "*products", limit: 1 },
       cache: "force-cache",
+      next: { tags: [TAGS.collections] },
     });
 
     const col = collections[0];
@@ -331,6 +340,7 @@ const getCollectionProductsCached = unstable_cache(
       method: "GET",
       query: fetchQuery,
       cache: "force-cache",
+      next: { tags: [TAGS.products, TAGS.collections] },
     });
 
     return products.filter((p) => !isHiddenProduct(p)).map(transformProduct);
@@ -365,6 +375,7 @@ export async function getCollections(): Promise<Collection[]> {
     method: "GET",
     query: { limit: 100, fields: "+metadata" },
     cache: "force-cache",
+    next: { tags: [TAGS.collections] },
   });
 
   const allCollection: Collection = {
