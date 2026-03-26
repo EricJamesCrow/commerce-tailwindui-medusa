@@ -5,7 +5,12 @@ import { HIDDEN_PRODUCT_TAG, TAGS } from "lib/constants";
 import { FOOTER_CONFIG } from "lib/constants/footer";
 import { DEFAULT_NAVIGATION } from "lib/constants/navigation";
 import type { Cart, Collection, Navigation, Page, Product } from "lib/types";
-import { cacheLife, cacheTag, revalidateTag } from "next/cache";
+import {
+  cacheLife,
+  cacheTag,
+  revalidateTag,
+  unstable_cache,
+} from "next/cache";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthHeaders, getCartId, removeCartId, setCartId } from "./cookies";
@@ -54,6 +59,8 @@ type ProductFetchQuery = {
   order?: string;
   collection_id?: string[];
 };
+
+const CATALOG_REVALIDATE_SECONDS = 60 * 60 * 24;
 
 // --- SDK Client ---
 
@@ -132,31 +139,79 @@ function isHiddenProduct(product: HttpTypes.StoreProduct): boolean {
 
 // --- Products ---
 
+const getProductCached = unstable_cache(
+  async (handle: string): Promise<Product | undefined> => {
+    const region = await getDefaultRegion();
+
+    const { products } = await sdk.client.fetch<{
+      products: HttpTypes.StoreProduct[];
+    }>("/store/products", {
+      method: "GET",
+      query: {
+        handle,
+        region_id: region.id,
+        fields: PRODUCT_FIELDS,
+        limit: 1,
+      },
+      cache: "force-cache",
+    });
+
+    const product = products[0];
+    if (!product) return undefined;
+
+    return transformProduct(product);
+  },
+  ["medusa-product"],
+  {
+    tags: [TAGS.products],
+    revalidate: CATALOG_REVALIDATE_SECONDS,
+  },
+);
+
 export async function getProduct(handle: string): Promise<Product | undefined> {
-  "use cache";
-  cacheTag(TAGS.products);
-  cacheLife("days");
+  return getProductCached(handle);
+}
 
-  const region = await getDefaultRegion();
+const getProductsCached = unstable_cache(
+  async ({
+    query,
+    reverse,
+    sortKey,
+    limit = 100,
+  }: {
+    query?: string;
+    reverse?: boolean;
+    sortKey?: string;
+    limit?: number;
+  }): Promise<Product[]> => {
+    const region = await getDefaultRegion();
+    const order = buildSortOrder(sortKey, reverse);
 
-  const { products } = await sdk.client.fetch<{
-    products: HttpTypes.StoreProduct[];
-  }>("/store/products", {
-    method: "GET",
-    query: {
-      handle,
+    const fetchQuery: ProductFetchQuery = {
       region_id: region.id,
       fields: PRODUCT_FIELDS,
-      limit: 1,
-    },
-    cache: "force-cache",
-  });
+      limit,
+    };
 
-  const product = products[0];
-  if (!product) return undefined;
+    if (query) fetchQuery.q = query;
+    if (order) fetchQuery.order = order;
 
-  return transformProduct(product);
-}
+    const { products } = await sdk.client.fetch<{
+      products: HttpTypes.StoreProduct[];
+    }>("/store/products", {
+      method: "GET",
+      query: fetchQuery,
+      cache: "force-cache",
+    });
+
+    return products.filter((p) => !isHiddenProduct(p)).map(transformProduct);
+  },
+  ["medusa-products"],
+  {
+    tags: [TAGS.products],
+    revalidate: CATALOG_REVALIDATE_SECONDS,
+  },
+);
 
 export async function getProducts({
   query,
@@ -169,85 +224,128 @@ export async function getProducts({
   sortKey?: string;
   limit?: number;
 }): Promise<Product[]> {
-  "use cache";
-  cacheTag(TAGS.products);
-  cacheLife("days");
-
-  const region = await getDefaultRegion();
-  const order = buildSortOrder(sortKey, reverse);
-
-  const fetchQuery: ProductFetchQuery = {
-    region_id: region.id,
-    fields: PRODUCT_FIELDS,
-    limit,
-  };
-
-  if (query) fetchQuery.q = query;
-  if (order) fetchQuery.order = order;
-
-  const { products } = await sdk.client.fetch<{
-    products: HttpTypes.StoreProduct[];
-  }>("/store/products", {
-    method: "GET",
-    query: fetchQuery,
-    cache: "force-cache",
-  });
-
-  return products.filter((p) => !isHiddenProduct(p)).map(transformProduct);
+  return getProductsCached({ query, reverse, sortKey, limit });
 }
+
+const getProductRecommendationsCached = unstable_cache(
+  async (productId: string): Promise<Product[]> => {
+    const region = await getDefaultRegion();
+
+    const { products } = await sdk.client.fetch<{
+      products: HttpTypes.StoreProduct[];
+    }>("/store/products", {
+      method: "GET",
+      query: {
+        region_id: region.id,
+        fields: PRODUCT_FIELDS,
+        limit: 5,
+        order: "-created_at",
+      },
+      cache: "force-cache",
+    });
+
+    return products
+      .filter((p) => p.id !== productId && !isHiddenProduct(p))
+      .slice(0, 4)
+      .map(transformProduct);
+  },
+  ["medusa-product-recommendations"],
+  {
+    tags: [TAGS.products],
+    revalidate: CATALOG_REVALIDATE_SECONDS,
+  },
+);
 
 // Placeholder: Medusa v2 has no recommendation engine. This returns the 4 most
 // recent products (excluding the current one) as a "you might also like" section.
 export async function getProductRecommendations(
   productId: string,
 ): Promise<Product[]> {
-  "use cache";
-  cacheTag(TAGS.products);
-  cacheLife("days");
-
-  const region = await getDefaultRegion();
-
-  const { products } = await sdk.client.fetch<{
-    products: HttpTypes.StoreProduct[];
-  }>("/store/products", {
-    method: "GET",
-    query: {
-      region_id: region.id,
-      fields: PRODUCT_FIELDS,
-      limit: 5,
-      order: "-created_at",
-    },
-    cache: "force-cache",
-  });
-
-  return products
-    .filter((p) => p.id !== productId && !isHiddenProduct(p))
-    .slice(0, 4)
-    .map(transformProduct);
+  return getProductRecommendationsCached(productId);
 }
 
 // --- Collections ---
 
+const getCollectionCached = unstable_cache(
+  async (handle: string): Promise<Collection | undefined> => {
+    const { collections } = await sdk.client.fetch<{
+      collections: HttpTypes.StoreCollection[];
+    }>("/store/collections", {
+      method: "GET",
+      query: { handle, limit: 1 },
+      cache: "force-cache",
+    });
+
+    const collection = collections[0];
+    if (!collection) return undefined;
+
+    return transformCollection(collection);
+  },
+  ["medusa-collection"],
+  {
+    tags: [TAGS.collections],
+    revalidate: CATALOG_REVALIDATE_SECONDS,
+  },
+);
+
 export async function getCollection(
   handle: string,
 ): Promise<Collection | undefined> {
-  "use cache";
-  cacheTag(TAGS.collections);
-  cacheLife("days");
-
-  const { collections } = await sdk.client.fetch<{
-    collections: HttpTypes.StoreCollection[];
-  }>("/store/collections", {
-    method: "GET",
-    query: { handle, limit: 1 },
-    cache: "force-cache",
-  });
-
-  const collection = collections[0];
-  if (!collection) return undefined;
-
-  return transformCollection(collection);
+  return getCollectionCached(handle);
 }
+
+const getCollectionProductsCached = unstable_cache(
+  async ({
+    collection,
+    reverse,
+    sortKey,
+  }: {
+    collection: string;
+    reverse?: boolean;
+    sortKey?: string;
+  }): Promise<Product[]> => {
+    const { collections } = await sdk.client.fetch<{
+      collections: HttpTypes.StoreCollection[];
+    }>("/store/collections", {
+      method: "GET",
+      query: { handle: collection, fields: "*products", limit: 1 },
+      cache: "force-cache",
+    });
+
+    const col = collections[0];
+    if (!col) {
+      console.log(`No collection found for \`${collection}\``);
+      return [];
+    }
+
+    const region = await getDefaultRegion();
+    const order = buildSortOrder(sortKey, reverse);
+
+    const fetchQuery: ProductFetchQuery = {
+      collection_id: [col.id],
+      region_id: region.id,
+      fields: PRODUCT_FIELDS,
+      limit: 100,
+    };
+
+    if (order) fetchQuery.order = order;
+
+    const { products } = await sdk.client.fetch<{
+      products: HttpTypes.StoreProduct[];
+    }>("/store/products", {
+      method: "GET",
+      query: fetchQuery,
+      cache: "force-cache",
+    });
+
+    return products.filter((p) => !isHiddenProduct(p)).map(transformProduct);
+  },
+  ["medusa-collection-products"],
+  {
+    tags: [TAGS.collections, TAGS.products],
+    revalidate: CATALOG_REVALIDATE_SECONDS,
+  },
+);
 
 export async function getCollectionProducts({
   collection,
@@ -258,45 +356,7 @@ export async function getCollectionProducts({
   reverse?: boolean;
   sortKey?: string;
 }): Promise<Product[]> {
-  "use cache";
-  cacheTag(TAGS.collections, TAGS.products);
-  cacheLife("days");
-
-  const { collections } = await sdk.client.fetch<{
-    collections: HttpTypes.StoreCollection[];
-  }>("/store/collections", {
-    method: "GET",
-    query: { handle: collection, fields: "*products", limit: 1 },
-    cache: "force-cache",
-  });
-
-  const col = collections[0];
-  if (!col) {
-    console.log(`No collection found for \`${collection}\``);
-    return [];
-  }
-
-  const region = await getDefaultRegion();
-  const order = buildSortOrder(sortKey, reverse);
-
-  const fetchQuery: ProductFetchQuery = {
-    collection_id: [col.id],
-    region_id: region.id,
-    fields: PRODUCT_FIELDS,
-    limit: 100,
-  };
-
-  if (order) fetchQuery.order = order;
-
-  const { products } = await sdk.client.fetch<{
-    products: HttpTypes.StoreProduct[];
-  }>("/store/products", {
-    method: "GET",
-    query: fetchQuery,
-    cache: "force-cache",
-  });
-
-  return products.filter((p) => !isHiddenProduct(p)).map(transformProduct);
+  return getCollectionProductsCached({ collection, reverse, sortKey });
 }
 
 export async function getCollections(): Promise<Collection[]> {

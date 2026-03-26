@@ -1,5 +1,10 @@
 import { withSentryConfig } from "@sentry/nextjs";
 
+function sanitizeEnvValue(value: string | undefined): string | undefined {
+  const sanitized = value?.replace(/[\r\n]+/g, "").trim();
+  return sanitized ? sanitized : undefined;
+}
+
 export default withSentryConfig(
   {
     cacheComponents: true,
@@ -90,8 +95,8 @@ export default withSentryConfig(
     },
   },
   {
-    org: process.env.SENTRY_ORG,
-    project: process.env.SENTRY_PROJECT,
+    org: sanitizeEnvValue(process.env.SENTRY_ORG),
+    project: sanitizeEnvValue(process.env.SENTRY_PROJECT),
     silent: !process.env.CI,
   },
 );
