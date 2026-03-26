@@ -236,7 +236,7 @@ export function CheckoutReview({
       }
 
       setError(
-        "Payment session expired. Please return to the payment step and try again.",
+        "Unable to retrieve payment session. Please return to the payment step and try again.",
       );
     } catch (err) {
       setError(

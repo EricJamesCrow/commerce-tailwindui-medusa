@@ -60,6 +60,7 @@ export default defineConfig({
     },
   ],
   webServer: {
+    // This default command assumes a POSIX/bash-like shell, which matches CI and local macOS/Linux use.
     command:
       process.env.PLAYWRIGHT_WEB_SERVER_COMMAND ??
       'trap "kill 0" EXIT; cd ..; (cd backend && bun run dev) & (cd storefront && bun run dev) & wait',
