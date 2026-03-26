@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { DownloadInvoiceButton } from "./download-invoice-button";
 import { isInvoiceEligible } from "./order-utils";
+import { ReorderButton } from "./reorder-button";
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString(DEFAULT_LOCALE, {
@@ -48,6 +49,7 @@ export function OrderCard({ order }: { order: HttpTypes.StoreOrder }) {
         </dl>
         <div className="hidden lg:col-span-2 lg:flex lg:items-center lg:justify-end lg:space-x-4">
           {showInvoice && <DownloadInvoiceButton orderId={order.id} />}
+          <ReorderButton orderId={order.id} />
           <Link
             href={`/account/orders/${order.id}`}
             className="text-primary-600 hover:text-primary-500 text-sm font-medium"
@@ -105,12 +107,9 @@ export function OrderCard({ order }: { order: HttpTypes.StoreOrder }) {
         ))}
       </ul>
 
-      <div
-        className={`flex items-center border-t border-gray-200 p-4 sm:p-6 lg:hidden ${
-          showInvoice ? "justify-between" : "justify-end"
-        }`}
-      >
+      <div className="flex items-center gap-x-4 border-t border-gray-200 p-4 sm:p-6 lg:hidden justify-between">
         {showInvoice && <DownloadInvoiceButton orderId={order.id} />}
+        <ReorderButton orderId={order.id} />
         <Link
           href={`/account/orders/${order.id}`}
           className="text-primary-600 hover:text-primary-500 text-sm font-medium"
