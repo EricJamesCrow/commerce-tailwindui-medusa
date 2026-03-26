@@ -5,12 +5,7 @@ import { HIDDEN_PRODUCT_TAG, TAGS } from "lib/constants";
 import { FOOTER_CONFIG } from "lib/constants/footer";
 import { DEFAULT_NAVIGATION } from "lib/constants/navigation";
 import type { Cart, Collection, Navigation, Page, Product } from "lib/types";
-import {
-  cacheLife,
-  cacheTag,
-  revalidateTag,
-  unstable_cache,
-} from "next/cache";
+import { cacheLife, cacheTag, revalidateTag, unstable_cache } from "next/cache";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthHeaders, getCartId, removeCartId, setCartId } from "./cookies";
