@@ -6,8 +6,16 @@ import {
   transformProduct,
 } from "lib/medusa/transforms";
 
+type DeepPartial<T> = T extends (...args: never[]) => unknown
+  ? T
+  : T extends (infer U)[]
+    ? DeepPartial<U>[]
+    : T extends object
+      ? { [K in keyof T]?: DeepPartial<T[K]> }
+      : T;
+
 function makeVariant(
-  overrides: Record<string, unknown> = {},
+  overrides: DeepPartial<HttpTypes.StoreProductVariant> = {},
 ): HttpTypes.StoreProductVariant {
   return {
     id: "variant_default",
@@ -32,7 +40,7 @@ function makeVariant(
 }
 
 function makeProduct(
-  overrides: Record<string, unknown> = {},
+  overrides: DeepPartial<HttpTypes.StoreProduct> = {},
 ): HttpTypes.StoreProduct {
   return {
     id: "prod_123",
@@ -64,7 +72,7 @@ function makeProduct(
 }
 
 function makeCollection(
-  overrides: Record<string, unknown> = {},
+  overrides: DeepPartial<HttpTypes.StoreCollection> = {},
 ): HttpTypes.StoreCollection {
   return {
     handle: "shirts",
@@ -81,7 +89,7 @@ function makeCollection(
 }
 
 function makeCart(
-  overrides: Record<string, unknown> = {},
+  overrides: DeepPartial<HttpTypes.StoreCart> = {},
 ): HttpTypes.StoreCart {
   return {
     id: "cart_123",
@@ -264,7 +272,7 @@ describe("transformCollection", () => {
   it("preserves current empty-handle and empty-metadata fallbacks", () => {
     const collection = transformCollection(
       makeCollection({
-        handle: undefined,
+        handle: "",
         title: "Sale",
         metadata: {},
       }),
@@ -279,7 +287,7 @@ describe("transformCollection", () => {
         description: "",
       },
       updatedAt: "2026-03-25T12:00:00.000Z",
-      path: "/products/undefined",
+      path: "/products/",
       image: undefined,
     });
   });
