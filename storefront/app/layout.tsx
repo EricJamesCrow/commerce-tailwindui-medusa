@@ -5,6 +5,7 @@ import { ReactNode, Suspense } from "react";
 import "./globals.css";
 
 import { CartProvider } from "components/cart/cart-context";
+import { DiscountPopup } from "components/common/discount-popup";
 import Footer from "components/layout/footer";
 import { Incentives } from "components/layout/incentives";
 import { Navbar } from "components/layout/navbar";
@@ -58,6 +59,7 @@ async function AppProviders({ children }: { children: ReactNode }) {
             <main>{children}</main>
             <Incentives />
             <Footer />
+            <DiscountPopup isAuthenticated={!!customer} />
           </SearchProvider>
         </NotificationProvider>
       </PostHogProvider>
