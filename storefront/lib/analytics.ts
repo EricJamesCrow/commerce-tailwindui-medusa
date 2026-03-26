@@ -116,6 +116,8 @@ export type AnalyticsEvents = {
     item_count: number;
   };
   invoice_downloaded: { order_id: string };
+  reorder_initiated: { order_id: string };
+  reorder_failed: { order_id: string; error_code: string };
   abandoned_cart_recovered: { cart_id: string; item_count: number };
 
   // --- Newsletter ---
