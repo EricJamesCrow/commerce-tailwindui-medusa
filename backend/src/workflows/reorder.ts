@@ -135,7 +135,7 @@ export const reorderWorkflow = createWorkflow(
       entity: "cart",
       fields: ["id", "items.*", "total", "currency_code"],
       filters: { id: cartId },
-    });
+    }).config({ name: "get-reorder-cart" });
 
     const cart = transform({ carts }, ({ carts }) => {
       const c = carts[0]!;
