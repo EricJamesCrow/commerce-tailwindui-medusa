@@ -19,8 +19,10 @@ function classifyError(e: unknown): {
   if (
     msg.includes("variant") ||
     msg.includes("inventory") ||
-    msg.includes("stock") ||
-    msg.includes("not found")
+    msg.includes("stock")
+    // "not found" intentionally excluded: the backend returns NOT_FOUND for
+    // both missing orders and IDOR violations, so matching it here would show
+    // "items unavailable" for an auth/permissions error, which is wrong UX.
   ) {
     return {
       error: "Some items from this order are no longer available.",
@@ -34,7 +36,10 @@ function classifyError(e: unknown): {
 }
 
 export async function reorder(orderId: string): Promise<ReorderResult> {
-  if (!/^order_[a-z0-9]+$/.test(orderId)) {
+  // Order IDs are system-generated ULIDs (e.g. order_01JNBA2VQ...) — never
+  // typed by a user — so they must NOT be lowercased, unlike email addresses
+  // which are normalized at the auth boundary.
+  if (!/^order_[a-zA-Z0-9]+$/.test(orderId)) {
     return {
       error: "Something went wrong. Please try again.",
       error_code: "unknown_error",
@@ -46,9 +51,13 @@ export async function reorder(orderId: string): Promise<ReorderResult> {
       `/store/customers/me/orders/${orderId}/reorder`,
       { method: "POST", headers },
     );
-    await setCartId(cart.id);
-    revalidateTag(TAGS.cart, "max");
-    revalidatePath("/", "layout");
+    try {
+      await setCartId(cart.id);
+    } finally {
+      // Revalidate in finally so cache is always cleared even if setCartId throws.
+      revalidateTag(TAGS.cart, "max");
+      revalidatePath("/", "layout");
+    }
     return { cart };
   } catch (e) {
     Sentry.captureException(e, {

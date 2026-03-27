@@ -6,8 +6,11 @@ import { MedusaError } from "@medusajs/framework/utils";
 import { z } from "@medusajs/framework/zod";
 import { reorderWorkflow } from "../../../../../../../workflows/reorder";
 
+// Order IDs are system-generated ULIDs (e.g. order_01JNBA2VQ...) and are
+// never typed by a user, so they must NOT be lowercased — unlike email
+// addresses which are normalized to lowercase at the auth boundary.
 const ReorderParamsSchema = z.object({
-  id: z.string().regex(/^order_[a-z0-9]+$/, "Invalid order ID format"),
+  id: z.string().regex(/^order_[a-zA-Z0-9]+$/, "Invalid order ID format"),
 });
 
 export async function POST(

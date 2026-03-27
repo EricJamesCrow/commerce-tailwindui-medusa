@@ -5,3 +5,4 @@ out
 build
 .playwright-newsletter-rate-limit
 playwright-report
+test-results
