@@ -259,6 +259,7 @@ This ensures every plan execution produces a clean Graphite branch with a pre-re
 ## Code Style (Storefront)
 
 - **Normalize emails to lowercase** — always apply `.toLowerCase()` before storing, comparing, or sending emails to the Medusa SDK. Medusa's auth provider uses case-sensitive matching, so `EricCrow@pm.me` and `ericcrow@pm.me` are treated as different accounts. Normalize at the server action boundary (e.g., `customer.ts`, `checkout.ts`), not in UI components.
+- **Do NOT normalize system-generated IDs** — order IDs, cart IDs, product IDs, and similar entity identifiers are Medusa-generated ULIDs (e.g. `order_01JNBA2VQ...`). They are never typed by a user and must not be lowercased. Regex validators for these IDs should use `[a-zA-Z0-9]`, not `[a-z0-9]`.
 - **TailwindPlus (Tailwind UI) components as the design system** — always use TailwindPlus components as the starting point for any new UI. Reference the component catalog at `/Users/itsjusteric/CrowCommerce/Resources/TailwindUI/tailwindplus-components.json` to find matching components before building custom UI.
 - **Headless UI** for accessible interactive elements (Dialog, Menu, Popover, etc.)
 - **clsx** for conditional class composition
