@@ -186,9 +186,7 @@ export default defineMiddlewares({
     {
       matcher: "/store/customers/me/orders/:id/reorder",
       method: ["POST"],
-      middlewares: [
-        authenticate("customer", ["session", "bearer"]),
-      ],
+      middlewares: [authenticate("customer", ["session", "bearer"])],
     },
     // Body validation for specific customer wishlist mutations
     {
