@@ -2,13 +2,17 @@
 
 import { sdk } from "lib/medusa";
 import { TAGS } from "lib/constants";
-import type { HttpTypes } from "@medusajs/types";
 import { setCartId, getAuthHeaders } from "lib/medusa/cookies";
 import * as Sentry from "@sentry/nextjs";
 import { revalidatePath, revalidateTag } from "next/cache";
 
+// The backend returns only the fields needed to set the cart — not the full
+// StoreCart shape. Using a narrow type prevents callers from expecting fields
+// like cart.items or cart.subtotal that are never populated.
+type ReorderCart = { id: string; currency_code: string };
+
 type ReorderResult =
-  | { cart: HttpTypes.StoreCart }
+  | { cart: ReorderCart }
   | { error: string; error_code: "item_unavailable" | "unknown_error" };
 
 function classifyError(e: unknown): {
@@ -47,7 +51,7 @@ export async function reorder(orderId: string): Promise<ReorderResult> {
   }
   try {
     const headers = await getAuthHeaders();
-    const { cart } = await sdk.client.fetch<{ cart: HttpTypes.StoreCart }>(
+    const { cart } = await sdk.client.fetch<{ cart: ReorderCart }>(
       `/store/customers/me/orders/${orderId}/reorder`,
       { method: "POST", headers },
     );

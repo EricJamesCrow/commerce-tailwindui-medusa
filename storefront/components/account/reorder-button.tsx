@@ -40,7 +40,7 @@ export function ReorderButton({
   }, [orderId, router]);
 
   return (
-    <div className="flex items-center gap-x-3">
+    <div className="flex flex-col items-start gap-y-2">
       <button
         type="button"
         onClick={handleReorder}
@@ -84,7 +84,9 @@ export function ReorderButton({
       </button>
 
       {state === "error" && errorMessage && (
-        <p className="text-sm text-red-600">{errorMessage}</p>
+        <p role="alert" className="text-sm text-red-600">
+          {errorMessage}
+        </p>
       )}
     </div>
   );

@@ -5,6 +5,7 @@ import type {
 import { MedusaError } from "@medusajs/framework/utils";
 import { z } from "@medusajs/framework/zod";
 import { reorderWorkflow } from "../../../../../../../workflows/reorder";
+import * as Sentry from "@sentry/node";
 
 // Order IDs are system-generated ULIDs (e.g. order_01JNBA2VQ...) and are
 // never typed by a user, so they must NOT be lowercased — unlike email
@@ -39,12 +40,22 @@ export async function POST(
     throw new MedusaError(MedusaError.Types.NOT_FOUND, "Order not found");
   }
 
-  const { result } = await reorderWorkflow(req.scope).run({
-    input: {
-      orderId: parsed.data.id,
-      customerId,
-    },
-  });
-
-  res.status(201).json({ cart: result.cart });
+  try {
+    const { result } = await reorderWorkflow(req.scope).run({
+      input: {
+        orderId: parsed.data.id,
+        customerId,
+      },
+    });
+    res.status(201).json({ cart: result.cart });
+  } catch (e) {
+    Sentry.captureException(e, {
+      tags: {
+        order_id: parsed.data.id,
+        customer_id: customerId,
+        action: "reorder",
+      },
+    });
+    throw e;
+  }
 }
