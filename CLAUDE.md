@@ -163,6 +163,14 @@ cd storefront && bun run prettier:check   # or bun run prettier to fix
 cd backend && bun run prettier:check      # or bunx prettier --write <files> to fix
 ```
 
+**Pre-submit smoke test:** Before running `gt submit --stack`, verify the Playwright smoke suite passes with the full stack running locally:
+```bash
+cd storefront && bun run test:e2e:smoke
+```
+Common smoke failures that indicate backend issues (not flaky tests):
+- `fetch failed` on page load → backend not reachable; check for duplicate Medusa workflow step names (two `useQueryGraphStep` calls in the same workflow need `.config({ name: "..." })` on the second one)
+- `Step X is already defined in workflow` in backend logs → same cause
+
 **Pre-submit CodeRabbit review:** Before running `gt submit --stack`, run `cr review` (CodeRabbit CLI) to catch issues locally. Fix any relevant findings, commit the fixes, then submit. This prevents a round-trip of push → wait for CodeRabbit → fix → push again.
 
 **CodeRabbit reviews:** When asked to fix CodeRabbit comments on a PR, read the review comments via `gh api`, assess each finding against the actual code, apply valid fixes, reject suggestions that conflict with project conventions (with a reply explaining why), commit the changes, push via `gt submit --stack`, and resolve each addressed comment thread using `gh api`. Always resolve comment threads after addressing them — don't leave them open.
@@ -178,10 +186,11 @@ When executing an implementation plan (via `superpowers:executing-plans`, `super
 
 **After all plan tasks are complete:**
 1. Run `cd storefront && bun run prettier:check` and `cd backend && bun run prettier:check` — fix any issues before committing
-2. Run `cr review` (CodeRabbit CLI) to catch issues locally
-3. Fix any relevant findings, commit the fixes
-4. Run the `code-simplifier` skill to review changed code for reuse, quality, and efficiency
-5. Run `gt submit --stack --no-interactive` to push and create the PR
+2. Run `cd storefront && bun run test:e2e:smoke` with the full stack running — fix any failures before proceeding
+3. Run `cr review` (CodeRabbit CLI) to catch issues locally
+4. Fix any relevant findings, commit the fixes
+5. Run the `code-simplifier` skill to review changed code for reuse, quality, and efficiency
+6. Run `gt submit --stack --no-interactive` to push and create the PR
 5. Unless explicitly asked to keep as draft, run `gh pr ready <number>` to mark the PR as ready for review
 6. Update the PR description with a summary, event table, and test plan
 
