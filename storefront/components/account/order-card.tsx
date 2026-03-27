@@ -107,7 +107,7 @@ export function OrderCard({ order }: { order: HttpTypes.StoreOrder }) {
         ))}
       </ul>
 
-      <div className="flex items-center gap-x-4 border-t border-gray-200 p-4 sm:p-6 lg:hidden justify-between">
+      <div className="flex items-center justify-between gap-x-4 border-t border-gray-200 p-4 sm:p-6 lg:hidden">
         {showInvoice && <DownloadInvoiceButton orderId={order.id} />}
         <ReorderButton orderId={order.id} />
         <Link

@@ -2,6 +2,7 @@ import {
   createWorkflow,
   WorkflowResponse,
   transform,
+  when,
 } from "@medusajs/framework/workflows-sdk";
 import { CreateCartWorkflowInput } from "@medusajs/core-flows";
 import {
@@ -79,7 +80,13 @@ export const reorderWorkflow = createWorkflow(
           items: ((order.items as Array<unknown> | null) ?? [])
             .filter(
               (item): item is { variant_id: string; quantity: number } =>
-                item !== null && item !== undefined,
+                typeof item === "object" &&
+                item !== null &&
+                "variant_id" in item &&
+                "quantity" in item &&
+                typeof (item as { variant_id?: unknown }).variant_id ===
+                  "string" &&
+                typeof (item as { quantity?: unknown }).quantity === "number",
             )
             .map((item) => ({
               variant_id: item.variant_id,
@@ -116,8 +123,11 @@ export const reorderWorkflow = createWorkflow(
       },
     );
 
-    addShippingMethodToCartWorkflow.runAsStep({
-      input: shippingInput,
+    when(
+      { shippingInput },
+      (data) => data.shippingInput.options.length > 0,
+    ).then(function () {
+      addShippingMethodToCartWorkflow.runAsStep({ input: shippingInput });
     });
 
     // Step 4: Retrieve new cart's full details

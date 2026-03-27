@@ -13,7 +13,9 @@ test.setTimeout(180_000);
  * Shared helper: complete checkout to create a real order, then navigate
  * to the order list page. Reused by both tests.
  */
-async function completeCheckoutAndGoToOrders(page: import("@playwright/test").Page) {
+async function completeCheckoutAndGoToOrders(
+  page: import("@playwright/test").Page,
+) {
   const addressField = page.locator(sel.ADDR_FIRST_NAME);
   const signedInText = page.locator(sel.SIGNED_IN_AS);
   await expect(signedInText.or(addressField)).toBeVisible({ timeout: 15_000 });
@@ -50,13 +52,15 @@ test.describe("Reorder", () => {
 
     // Loading state should appear briefly
     await expect(
-      page.locator('button:has-text("Reordering...")').first()
+      page.locator('button:has-text("Reordering...")').first(),
     ).toBeVisible({ timeout: 5_000 });
 
     // Should redirect to /checkout with cart pre-populated
     await expect(page).toHaveURL("/checkout", { timeout: 30_000 });
     // Verify the cart is actually populated — the order summary must show at least one item
-    await expect(page.locator(sel.ORDER_SUMMARY_ITEM).first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator(sel.ORDER_SUMMARY_ITEM).first()).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test("reorder from order detail page redirects to checkout with cart populated", async ({
@@ -78,6 +82,8 @@ test.describe("Reorder", () => {
     // Click and verify checkout redirect with populated cart
     await reorderBtn.click();
     await expect(page).toHaveURL("/checkout", { timeout: 30_000 });
-    await expect(page.locator(sel.ORDER_SUMMARY_ITEM).first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator(sel.ORDER_SUMMARY_ITEM).first()).toBeVisible({
+      timeout: 15_000,
+    });
   });
 });
