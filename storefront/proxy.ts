@@ -75,7 +75,12 @@ export function proxy(request: NextRequest): NextResponse {
     });
   }
 
-  response.headers.set("Content-Security-Policy", buildCsp(nonce));
+  // TODO: Re-enable CSP once nonce/caching issue is resolved.
+  // Root cause: Vercel CDN caches HTML with a baked-in nonce; proxy generates a
+  // fresh nonce per-request, causing a mismatch that blocks ALL scripts. Fix will
+  // add `script-src-elem` (no 'strict-dynamic') so external chunks from 'self'
+  // and js.stripe.com are allowed by hostname rather than nonce.
+  // response.headers.set("Content-Security-Policy", buildCsp(nonce));
 
   return response;
 }

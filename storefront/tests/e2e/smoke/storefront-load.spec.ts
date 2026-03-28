@@ -6,6 +6,32 @@ function escapeRegex(value: string): string {
 }
 
 test.describe("Storefront smoke", () => {
+  // Catches CSP violations on the home page — a CSP nonce/caching mismatch
+  // blocks ALL scripts, breaking hydration and interactive components.
+  // Re-enable CSP in proxy.ts (currently disabled for debugging) and verify
+  // this test stays green before shipping.
+  test("home page has no CSP violations", async ({ page }) => {
+    const cspViolations: string[] = [];
+
+    page.on("console", (msg) => {
+      const text = msg.text();
+      if (
+        msg.type() === "error" &&
+        text.toLowerCase().includes("content security policy")
+      ) {
+        cspViolations.push(text);
+      }
+    });
+
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+
+    expect(
+      cspViolations,
+      `CSP violations detected:\n${cspViolations.join("\n")}`,
+    ).toHaveLength(0);
+  });
+
   test("home page and product detail page load", async ({ page }) => {
     await page.goto("/");
     await page.waitForLoadState("networkidle");
