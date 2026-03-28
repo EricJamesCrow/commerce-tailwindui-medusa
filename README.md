@@ -1,6 +1,6 @@
 # CrowCommerce — Project Status
 
-Last updated: 2026-03-25
+Last updated: 2026-03-27
 
 **[Setup Guide](SETUP.md)** — local dev through production deployment
 
@@ -40,7 +40,7 @@ These are features identified but not yet planned in detail:
 - Multi-region / multi-currency support
 - Collections/categories with images
 - CMS pages (Payload CMS integration)
-- Re-order previous purchases
+- Re-order previous purchases (temporarily disabled pending checkout hardening)
 - Agentic commerce (AI shopping assistant, natural language search)
 - Newsletter campaigns (sending/scheduling — signup is shipped)
 

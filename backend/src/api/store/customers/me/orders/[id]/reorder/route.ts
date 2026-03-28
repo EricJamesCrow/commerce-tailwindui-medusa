@@ -2,10 +2,10 @@ import type {
   AuthenticatedMedusaRequest,
   MedusaResponse,
 } from "@medusajs/framework/http";
-import { MedusaError } from "@medusajs/framework/utils";
 import { z } from "@medusajs/framework/zod";
-import { reorderWorkflow } from "../../../../../../../workflows/reorder";
-import * as Sentry from "@sentry/node";
+
+const REORDER_DISABLED_MESSAGE =
+  "Reordering is temporarily unavailable while checkout is being hardened.";
 
 // Order IDs are system-generated ULIDs (e.g. order_01JNBA2VQ...) and are
 // never typed by a user, so they must NOT be lowercased — unlike email
@@ -23,39 +23,8 @@ export async function POST(
     return res.status(400).json({ message: "Invalid order ID" });
   }
 
-  const customerId = req.auth_context.actor_id;
-
-  // Verify customer owns this order (IDOR prevention)
-  const query = req.scope.resolve("query");
-  const { data: orders } = await query.graph({
-    entity: "order",
-    fields: ["id", "customer_id"],
-    filters: { id: parsed.data.id },
+  return res.status(503).json({
+    message: REORDER_DISABLED_MESSAGE,
+    code: "temporarily_unavailable",
   });
-  const order = orders[0];
-  if (!order) {
-    throw new MedusaError(MedusaError.Types.NOT_FOUND, "Order not found");
-  }
-  if (order.customer_id !== customerId) {
-    throw new MedusaError(MedusaError.Types.NOT_FOUND, "Order not found");
-  }
-
-  try {
-    const { result } = await reorderWorkflow(req.scope).run({
-      input: {
-        orderId: parsed.data.id,
-        customerId,
-      },
-    });
-    res.status(201).json({ cart: result.cart });
-  } catch (e) {
-    Sentry.captureException(e, {
-      tags: {
-        order_id: parsed.data.id,
-        customer_id: customerId,
-        action: "reorder",
-      },
-    });
-    throw e;
-  }
 }
