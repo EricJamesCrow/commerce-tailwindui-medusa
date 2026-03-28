@@ -40,7 +40,7 @@ export type AnalyticsEvents = {
   customer_signed_up: { method: string };
   customer_logged_in: { method: string };
   customer_logged_out: Record<string, never>;
-  password_reset_requested: { email: string };
+  password_reset_requested: Record<string, never>;
   password_reset_completed: Record<string, never>;
 
   // --- Account ---
@@ -116,6 +116,8 @@ export type AnalyticsEvents = {
     item_count: number;
   };
   invoice_downloaded: { order_id: string };
+  reorder_initiated: { order_id: string };
+  reorder_failed: { order_id: string; error_code: string };
   abandoned_cart_recovered: { cart_id: string; item_count: number };
 
   // --- Newsletter ---

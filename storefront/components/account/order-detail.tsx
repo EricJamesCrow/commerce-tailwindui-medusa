@@ -9,6 +9,7 @@ import {
   deriveCustomerOrderProgress,
 } from "./order-status";
 import { DownloadInvoiceButton } from "./download-invoice-button";
+import { ReorderButton } from "./reorder-button";
 import { isInvoiceEligible } from "./order-utils";
 
 // ---------------------------------------------------------------------------
@@ -209,11 +210,10 @@ export function OrderDetail({ order }: { order: StoreOrderDetail }) {
             </time>
           </dd>
         </dl>
-        {showInvoice && (
-          <div className="mt-4 sm:mt-0">
-            <DownloadInvoiceButton orderId={order.id} />
-          </div>
-        )}
+        <div className="mt-4 flex items-center gap-x-4 sm:mt-0">
+          {showInvoice && <DownloadInvoiceButton orderId={order.id} />}
+          <ReorderButton orderId={order.id} />
+        </div>
       </div>
 
       {/* Canceled banner */}

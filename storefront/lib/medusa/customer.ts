@@ -282,7 +282,7 @@ export async function requestPasswordReset(
       identifier: normalizedEmail,
     });
     try {
-      await trackServer("password_reset_requested", { email: normalizedEmail });
+      await trackServer("password_reset_requested", {});
     } catch {}
   } catch (e) {
     if (isRateLimited(e)) {
