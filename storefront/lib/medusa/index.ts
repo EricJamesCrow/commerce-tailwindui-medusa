@@ -754,9 +754,12 @@ export async function getPages(): Promise<Page[]> {
 // --- Webhook Revalidation ---
 
 export async function revalidate(req: NextRequest): Promise<NextResponse> {
-  const secret = req.nextUrl.searchParams.get("secret");
+  const secret =
+    req.headers.get("x-revalidate-secret") ??
+    req.nextUrl.searchParams.get("secret");
+  const expectedSecret = sanitizeEnvValue(process.env.REVALIDATE_SECRET);
 
-  if (!secret || secret !== process.env.REVALIDATE_SECRET) {
+  if (!secret || !expectedSecret || secret !== expectedSecret) {
     console.error("Invalid revalidation secret.");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

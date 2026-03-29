@@ -4,6 +4,8 @@ loadEnv(process.env.NODE_ENV || "development", process.cwd());
 
 const isProd = process.env.NODE_ENV === "production";
 const INSECURE_SECRETS = ["supersecret", "change-me-to-a-secure-random-string"];
+const storefrontUrl = process.env.STOREFRONT_URL?.trim();
+const revalidateSecret = process.env.REVALIDATE_SECRET?.trim();
 
 if (
   isProd &&
@@ -88,6 +90,20 @@ if (process.env.MEILISEARCH_HOST && !process.env.MEILISEARCH_API_KEY) {
   console.warn(
     "[medusa-config] MEILISEARCH_HOST is set but MEILISEARCH_API_KEY is missing — " +
       "Meilisearch module will not be registered",
+  );
+}
+
+if (storefrontUrl && !revalidateSecret) {
+  console.warn(
+    "[medusa-config] STOREFRONT_URL is set but REVALIDATE_SECRET is missing — " +
+      "catalog updates will not trigger storefront cache revalidation",
+  );
+}
+
+if (revalidateSecret && !storefrontUrl) {
+  console.warn(
+    "[medusa-config] REVALIDATE_SECRET is set but STOREFRONT_URL is missing — " +
+      "catalog updates will not trigger storefront cache revalidation",
   );
 }
 

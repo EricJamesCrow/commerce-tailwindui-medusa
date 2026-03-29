@@ -1,14 +1,13 @@
 import * as Sentry from "@sentry/nextjs";
 import { browserProfilingIntegration } from "@sentry/nextjs";
+import { sanitizeEnvValue } from "./lib/env";
+import { resolveStorefrontSentryEnvironment } from "./lib/sentry";
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
 
 Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  environment:
-    process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT ||
-    process.env.NODE_ENV ||
-    "development",
+  dsn: sanitizeEnvValue(process.env.NEXT_PUBLIC_SENTRY_DSN),
+  environment: resolveStorefrontSentryEnvironment(),
   tracesSampleRate: parseFloat(
     process.env.NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE || "0.2",
   ),

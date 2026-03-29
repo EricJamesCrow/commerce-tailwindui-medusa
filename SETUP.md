@@ -268,6 +268,7 @@ When migrating to a CMS (e.g., Payload), swap the import source in each route fi
    ADMIN_CORS=            # Your backend domain, e.g. https://api.example.com
    AUTH_CORS=              # Same as ADMIN_CORS
    MEDUSA_BACKEND_URL=    # Your backend domain, e.g. https://api.example.com
+   REVALIDATE_SECRET=     # Must exactly match the storefront REVALIDATE_SECRET
    S3_FILE_URL=            # R2 public URL (e.g. https://pub-abc123.r2.dev)
    S3_ACCESS_KEY_ID=       # R2 API token ID
    S3_SECRET_ACCESS_KEY=   # R2 API token secret
@@ -275,6 +276,7 @@ When migrating to a CMS (e.g., Payload), swap the import source in each route fi
    S3_REGION=auto          # Always "auto" for Cloudflare R2
    S3_ENDPOINT=            # https://<account-id>.r2.cloudflarestorage.com
    SENTRY_DSN=              # Sentry project DSN
+   SENTRY_ENVIRONMENT=     # "production" in prod, "staging" in non-prod Railway envs
    MEILISEARCH_HOST=        # Meilisearch server URL (e.g. https://ms-xxx.meilisearch.io or self-hosted)
    MEILISEARCH_API_KEY=     # Meilisearch master key (admin access for indexing)
    ```
@@ -312,6 +314,7 @@ When migrating to a CMS (e.g., Payload), swap the import source in each route fi
    SENTRY_AUTH_TOKEN=                       # Source map uploads (sentry.io/settings/auth-tokens/)
    SENTRY_ORG=                              # Sentry organization slug
    SENTRY_PROJECT=                          # Sentry project slug
+   NEXT_PUBLIC_SENTRY_ENVIRONMENT=          # "production" for prod, "preview" for Vercel previews
    NEXT_PUBLIC_MEILISEARCH_HOST=            # Meilisearch server URL (same as backend)
    NEXT_PUBLIC_MEILISEARCH_API_KEY=         # Meilisearch search-only API key (NOT master key)
    ```
@@ -321,6 +324,19 @@ When migrating to a CMS (e.g., Payload), swap the import source in each route fi
 4. **Update backend CORS** — add your Vercel production domain to `STORE_CORS` in Railway.
 
 5. **Sanity-check Vercel env formatting** — after setting or updating critical Vercel vars, run `vercel env pull --environment=production` and confirm URL/key values do not include trailing newlines. A pasted newline in `MEDUSA_BACKEND_URL` can break the storefront proxy's CSP header and produce production 500s.
+
+6. **Verify Sentry build inputs** — confirm `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` all match the storefront Sentry project, and that `NEXT_PUBLIC_SENTRY_ENVIRONMENT` is set explicitly. Vercel previews should report as `preview`; production should report as `production`.
+
+### Catalog Cache Revalidation
+
+When both the backend and storefront have the same `REVALIDATE_SECRET` configured, Medusa subscribers automatically POST to `POST /api/revalidate` after product and product-collection create, update, and delete events.
+
+To verify the production path end-to-end:
+
+1. Update a product or collection in Medusa admin.
+2. Confirm the backend logs a `[StorefrontRevalidate]` success entry.
+3. Confirm the storefront receives the request and the updated catalog data appears without waiting for the catalog TTL to expire.
+4. If it fails, verify `STOREFRONT_URL` and `REVALIDATE_SECRET` are set in Railway, and that `REVALIDATE_SECRET` matches the value in Vercel exactly.
 
 ## Structured Data Coverage
 

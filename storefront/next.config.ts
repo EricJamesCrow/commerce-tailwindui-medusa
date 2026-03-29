@@ -1,9 +1,7 @@
 import { withSentryConfig } from "@sentry/nextjs";
+import { getStorefrontSentryBuildConfig } from "./lib/sentry";
 
-function sanitizeEnvValue(value: string | undefined): string | undefined {
-  const sanitized = value?.replace(/[\r\n]+/g, "").trim();
-  return sanitized ? sanitized : undefined;
-}
+const sentryBuildConfig = getStorefrontSentryBuildConfig();
 
 export default withSentryConfig(
   {
@@ -95,8 +93,9 @@ export default withSentryConfig(
     },
   },
   {
-    org: sanitizeEnvValue(process.env.SENTRY_ORG),
-    project: sanitizeEnvValue(process.env.SENTRY_PROJECT),
+    authToken: sentryBuildConfig.authToken,
+    org: sentryBuildConfig.org,
+    project: sentryBuildConfig.project,
     silent: !process.env.CI,
   },
 );

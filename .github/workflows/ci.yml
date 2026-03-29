@@ -112,6 +112,7 @@ jobs:
       STOREFRONT_URL: http://localhost:3000
       JWT_SECRET: supersecret
       COOKIE_SECRET: supersecret
+      REVALIDATE_SECRET: supersecret
       STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }}
       NEXT_PUBLIC_STRIPE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_KEY }}
     steps:
