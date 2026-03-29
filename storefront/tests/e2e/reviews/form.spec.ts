@@ -70,6 +70,8 @@ test.describe("Review Form", () => {
     authedPage: page,
     testProductHandle,
   }) => {
+    const uniqueContent = `Pending moderation review ${Date.now()}`;
+
     await page.goto(`/product/${testProductHandle}`);
     await page.waitForLoadState("networkidle");
 
@@ -85,9 +87,7 @@ test.describe("Review Form", () => {
     await page.locator(sel.REVIEW_TITLE_INPUT).fill("Excellent product!");
 
     // Fill content (required)
-    await page
-      .locator(sel.REVIEW_CONTENT_INPUT)
-      .fill("This product exceeded my expectations. Highly recommend!");
+    await page.locator(sel.REVIEW_CONTENT_INPUT).fill(uniqueContent);
 
     // Submit
     const submitBtn = page.locator(sel.REVIEW_SUBMIT_BUTTON).last();
@@ -99,15 +99,15 @@ test.describe("Review Form", () => {
       timeout: 5_000,
     });
 
-    // Review appears in the list (use .first() since prior runs may leave matching reviews)
-    await expect(
-      page
-        .locator(sel.REVIEW_CONTENT_TEXT)
-        .filter({
-          hasText: "This product exceeded my expectations",
-        })
-        .first(),
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator(sel.REVIEW_SUBMISSION_NOTICE)).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(page.locator(sel.REVIEW_SUBMISSION_NOTICE)).toContainText(
+      "awaiting approval",
+    );
+
+    await page.reload({ waitUntil: "networkidle" });
+    await expect(page.getByText(uniqueContent)).toHaveCount(0);
   });
 
   test("shows error when content is empty", async ({

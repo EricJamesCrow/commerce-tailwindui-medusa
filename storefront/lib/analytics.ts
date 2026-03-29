@@ -78,6 +78,8 @@ export type AnalyticsEvents = {
     product_id: string;
     rating: number;
     has_images: boolean;
+    status: "pending" | "approved" | "flagged";
+    verified_purchase: boolean;
   };
 
   // --- Search ---

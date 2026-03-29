@@ -9,7 +9,17 @@ import { retrieveCustomer } from "lib/medusa/customer";
 import { trackServer } from "lib/analytics-server";
 import * as Sentry from "@sentry/nextjs";
 
-export type ReviewActionResult = { error?: string; success?: boolean } | null;
+type SubmittedReview = Review & {
+  status: "pending" | "approved" | "flagged";
+};
+
+export type ReviewActionResult = {
+  error?: string;
+  success?: boolean;
+  status?: SubmittedReview["status"];
+  verifiedPurchase?: boolean;
+  review?: Review;
+} | null;
 
 type ReviewImageInput = { url: string; sort_order: number };
 const REVIEWS_REVALIDATE_SECONDS = 60 * 60 * 24;
@@ -99,18 +109,6 @@ export async function getProductReviews(
   return getProductReviewsCached(productId, limit, offset);
 }
 
-export async function getReviewerName(): Promise<{
-  firstName: string;
-  lastName: string;
-} | null> {
-  const customer = await retrieveCustomer();
-  if (!customer) return null;
-  return {
-    firstName: customer.first_name || "Customer",
-    lastName: customer.last_name || "",
-  };
-}
-
 export async function addProductReview(
   prevState: ReviewActionResult,
   formData: FormData,
@@ -133,7 +131,9 @@ export async function addProductReview(
   const headers = await getAuthHeaders();
 
   try {
-    await sdk.client.fetch("/store/reviews", {
+    const { review } = await sdk.client.fetch<{
+      review: SubmittedReview;
+    }>("/store/reviews", {
       method: "POST",
       headers,
       body: {
@@ -151,8 +151,17 @@ export async function addProductReview(
         product_id: productId,
         rating,
         has_images: images.length > 0,
+        status: review.status,
+        verified_purchase: review.verified_purchase,
       });
     } catch {}
+
+    return {
+      success: true,
+      status: review.status,
+      verifiedPurchase: review.verified_purchase,
+      review: review.status === "approved" ? review : undefined,
+    };
   } catch (e) {
     Sentry.captureException(e, {
       tags: { action: "add_product_review" },
@@ -165,6 +174,4 @@ export async function addProductReview(
     revalidateTag(TAGS.reviews, "max");
     revalidatePath("/", "layout");
   }
-
-  return { success: true };
 }

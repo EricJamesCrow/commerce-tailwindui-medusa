@@ -1,16 +1,12 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { ReviewSummary } from "components/reviews/ReviewSummary";
 import { ReviewListClient } from "components/reviews/ReviewListClient";
 import { ReviewForm } from "components/reviews/ReviewForm";
 import { trackClient } from "lib/analytics";
 import type { ProductReviews as ProductReviewsType, Review } from "lib/types";
-import {
-  addProductReview,
-  getProductReviews,
-  getReviewerName,
-} from "lib/medusa/reviews";
+import { addProductReview, getProductReviews } from "lib/medusa/reviews";
 
 export function ProductReviews({
   productId,
@@ -23,21 +19,13 @@ export function ProductReviews({
 }) {
   const [formOpen, setFormOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [submissionNotice, setSubmissionNotice] = useState<string | null>(null);
   const [reviews, setReviews] = useState<Review[]>(initialData.reviews);
   const [summaryData, setSummaryData] = useState(initialData);
-  const [customerName, setCustomerName] = useState<{
-    firstName: string;
-    lastName: string;
-  } | null>(null);
   const [hasMore, setHasMore] = useState(
     initialData.count > initialData.reviews.length,
   );
   const [isLoadingMore, startLoadMore] = useTransition();
-
-  // Fetch customer name on mount (outside "use cache" scope)
-  useEffect(() => {
-    getReviewerName().then(setCustomerName);
-  }, []);
 
   function loadMore() {
     startLoadMore(async () => {
@@ -69,24 +57,30 @@ export function ProductReviews({
     });
   }
 
-  function handleReviewSubmitted(review: Review, formData: FormData) {
-    setFormOpen(false);
+  async function handleReviewSubmitted(formData: FormData): Promise<boolean> {
     setFormError(null);
+    const result = await addProductReview(null, formData);
 
-    // Optimistic: update state immediately
-    setReviews((prev) => [review, ...prev]);
-    updateSummary(review.rating, 1);
+    if (result?.error) {
+      setFormError(result.error);
+      return false;
+    }
 
-    // Fire server action in background
-    addProductReview(null, formData).then((result) => {
-      if (result?.error) {
-        // Revert optimistic update
-        setReviews((prev) => prev.filter((r) => r.id !== review.id));
-        updateSummary(review.rating, -1);
-        setFormError(result.error);
-        setFormOpen(true);
-      }
-    });
+    if (result?.review) {
+      setReviews((prev) => [result.review!, ...prev]);
+      updateSummary(result.review.rating, 1);
+    }
+
+    setFormOpen(false);
+    setSubmissionNotice(
+      result?.status === "approved"
+        ? "Thanks. Your review is now live."
+        : result?.verifiedPurchase
+          ? "Thanks. Your verified-purchase review was submitted and is awaiting approval."
+          : "Thanks. Your review was submitted and is awaiting approval.",
+    );
+
+    return true;
   }
 
   return (
@@ -97,6 +91,7 @@ export function ProductReviews({
           canReview={canReview}
           onWriteReview={() => {
             setFormOpen(true);
+            setSubmissionNotice(null);
             trackClient("review_form_opened", { product_id: productId });
           }}
         />
@@ -104,6 +99,14 @@ export function ProductReviews({
 
       <div className="mt-16 lg:col-span-7 lg:col-start-6 lg:mt-0">
         <h3 className="sr-only">Recent reviews</h3>
+        {submissionNotice && (
+          <div
+            data-testid="review-submission-notice"
+            className="border-primary-200 bg-primary-50 text-primary-800 mb-6 rounded-lg border px-4 py-3 text-sm"
+          >
+            {submissionNotice}
+          </div>
+        )}
         <ReviewListClient reviews={reviews} />
 
         {hasMore && (
@@ -129,7 +132,6 @@ export function ProductReviews({
             setFormError(null);
           }}
           onSubmitted={handleReviewSubmitted}
-          customerName={customerName}
           serverError={formError}
         />
       )}
