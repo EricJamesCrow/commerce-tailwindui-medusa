@@ -2,9 +2,13 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { createFindParams } from "@medusajs/medusa/api/utils/validators";
 
 export const GetAdminReviewsSchema = createFindParams();
+const VERIFIED_PURCHASE_FIELDS = ["order_id", "order_line_item_id"] as const;
 
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   const query = req.scope.resolve("query");
+  const fields = Array.from(
+    new Set([...(req.queryConfig.fields ?? []), ...VERIFIED_PURCHASE_FIELDS]),
+  );
 
   const {
     data: rawReviews,
@@ -16,6 +20,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   } = await query.graph({
     entity: "review",
     ...req.queryConfig,
+    fields,
   });
 
   const reviews = rawReviews.map(

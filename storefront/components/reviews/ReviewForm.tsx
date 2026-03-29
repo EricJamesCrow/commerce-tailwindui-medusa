@@ -86,16 +86,21 @@ export function ReviewForm({
       }
     }
 
-    const submitted = await onSubmitted(formData);
-    setIsSubmitting(false);
+    try {
+      const submitted = await onSubmitted(formData);
 
-    if (!submitted) {
-      return;
+      if (!submitted) {
+        return;
+      }
+
+      setRating(0);
+      setSelectedFiles([]);
+      setError(null);
+    } catch {
+      setError("Failed to submit review. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setRating(0);
-    setSelectedFiles([]);
-    setError(null);
   };
 
   const displayRating = hoverRating || rating;
