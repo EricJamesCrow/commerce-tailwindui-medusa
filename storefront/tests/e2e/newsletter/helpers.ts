@@ -117,7 +117,10 @@ function runSql(sql: string): string {
 }
 
 function escapeSqlString(value: string): string {
-  return value.replace(/'/g, "''");
+  return value
+    .replace(/\u0000/g, "")
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "''");
 }
 
 export async function waitForUnsubscribeNonce(

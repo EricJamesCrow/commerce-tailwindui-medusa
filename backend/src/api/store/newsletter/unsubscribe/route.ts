@@ -3,6 +3,7 @@ import { MedusaError } from "@medusajs/framework/utils";
 import { z } from "@medusajs/framework/zod";
 import { NEWSLETTER_MODULE } from "../../../../modules/newsletter";
 import type NewsletterModuleService from "../../../../modules/newsletter/service";
+import { verifyLegacyUnsubscribeToken } from "../../../../utils/newsletter-token";
 import { unsubscribeFromNewsletterWorkflow } from "../../../../workflows/newsletter/unsubscribe-from-newsletter";
 import { UnsubscribeSchema } from "../validators";
 
@@ -19,14 +20,28 @@ export async function POST(req: MedusaRequest<PostBody>, res: MedusaResponse) {
   );
 
   if (!subscriber) {
-    throw new MedusaError(
-      MedusaError.Types.INVALID_DATA,
-      "Invalid or expired unsubscribe token",
-    );
+    const legacyResult = verifyLegacyUnsubscribeToken(token);
+
+    if (!legacyResult) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        "Invalid or expired unsubscribe token",
+      );
+    }
+
+    await unsubscribeFromNewsletterWorkflow(req.scope).run({
+      input: { email: legacyResult.email },
+    });
+
+    res.json({ success: true });
+    return;
   }
 
   await unsubscribeFromNewsletterWorkflow(req.scope).run({
-    input: { subscriber_id: subscriber.id },
+    input: {
+      subscriber_id: subscriber.id,
+      unsubscribe_nonce: token,
+    },
   });
 
   res.json({ success: true });
