@@ -36,6 +36,7 @@ export default class MeilisearchModuleService {
 
     await index.updateFilterableAttributes([
       "collection_titles",
+      "collection_handles",
       "availability",
       "variant_prices",
       "tag_values",
@@ -44,7 +45,8 @@ export default class MeilisearchModuleService {
     await index.updateSortableAttributes([
       "title",
       "created_at",
-      "variant_prices",
+      "min_variant_price",
+      "max_variant_price",
     ]);
   }
 

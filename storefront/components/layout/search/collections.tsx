@@ -4,12 +4,12 @@ import CollectionsList from "./collections-list";
 
 async function CollectionList() {
   const collections = await getCollections();
-  const collectionsWithLinks = collections.map((collection) => ({
+  const collectionsWithHandles = collections.map((collection) => ({
     name: collection.title,
-    href: collection.handle ? `/products/${collection.handle}` : "/products",
+    handle: collection.handle,
   }));
 
-  return <CollectionsList collections={collectionsWithLinks} />;
+  return <CollectionsList collections={collectionsWithHandles} />;
 }
 
 export default function Collections() {
