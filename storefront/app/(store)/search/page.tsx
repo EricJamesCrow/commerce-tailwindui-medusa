@@ -17,6 +17,15 @@ function getFirstParam(
   return Array.isArray(value) ? value[0] : value;
 }
 
+function parsePriceParam(value: string | undefined): number | null {
+  if (!value?.trim()) {
+    return null;
+  }
+
+  const parsedValue = Number(value);
+  return Number.isFinite(parsedValue) ? parsedValue : null;
+}
+
 export default async function SearchPage(props: {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
@@ -35,16 +44,16 @@ export default async function SearchPage(props: {
   const { sortKey, reverse } =
     sorting.find((item) => item.slug === sort) || defaultSort;
 
-  const parsedMinPrice = Number(minPrice);
-  const parsedMaxPrice = Number(maxPrice);
+  const parsedMinPrice = parsePriceParam(minPrice);
+  const parsedMaxPrice = parsePriceParam(maxPrice);
 
   const meilisearchEnabledForRequest = MEILISEARCH_ENABLED;
   const meilisearchResults = meilisearchEnabledForRequest
     ? await searchIndexedProducts(searchValue, {
         availability: availability === "in_stock" ? true : undefined,
         collection: collection || null,
-        minPrice: Number.isFinite(parsedMinPrice) ? parsedMinPrice : null,
-        maxPrice: Number.isFinite(parsedMaxPrice) ? parsedMaxPrice : null,
+        minPrice: parsedMinPrice,
+        maxPrice: parsedMaxPrice,
         sort,
       })
     : null;
