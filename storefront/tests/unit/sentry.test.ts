@@ -27,7 +27,7 @@ describe("resolveStorefrontSentryEnvironment", () => {
     expect(resolveStorefrontSentryEnvironment()).toBe("preview");
   });
 
-  it("falls back to VERCEL_ENV and then NODE_ENV", () => {
+  it("falls back to NEXT_PUBLIC_VERCEL_ENV and then NODE_ENV", () => {
     vi.stubEnv("NEXT_PUBLIC_VERCEL_ENV", "preview");
     expect(resolveStorefrontSentryEnvironment()).toBe("preview");
 
