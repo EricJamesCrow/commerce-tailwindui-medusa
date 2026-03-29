@@ -3,6 +3,196 @@
 > For feature status and project overview, see [README.md](README.md).
 > For in-progress feature details, see [docs/features/](docs/features/).
 
+## Codex Launch Tracks
+
+Use this section when running parallel launch-hardening work in separate Codex threads and separate git worktrees.
+
+If a user says `TODO.md Track 1`, `TODO.md Track 2`, `TODO.md Track 3`, or `TODO.md Track 4`, the agent should:
+
+1. Read this section and execute only the requested track.
+2. Create a clean Graphite branch before repo-tracked edits.
+3. Treat the track as an implementation task, not a planning task.
+4. Stay within the listed ownership boundaries unless blocked.
+5. Run the listed verification before considering the track complete.
+
+### Shared Execution Rules
+
+- Work from a clean worktree so unrelated local changes are not bundled into the branch.
+- Use Graphite for branch creation and submission:
+  - `gt create -a -m "<type>: <track description>"`
+  - `gt submit --stack --no-interactive`
+- Do not modify files owned by another active track unless the user explicitly asks to merge scopes.
+- Update this `TODO.md` section and any relevant feature doc if the track meaningfully changes scope or completion criteria.
+- Before submit, run:
+  - `cd storefront && bun run prettier:check`
+  - `cd backend && bun run prettier:check`
+  - `cd storefront && bun run test:e2e:smoke` with the full stack running
+  - `cr review`
+
+### Track 1: Search Unification
+
+- Goal: make storefront search production-ready by unifying the search results page and Cmd+K palette behind one consistent architecture when Meilisearch is enabled, while preserving Medusa fallback when it is not.
+- Why this is launch-critical:
+  - Current architecture is split between Medusa REST on `/search` and Meilisearch in Cmd+K.
+  - Price facets are not trustworthy until `variant_prices` indexing is fixed.
+- Primary files:
+  - `storefront/app/(store)/search/page.tsx`
+  - `storefront/components/layout/search/collections.tsx`
+  - `storefront/components/layout/search/mobile-filters.tsx`
+  - `storefront/components/layout/search/sort-filter.tsx`
+  - `storefront/components/search-command/use-search.tsx`
+  - `storefront/lib/meilisearch.ts`
+  - `backend/src/workflows/sync-products.ts`
+  - `backend/src/modules/meilisearch/service.ts`
+- Reference backlog/specs:
+  - `TODO.md` → "From PR #32 (Meilisearch Integration)"
+  - `docs/features/search.md`
+  - `docs/superpowers/plans/2026-03-21-meilisearch.md`
+- Required outcomes:
+  - `/search` uses Meilisearch when Meilisearch is enabled.
+  - Cmd+K and `/search` return results from the same source of truth when Meilisearch is enabled.
+  - Facets are integrated into the existing `(store)` layout instead of rendering a second competing search layout.
+  - `variant_prices` are indexed correctly enough for price filtering/sorting to work.
+  - Medusa fallback still works when Meilisearch env vars are absent.
+- Verification:
+  - Manual: verify Cmd+K and `/search?q=...` return consistent product sets.
+  - Manual: verify collection facet, availability facet, and price range work.
+  - Manual: verify store still works with Meilisearch env vars disabled.
+  - Automated: run relevant storefront tests plus smoke suite.
+- Do not pull into this track:
+  - Search-focused alternative layout experiments.
+  - Personalization or AI search work.
+
+### Track 2: Reviews Hardening + Phase 3 Launch Slice
+
+- Goal: fix review trust/safety issues and complete the minimum viable part of Phase 3 needed for launch confidence.
+- Why this is launch-critical:
+  - The backend currently auto-approves reviews, which conflicts with the intended moderation model.
+  - Verified purchase is the most important missing review trust signal.
+- Primary files:
+  - `backend/src/api/store/reviews/route.ts`
+  - `backend/src/api/store/products/[id]/reviews/route.ts`
+  - `backend/src/modules/product-review/service.ts`
+  - `backend/src/workflows/create-review.ts`
+  - `backend/src/admin/routes/reviews/page.tsx`
+  - `storefront/lib/medusa/reviews.ts`
+  - `storefront/components/reviews/ProductReviews.tsx`
+  - `storefront/components/reviews/ReviewForm.tsx`
+- Reference backlog/specs:
+  - `docs/features/product-reviews.md`
+  - `TODO.md` → review-related follow-ups
+- Required outcomes:
+  - Review submission behavior matches the intended product policy.
+  - If moderation is intended, new reviews should default to `pending` and require admin approval.
+  - Verified purchase linkage exists and drives a storefront badge or explicit trust indicator.
+  - Review submission, moderation, and display still work after the change.
+- Preferred scope for tonight:
+  - Do the moderation fix first.
+  - Do verified purchase linking second.
+  - Defer admin full-text review search and review editing unless time remains.
+- Verification:
+  - Manual: submit a review and verify status/default moderation path.
+  - Manual: approve a pending review in admin and verify storefront visibility.
+  - Manual: verify purchased-product review shows verified purchase state if implemented.
+  - Automated: run review E2E coverage plus smoke suite.
+- Do not pull into this track:
+  - General search improvements.
+  - Newsletter/security work unrelated to reviews.
+
+### Track 3: CI / Deploy / Production Gates
+
+- Goal: finish the quality gates and production verification work that reduces launch risk for every other track.
+- Why this is launch-critical:
+  - CI and deploy verification are still partial.
+  - Sentry production env setup is known-bad.
+  - Catalog revalidation needs production-level verification.
+- Primary files:
+  - `.github/workflows/ci.yml`
+  - `backend/package.json`
+  - `backend/.prettierrc`
+  - `backend/.prettierignore`
+  - `storefront/playwright.config.ts`
+  - `storefront/app/api/revalidate/route.ts`
+  - `storefront/lib/medusa/index.ts`
+  - `storefront/next.config.ts`
+  - `backend/medusa-config.ts`
+  - `SETUP.md`
+- Reference backlog/specs:
+  - `TODO.md` → Infrastructure priority items
+  - `docs/superpowers/plans/2026-03-24-ci-cd-quality-gates.md`
+  - `docs/superpowers/plans/2026-03-25-playwright-smoke-ci.md`
+- Required outcomes:
+  - CI runs the intended quality gates consistently.
+  - Playwright smoke coverage is part of the launch path.
+  - Sentry production env/release configuration is corrected and documented.
+  - Catalog revalidation path is verified end-to-end against the real deployment assumptions.
+- Verification:
+  - Manual: trigger CI on the branch and confirm green checks.
+  - Manual: verify a product or collection update reaches `/api/revalidate` and refreshes storefront content.
+  - Manual: confirm production build no longer fails on Sentry project/env config.
+- Do not pull into this track:
+  - Feature work unrelated to release safety.
+  - UI polish work.
+
+### Track 4: Security / Privacy Hardening
+
+- Goal: address the launch-blocking security and privacy issues already identified in the backlog and run a focused audit pass on the highest-risk custom modules.
+- Why this is launch-critical:
+  - Newsletter unsubscribe links currently use a reversible/replayable token pattern.
+  - Invoice, review, and wishlist modules are the highest-risk custom surfaces.
+- Primary files:
+  - `backend/src/api/store/newsletter/`
+  - `backend/src/modules/newsletter/`
+  - `storefront/app/`
+  - `backend/src/modules/invoice/`
+  - `backend/src/modules/product-review/`
+  - `backend/src/modules/wishlist/`
+  - Any directly-related tests/docs touched by the fix
+- Reference backlog/specs:
+  - `TODO.md` → newsletter follow-ups
+  - `TODO.md` → security audits
+- Required outcomes:
+  - Replace the HMAC bearer unsubscribe token with an opaque server-stored nonce.
+  - Strip tokenized unsubscribe params from the browser URL after load if the page still needs to read them client-side.
+  - Run a focused security pass on invoice, review, and wishlist modules and fix any concrete P0/P1 issues found.
+- Verification:
+  - Manual: unsubscribe link works once and does not leak a reusable token in the URL after page load.
+  - Manual: re-subscribe invalidates prior unsubscribe nonce if applicable.
+  - Manual: security review notes are captured in docs or the PR description.
+- Do not pull into this track:
+  - Broad refactors with no concrete launch-risk reduction.
+
+### Suggested Parallelization
+
+- Safe to run in parallel:
+  - Track 1 with Track 2
+  - Track 1 with Track 3
+  - Track 2 with Track 3
+  - Track 4 with any other track, as long as file ownership stays clear
+- Use care if both tracks need the same files:
+  - Track 1 owns search layout and Meilisearch files
+  - Track 2 owns review routes, review module, and review storefront/admin UI
+  - Track 3 owns CI, deploy config, and release verification files
+  - Track 4 owns newsletter/security-sensitive module fixes unless a narrower owner is explicitly chosen
+
+### Recommended Order
+
+1. Start Track 3 immediately so CI and smoke coverage protect the other tracks.
+2. Start Track 2 in parallel because review trust is the sharpest user-facing launch risk.
+3. Start Track 1 once the quality gates are in place.
+4. Run Track 4 as a focused audit/fix pass while the other tracks are in flight.
+
+### Explicit Deferrals For Launch
+
+Do not let these block the client fork tonight unless the user explicitly reprioritizes them:
+
+- Re-order re-enable
+- Promo code UI
+- Express checkout completion
+- Search-focused alternative layout experiments
+- React Compiler optimization pass
+- General UI consistency cleanup
+
 ## Code Review Follow-ups
 
 ### From PR #8
