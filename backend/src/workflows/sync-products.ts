@@ -4,6 +4,7 @@ import {
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk";
 import { useQueryGraphStep } from "@medusajs/medusa/core-flows";
+import { QueryContext } from "@medusajs/framework/utils";
 import { syncProductsStep, SyncProductsStepInput } from "./steps/sync-products";
 import { deleteProductsFromMeilisearchStep } from "./steps/delete-products-from-meilisearch";
 
@@ -11,15 +12,26 @@ type SyncProductsWorkflowInput = {
   filters?: Record<string, unknown>;
 };
 
-type QueriedPrice = {
-  amount?: number | null;
+type QueriedCalculatedPrice = {
+  calculated_amount?: number | null;
   currency_code?: string | null;
 };
 
 type QueriedVariant = {
-  prices?: QueriedPrice[] | null;
+  calculated_price?: QueriedCalculatedPrice | null;
   inventory_quantity?: number | null;
   manage_inventory?: boolean | null;
+};
+
+const preferredRegionId = process.env.NEXT_PUBLIC_DEFAULT_REGION_ID;
+const pricingContext = {
+  variants: {
+    calculated_price: QueryContext(
+      preferredRegionId
+        ? { region_id: preferredRegionId }
+        : { currency_code: "usd" },
+    ),
+  },
 };
 
 export const syncProductsWorkflow = createWorkflow(
@@ -37,13 +49,15 @@ export const syncProductsWorkflow = createWorkflow(
         "created_at",
         "updated_at",
         "collection.title",
+        "collection.handle",
         "tags.value",
-        "variants.prices.*",
+        "variants.calculated_price.*",
         "variants.inventory_quantity",
         "variants.manage_inventory",
       ],
+      context: pricingContext,
       filters: filters || {},
-    });
+    }).config({ name: "query-products-for-meilisearch" });
 
     const { publishedProducts, unpublishedIds } = transform(
       { products },
@@ -55,31 +69,35 @@ export const syncProductsWorkflow = createWorkflow(
           if (product.status === "published") {
             const variants = (product.variants || []) as QueriedVariant[];
             const collection_titles: string[] = [];
+            const collection_handles: string[] = [];
             if (product.collection?.title) {
               collection_titles.push(product.collection.title);
+            }
+            if (product.collection?.handle) {
+              collection_handles.push(product.collection.handle);
             }
 
             const tag_values = (product.tags || [])
               .map((t: { value?: string }) => t.value)
               .filter(Boolean) as string[];
 
-            // Only index USD prices (default store currency) to avoid
-            // leaking internal pricing from other regions/price lists
             const variant_prices: number[] = [];
             for (const variant of variants) {
-              for (const price of variant.prices || []) {
-                if (
-                  typeof price.amount === "number" &&
-                  price.currency_code === "usd"
-                ) {
-                  variant_prices.push(price.amount);
-                }
+              const amount = variant.calculated_price?.calculated_amount;
+              if (typeof amount === "number") {
+                variant_prices.push(amount);
               }
             }
 
             const availability = variants.some(
               (v) => !v.manage_inventory || (v.inventory_quantity ?? 0) > 0,
             );
+            const minVariantPrice = variant_prices.length
+              ? Math.min(...variant_prices)
+              : 0;
+            const maxVariantPrice = variant_prices.length
+              ? Math.max(...variant_prices)
+              : 0;
 
             publishedProducts.push({
               id: product.id,
@@ -88,8 +106,11 @@ export const syncProductsWorkflow = createWorkflow(
               handle: product.handle,
               thumbnail: product.thumbnail ?? null,
               collection_titles,
+              collection_handles,
               tag_values,
               variant_prices,
+              min_variant_price: minVariantPrice,
+              max_variant_price: maxVariantPrice,
               availability,
               created_at: product.created_at,
               updated_at: product.updated_at,

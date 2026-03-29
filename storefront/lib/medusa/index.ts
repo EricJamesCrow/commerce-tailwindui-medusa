@@ -47,6 +47,7 @@ type ProductFetchQuery = {
   region_id: string;
   fields: string;
   limit: number;
+  handle?: string | string[];
   q?: string;
   order?: string;
   collection_id?: string[];
@@ -245,6 +246,65 @@ export async function getProducts({
   limit?: number;
 }): Promise<Product[]> {
   return getProductsCached({ query, reverse, sortKey, limit });
+}
+
+export async function getProductsByHandles(
+  handles: string[],
+): Promise<Product[]> {
+  const uniqueHandles = [...new Set(handles.filter(Boolean))];
+  if (uniqueHandles.length === 0) {
+    return [];
+  }
+
+  const orderProducts = (products: Product[]) => {
+    const productMap = new Map(
+      products.map((product) => [product.handle, product]),
+    );
+    return uniqueHandles
+      .map((handle) => productMap.get(handle))
+      .filter((product): product is Product => Boolean(product));
+  };
+
+  try {
+    const region = await getDefaultRegion();
+    const { products } = await sdk.client.fetch<{
+      products: HttpTypes.StoreProduct[];
+    }>("/store/products", {
+      method: "GET",
+      query: {
+        handle: uniqueHandles,
+        region_id: region.id,
+        fields: PRODUCT_FIELDS,
+        limit: uniqueHandles.length,
+      },
+      cache: "force-cache",
+      next: { tags: [TAGS.products] },
+    });
+
+    const transformed = products
+      .filter((product) => !isHiddenProduct(product))
+      .map(transformProduct);
+
+    if (transformed.length > 0) {
+      return orderProducts(transformed);
+    }
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: {
+        action: "get_products_by_handles",
+        handle_count: String(uniqueHandles.length),
+      },
+      level: "warning",
+    });
+  }
+
+  const fallbackProducts = await Promise.all(
+    uniqueHandles.map((handle) => getProduct(handle)),
+  );
+
+  return orderProducts(
+    fallbackProducts.filter((product): product is Product => Boolean(product)),
+  );
 }
 
 const getProductRecommendationsCached = unstable_cache(
