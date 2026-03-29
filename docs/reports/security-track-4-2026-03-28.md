@@ -13,7 +13,7 @@ Date: 2026-03-28
 
 ### Fixed
 
-1. Newsletter unsubscribe links used a reversible HMAC bearer token that exposed a reusable secret-bearing value in the browser URL and analytics pipelines.
+1. Newsletter unsubscribe links used an HMAC-signed bearer token that exposed a reusable token value in the browser URL and analytics pipelines.
    - Replaced with a server-stored opaque `unsubscribe_nonce` on the subscriber record.
    - Nonces are rotated when welcome/welcome-back emails are issued.
    - Nonces are cleared on unsubscribe and on reactivation before a new welcome email is sent.

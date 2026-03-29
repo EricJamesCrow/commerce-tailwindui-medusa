@@ -67,6 +67,7 @@ All other variables have working defaults for local development. See `backend/.e
 | `MEDUSA_BACKEND_URL`             | Prod only        | —                                             | Public backend URL (admin UI build)                   |
 | `ADMIN_ORDER_EMAILS`             | No               | —                                             | Comma-separated emails for order alerts               |
 | `CART_RECOVERY_SECRET`           | If cart recovery | —                                             | HMAC secret for abandoned cart tokens                 |
+| `NEWSLETTER_HMAC_SECRET`         | Migration only   | —                                             | Temporary legacy newsletter unsubscribe token bridge  |
 | `S3_FILE_URL`                    | No               | —                                             | R2 public base URL (e.g. `https://pub-abc123.r2.dev`) |
 | `S3_ACCESS_KEY_ID`               | No               | —                                             | Cloudflare R2 API token ID                            |
 | `S3_SECRET_ACCESS_KEY`           | No               | —                                             | Cloudflare R2 API token secret                        |
