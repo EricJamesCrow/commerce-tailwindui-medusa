@@ -16,6 +16,8 @@ import type { Product } from "lib/types";
 import { transformProductsToRelatedProducts } from "lib/utils";
 import { Suspense } from "react";
 
+const BUILD_PLACEHOLDER_HANDLE = "__build-placeholder__";
+
 export async function generateMetadata(props: {
   params: Promise<{ handle: string }>;
 }): Promise<Metadata> {
@@ -59,9 +61,13 @@ export async function generateMetadata(props: {
 export async function generateStaticParams() {
   try {
     const products = await getProducts({});
+    if (products.length === 0) {
+      return [{ handle: BUILD_PLACEHOLDER_HANDLE }];
+    }
+
     return products.map((product) => ({ handle: product.handle }));
   } catch {
-    return [];
+    return [{ handle: BUILD_PLACEHOLDER_HANDLE }];
   }
 }
 

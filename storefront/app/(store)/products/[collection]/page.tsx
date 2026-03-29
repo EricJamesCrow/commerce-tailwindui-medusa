@@ -13,12 +13,22 @@ import {
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+const BUILD_PLACEHOLDER_COLLECTION = "__build-placeholder__";
+
 export async function generateStaticParams() {
   try {
     const collections = await getCollections();
-    return collections.map((collection) => ({ collection: collection.handle }));
+    const dynamicCollections = collections
+      .filter((collection) => collection.handle)
+      .map((collection) => ({ collection: collection.handle }));
+
+    if (dynamicCollections.length === 0) {
+      return [{ collection: BUILD_PLACEHOLDER_COLLECTION }];
+    }
+
+    return dynamicCollections;
   } catch {
-    return [];
+    return [{ collection: BUILD_PLACEHOLDER_COLLECTION }];
   }
 }
 
