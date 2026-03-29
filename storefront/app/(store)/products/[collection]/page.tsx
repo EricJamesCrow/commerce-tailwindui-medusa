@@ -36,6 +36,8 @@ export async function generateMetadata(props: {
   params: Promise<{ collection: string }>;
 }): Promise<Metadata> {
   const params = await props.params;
+  if (params.collection === BUILD_PLACEHOLDER_COLLECTION) return notFound();
+
   const collection = await getCollection(params.collection);
 
   if (!collection) return notFound();
@@ -56,6 +58,8 @@ export default async function ProductsCollectionPage(props: {
 }) {
   const searchParams = await props.searchParams;
   const params = await props.params;
+  if (params.collection === BUILD_PLACEHOLDER_COLLECTION) return notFound();
+
   const { sort } = (searchParams || {}) as { [key: string]: string };
   const { sortKey, reverse } =
     sorting.find((item) => item.slug === sort) || defaultSort;

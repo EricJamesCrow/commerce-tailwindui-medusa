@@ -22,6 +22,8 @@ export async function generateMetadata(props: {
   params: Promise<{ handle: string }>;
 }): Promise<Metadata> {
   const params = await props.params;
+  if (params.handle === BUILD_PLACEHOLDER_HANDLE) return notFound();
+
   const product = await getProduct(params.handle);
 
   if (!product) return notFound();
@@ -75,6 +77,8 @@ export default async function ProductPage(props: {
   params: Promise<{ handle: string }>;
 }) {
   const params = await props.params;
+  if (params.handle === BUILD_PLACEHOLDER_HANDLE) return notFound();
+
   const productPromise = getProduct(params.handle);
   const product = await productPromise;
 
