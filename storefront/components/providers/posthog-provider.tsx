@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import posthog from "posthog-js";
 import { PostHogProvider as PHProvider } from "posthog-js/react";
 import { setPostHogClient } from "lib/analytics";
+import { sanitizeEnvValue } from "lib/env";
 
 type Props = {
   children: React.ReactNode;
@@ -17,13 +18,14 @@ export function PostHogProvider({
   bootstrapFlags,
 }: Props) {
   const prevDistinctId = useRef<string | null>(null);
+  const key = sanitizeEnvValue(process.env.NEXT_PUBLIC_POSTHOG_KEY);
+  const apiHost = sanitizeEnvValue(process.env.NEXT_PUBLIC_POSTHOG_HOST);
 
   useEffect(() => {
-    const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
     if (!key) return;
 
     posthog.init(key, {
-      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "/api/ph",
+      api_host: apiHost || "/api/ph",
       defaults: "2026-01-30",
       autocapture: false,
       capture_pageview: true,
@@ -42,11 +44,11 @@ export function PostHogProvider({
 
     setPostHogClient(posthog);
     prevDistinctId.current = bootstrapDistinctId;
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [apiHost, bootstrapDistinctId, bootstrapFlags, key]);
 
   // Handle identity transitions (login/logout)
   useEffect(() => {
-    if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return;
+    if (!key) return;
     if (prevDistinctId.current === bootstrapDistinctId) return;
 
     const wasAuthenticated = prevDistinctId.current?.startsWith("cus_");
@@ -59,7 +61,7 @@ export function PostHogProvider({
     }
 
     prevDistinctId.current = bootstrapDistinctId;
-  }, [bootstrapDistinctId]);
+  }, [bootstrapDistinctId, key]);
 
   return <PHProvider client={posthog}>{children}</PHProvider>;
 }

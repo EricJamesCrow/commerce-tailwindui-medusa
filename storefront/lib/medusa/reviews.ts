@@ -3,7 +3,7 @@
 import { sdk } from "lib/medusa";
 import { TAGS } from "lib/constants";
 import type { ProductReviews, Review } from "lib/types";
-import { cacheLife, cacheTag, revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { getAuthHeaders } from "lib/medusa/cookies";
 import { retrieveCustomer } from "lib/medusa/customer";
 import { trackServer } from "lib/analytics-server";
@@ -12,6 +12,7 @@ import * as Sentry from "@sentry/nextjs";
 export type ReviewActionResult = { error?: string; success?: boolean } | null;
 
 type ReviewImageInput = { url: string; sort_order: number };
+const REVIEWS_REVALIDATE_SECONDS = 60 * 60 * 24;
 
 function parseImagesField(json: string | null): ReviewImageInput[] {
   if (!json) return [];
@@ -23,62 +24,79 @@ function parseImagesField(json: string | null): ReviewImageInput[] {
   }
 }
 
-export async function getProductReviews(
-  productId: string,
-  { limit = 10, offset = 0 }: { limit?: number; offset?: number } = {},
-): Promise<ProductReviews> {
-  "use cache";
-  cacheTag(TAGS.reviews);
-  cacheLife("days");
-
-  const emptyResult: ProductReviews = {
+function createEmptyProductReviews(): ProductReviews {
+  return {
     reviews: [],
     averageRating: 0,
     count: 0,
     ratingDistribution: [5, 4, 3, 2, 1].map((rating) => ({ rating, count: 0 })),
   };
+}
 
-  let response;
-  try {
-    response = await sdk.client.fetch<{
-      reviews: Review[];
-      average_rating: number;
-      count: number;
-      limit: number;
-      offset: number;
-      rating_distribution: { rating: number; count: number }[];
-    }>(`/store/products/${productId}/reviews`, {
-      method: "GET",
-      query: {
-        limit,
-        offset,
-        order: "-created_at",
-      },
-    });
-  } catch (error) {
-    Sentry.captureException(error, {
-      tags: { action: "get_product_reviews", product_id: productId },
-      level: "warning",
-    });
-    console.error("[reviews] Failed to fetch product reviews:", error);
-    return emptyResult;
-  }
+// Parameterized review loaders use unstable_cache because Next 16 prerendering
+// has timed out on this route when "use cache" is used directly.
+const getProductReviewsCached = unstable_cache(
+  async (
+    productId: string,
+    limit: number,
+    offset: number,
+  ): Promise<ProductReviews> => {
+    let response;
+    try {
+      response = await sdk.client.fetch<{
+        reviews: Review[];
+        average_rating: number;
+        count: number;
+        limit: number;
+        offset: number;
+        rating_distribution: { rating: number; count: number }[];
+      }>(`/store/products/${productId}/reviews`, {
+        method: "GET",
+        query: {
+          limit,
+          offset,
+          order: "-created_at",
+        },
+        cache: "force-cache",
+        next: { tags: [TAGS.reviews] },
+      });
+    } catch (error) {
+      Sentry.captureException(error, {
+        tags: { action: "get_product_reviews", product_id: productId },
+        level: "warning",
+      });
+      console.error("[reviews] Failed to fetch product reviews:", error);
+      return createEmptyProductReviews();
+    }
 
-  // Build full 1-5 distribution (fill missing ratings with 0)
-  const distributionMap = new Map(
-    response.rating_distribution.map((d) => [d.rating, d.count]),
-  );
-  const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => ({
-    rating,
-    count: distributionMap.get(rating) ?? 0,
-  }));
+    // Build full 1-5 distribution (fill missing ratings with 0)
+    const distributionMap = new Map(
+      response.rating_distribution.map((d) => [d.rating, d.count]),
+    );
+    const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => ({
+      rating,
+      count: distributionMap.get(rating) ?? 0,
+    }));
 
-  return {
-    reviews: response.reviews,
-    averageRating: response.average_rating,
-    count: response.count,
-    ratingDistribution,
-  };
+    return {
+      reviews: response.reviews,
+      averageRating: response.average_rating,
+      count: response.count,
+      ratingDistribution,
+    };
+  },
+  ["medusa-product-reviews"],
+  {
+    tags: [TAGS.reviews],
+    revalidate: REVIEWS_REVALIDATE_SECONDS,
+  },
+);
+
+export async function getProductReviews(
+  productId: string,
+  { limit = 10, offset = 0 }: { limit?: number; offset?: number } = {},
+): Promise<ProductReviews> {
+  return getProductReviewsCached(productId, limit, offset);
 }
 
 export async function getReviewerName(): Promise<{

@@ -13,12 +13,22 @@ import {
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+const BUILD_PLACEHOLDER_COLLECTION = "__build-placeholder__";
+
 export async function generateStaticParams() {
   try {
     const collections = await getCollections();
-    return collections.map((collection) => ({ collection: collection.handle }));
+    const dynamicCollections = collections
+      .filter((collection) => collection.handle)
+      .map((collection) => ({ collection: collection.handle }));
+
+    if (dynamicCollections.length === 0) {
+      return [{ collection: BUILD_PLACEHOLDER_COLLECTION }];
+    }
+
+    return dynamicCollections;
   } catch {
-    return [];
+    return [{ collection: BUILD_PLACEHOLDER_COLLECTION }];
   }
 }
 
@@ -26,6 +36,8 @@ export async function generateMetadata(props: {
   params: Promise<{ collection: string }>;
 }): Promise<Metadata> {
   const params = await props.params;
+  if (params.collection === BUILD_PLACEHOLDER_COLLECTION) return notFound();
+
   const collection = await getCollection(params.collection);
 
   if (!collection) return notFound();
@@ -46,6 +58,8 @@ export default async function ProductsCollectionPage(props: {
 }) {
   const searchParams = await props.searchParams;
   const params = await props.params;
+  if (params.collection === BUILD_PLACEHOLDER_COLLECTION) return notFound();
+
   const { sort } = (searchParams || {}) as { [key: string]: string };
   const { sortKey, reverse } =
     sorting.find((item) => item.slug === sort) || defaultSort;

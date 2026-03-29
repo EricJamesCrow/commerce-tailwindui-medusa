@@ -16,10 +16,14 @@ import type { Product } from "lib/types";
 import { transformProductsToRelatedProducts } from "lib/utils";
 import { Suspense } from "react";
 
+const BUILD_PLACEHOLDER_HANDLE = "__build-placeholder__";
+
 export async function generateMetadata(props: {
   params: Promise<{ handle: string }>;
 }): Promise<Metadata> {
   const params = await props.params;
+  if (params.handle === BUILD_PLACEHOLDER_HANDLE) return notFound();
+
   const product = await getProduct(params.handle);
 
   if (!product) return notFound();
@@ -59,9 +63,13 @@ export async function generateMetadata(props: {
 export async function generateStaticParams() {
   try {
     const products = await getProducts({});
+    if (products.length === 0) {
+      return [{ handle: BUILD_PLACEHOLDER_HANDLE }];
+    }
+
     return products.map((product) => ({ handle: product.handle }));
   } catch {
-    return [];
+    return [{ handle: BUILD_PLACEHOLDER_HANDLE }];
   }
 }
 
@@ -69,12 +77,13 @@ export default async function ProductPage(props: {
   params: Promise<{ handle: string }>;
 }) {
   const params = await props.params;
+  if (params.handle === BUILD_PLACEHOLDER_HANDLE) return notFound();
+
   const productPromise = getProduct(params.handle);
   const product = await productPromise;
 
   if (!product) return notFound();
 
-  const reviewsPromise = getProductReviews(product.id);
   const breadcrumbJsonLd = buildBreadcrumbJsonLd([
     { name: "Home", path: "/" },
     { name: "Products", path: "/products" },
