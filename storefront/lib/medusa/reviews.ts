@@ -99,18 +99,6 @@ export async function getProductReviews(
   return getProductReviewsCached(productId, limit, offset);
 }
 
-export async function getReviewerName(): Promise<{
-  firstName: string;
-  lastName: string;
-} | null> {
-  const customer = await retrieveCustomer();
-  if (!customer) return null;
-  return {
-    firstName: customer.first_name || "Customer",
-    lastName: customer.last_name || "",
-  };
-}
-
 export async function addProductReview(
   prevState: ReviewActionResult,
   formData: FormData,

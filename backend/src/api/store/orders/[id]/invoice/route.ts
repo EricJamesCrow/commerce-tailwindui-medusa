@@ -14,6 +14,13 @@ export const GET = async (
   const orderId = req.params.id;
   const customerId = req.auth_context?.actor_id;
 
+  if (!/^order_[a-zA-Z0-9]+$/.test(orderId)) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      "Invalid order ID format",
+    );
+  }
+
   if (!customerId) {
     throw new MedusaError(
       MedusaError.Types.NOT_ALLOWED,

@@ -12,17 +12,17 @@ import { NEWSLETTER_MODULE } from "../../modules/newsletter";
 import NewsletterModuleService from "../../modules/newsletter/service";
 
 type UnsubscribeInput = {
-  email: string;
+  subscriber_id: string;
 };
 
 const unsubscribeStep = createStep(
   "unsubscribe-newsletter",
-  async (input: { email: string }, { container }) => {
+  async (input: { subscriber_id: string }, { container }) => {
     const newsletterService: NewsletterModuleService =
       container.resolve(NEWSLETTER_MODULE);
 
     const [subscriber] = await newsletterService.listSubscribers(
-      { email: input.email.toLowerCase() },
+      { id: input.subscriber_id },
       { take: 1 },
     );
 
@@ -38,10 +38,12 @@ const unsubscribeStep = createStep(
     }
 
     const previousStatus = subscriber.status;
+    const previousNonce = subscriber.unsubscribe_nonce;
 
     const updated = await newsletterService.updateSubscribers({
       id: subscriber.id,
       status: "unsubscribed",
+      unsubscribe_nonce: null,
       unsubscribed_at: new Date(),
     });
 
@@ -50,6 +52,7 @@ const unsubscribeStep = createStep(
       {
         id: subscriber.id,
         previousStatus,
+        previousNonce,
       },
     );
   },
@@ -62,6 +65,7 @@ const unsubscribeStep = createStep(
     await newsletterService.updateSubscribers({
       id: compensationData.id,
       status: compensationData.previousStatus,
+      unsubscribe_nonce: compensationData.previousNonce,
       unsubscribed_at: null,
     });
   },
@@ -70,7 +74,7 @@ const unsubscribeStep = createStep(
 export const unsubscribeFromNewsletterWorkflow = createWorkflow(
   "unsubscribe-from-newsletter",
   function (input: UnsubscribeInput) {
-    const result = unsubscribeStep({ email: input.email });
+    const result = unsubscribeStep({ subscriber_id: input.subscriber_id });
 
     when(result, (data) => data.wasChanged).then(() => {
       const eventData = transform({ result }, (data) => ({

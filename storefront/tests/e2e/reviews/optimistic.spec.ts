@@ -1,8 +1,8 @@
 import { test, expect } from "../fixtures/review.fixture";
 import * as sel from "../helpers/selectors";
 
-test.describe("Optimistic Review Submission", () => {
-  test("review appears immediately in list after submission", async ({
+test.describe("Moderated Review Submission", () => {
+  test("shows a moderation message instead of publishing immediately", async ({
     authedPage: page,
     testProductHandle,
   }) => {
@@ -30,19 +30,14 @@ test.describe("Optimistic Review Submission", () => {
       timeout: 5_000,
     });
 
-    // Review should appear in the list without refreshing
-    // Use .first() since accumulated test data may leave multiple matching elements
     await expect(
-      page
-        .locator(sel.REVIEW_CONTENT_TEXT)
-        .filter({
-          hasText: "This review should appear instantly",
-        })
-        .first(),
-    ).toBeVisible({ timeout: 5_000 });
+      page.getByText(
+        "Thanks for your review. It has been submitted for moderation and will appear once approved.",
+      ),
+    ).toBeVisible({ timeout: 10_000 });
   });
 
-  test("summary count updates immediately after submission", async ({
+  test("summary count does not update before approval", async ({
     authedPage: page,
     testProductHandle,
   }) => {
@@ -75,15 +70,13 @@ test.describe("Optimistic Review Submission", () => {
       timeout: 5_000,
     });
 
-    // Count should increment by 1
-    const expectedCount = beforeCount + 1;
     await expect(countText).toHaveText(
-      new RegExp(`Based on ${expectedCount} review`),
-      { timeout: 5_000 },
+      new RegExp(`Based on ${beforeCount} review`),
+      { timeout: 10_000 },
     );
   });
 
-  test("review persists in list after dialog closes", async ({
+  test("pending review does not appear in the public list after dialog closes", async ({
     authedPage: page,
     testProductHandle,
   }) => {
@@ -110,10 +103,9 @@ test.describe("Optimistic Review Submission", () => {
       timeout: 5_000,
     });
 
-    // Scroll to reviews section and verify the review is still visible
+    // Scroll to reviews section and verify the review is still hidden until approval
     await page.locator(sel.REVIEW_SECTION_HEADING).scrollIntoViewIfNeeded();
 
-    // Use .first() since accumulated test data may leave multiple matching elements
     await expect(
       page
         .locator(sel.REVIEW_CONTENT_TEXT)
@@ -121,6 +113,6 @@ test.describe("Optimistic Review Submission", () => {
           hasText: "This review should persist after the dialog closes",
         })
         .first(),
-    ).toBeVisible({ timeout: 5_000 });
+    ).toHaveCount(0);
   });
 });

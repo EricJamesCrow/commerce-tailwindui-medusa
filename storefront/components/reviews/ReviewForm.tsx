@@ -10,21 +10,18 @@ import { XMarkIcon, StarIcon } from "@heroicons/react/24/outline";
 import { StarIcon as StarIconSolid } from "@heroicons/react/20/solid";
 import clsx from "clsx";
 import { useState } from "react";
-import type { Review } from "lib/types";
 
 export function ReviewForm({
   productId,
   open,
   onClose,
   onSubmitted,
-  customerName,
   serverError,
 }: {
   productId: string;
   open: boolean;
   onClose: () => void;
-  onSubmitted: (review: Review, formData: FormData) => void;
-  customerName: { firstName: string; lastName: string } | null;
+  onSubmitted: (formData: FormData) => void;
   serverError?: string | null;
 }) {
   const [rating, setRating] = useState(0);
@@ -77,26 +74,6 @@ export function ReviewForm({
       }
     }
 
-    // Build optimistic Review object
-    const title = (formData.get("title") as string)?.trim() || "";
-    const content = (formData.get("content") as string)?.trim() || "";
-
-    const optimisticReview: Review = {
-      id: `optimistic_${Date.now()}`,
-      title,
-      content,
-      rating,
-      first_name: customerName?.firstName || "You",
-      last_name: customerName?.lastName || "",
-      created_at: new Date().toISOString(),
-      images: uploadedImages.map((img, i) => ({
-        id: `optimistic_img_${i}`,
-        url: img.url,
-        sort_order: img.sort_order,
-      })),
-      response: null,
-    };
-
     setIsSubmitting(false);
 
     // Reset form state for next time
@@ -104,8 +81,7 @@ export function ReviewForm({
     setSelectedFiles([]);
     setError(null);
 
-    // Hand off to parent — parent handles optimistic update + server action
-    onSubmitted(optimisticReview, formData);
+    onSubmitted(formData);
   };
 
   const displayRating = hoverRating || rating;

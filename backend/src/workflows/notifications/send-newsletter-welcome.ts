@@ -6,8 +6,9 @@ import {
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk";
 import { sendNotificationsStep } from "@medusajs/medusa/core-flows";
+import { NEWSLETTER_MODULE } from "../../modules/newsletter";
+import type NewsletterModuleService from "../../modules/newsletter/service";
 import { EmailTemplates } from "../../modules/resend/templates/template-registry";
-import { signUnsubscribeToken } from "../../utils/newsletter-token";
 import { resolveStorefrontUrl } from "../../subscribers/_helpers/resolve-urls";
 
 type SendWelcomeInput = {
@@ -18,14 +19,22 @@ type SendWelcomeInput = {
 
 const buildWelcomeNotificationStep = createStep(
   "build-newsletter-welcome-notification",
-  async (input: SendWelcomeInput) => {
+  async (input: SendWelcomeInput, { container }) => {
     const storefrontUrl = resolveStorefrontUrl();
     if (!storefrontUrl) {
       return new StepResponse(null);
     }
 
-    const token = signUnsubscribeToken(input.email);
-    const unsubscribeUrl = `${storefrontUrl}/newsletter/unsubscribe?token=${token}`;
+    const newsletterService: NewsletterModuleService =
+      container.resolve(NEWSLETTER_MODULE);
+    const unsubscribeNonce = newsletterService.generateUnsubscribeNonce();
+
+    await newsletterService.updateSubscribers({
+      id: input.subscriber_id,
+      unsubscribe_nonce: unsubscribeNonce,
+    });
+
+    const unsubscribeUrl = `${storefrontUrl}/newsletter/unsubscribe?token=${unsubscribeNonce}`;
 
     return new StepResponse({
       to: input.email,

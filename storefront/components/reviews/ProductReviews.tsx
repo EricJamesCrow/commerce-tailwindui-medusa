@@ -1,16 +1,12 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { ReviewSummary } from "components/reviews/ReviewSummary";
 import { ReviewListClient } from "components/reviews/ReviewListClient";
 import { ReviewForm } from "components/reviews/ReviewForm";
 import { trackClient } from "lib/analytics";
 import type { ProductReviews as ProductReviewsType, Review } from "lib/types";
-import {
-  addProductReview,
-  getProductReviews,
-  getReviewerName,
-} from "lib/medusa/reviews";
+import { addProductReview, getProductReviews } from "lib/medusa/reviews";
 
 export function ProductReviews({
   productId,
@@ -23,21 +19,13 @@ export function ProductReviews({
 }) {
   const [formOpen, setFormOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [formMessage, setFormMessage] = useState<string | null>(null);
   const [reviews, setReviews] = useState<Review[]>(initialData.reviews);
   const [summaryData, setSummaryData] = useState(initialData);
-  const [customerName, setCustomerName] = useState<{
-    firstName: string;
-    lastName: string;
-  } | null>(null);
   const [hasMore, setHasMore] = useState(
     initialData.count > initialData.reviews.length,
   );
   const [isLoadingMore, startLoadMore] = useTransition();
-
-  // Fetch customer name on mount (outside "use cache" scope)
-  useEffect(() => {
-    getReviewerName().then(setCustomerName);
-  }, []);
 
   function loadMore() {
     startLoadMore(async () => {
@@ -50,42 +38,21 @@ export function ProductReviews({
     });
   }
 
-  function updateSummary(rating: number, delta: 1 | -1) {
-    setSummaryData((prev) => {
-      const newCount = prev.count + delta;
-      const newAvg =
-        newCount > 0
-          ? (prev.averageRating * prev.count + rating * delta) / newCount
-          : 0;
-      const newDist = prev.ratingDistribution.map((d) =>
-        d.rating === rating ? { ...d, count: d.count + delta } : d,
-      );
-      return {
-        ...prev,
-        count: newCount,
-        averageRating: newAvg,
-        ratingDistribution: newDist,
-      };
-    });
-  }
-
-  function handleReviewSubmitted(review: Review, formData: FormData) {
+  function handleReviewSubmitted(formData: FormData) {
     setFormOpen(false);
     setFormError(null);
+    setFormMessage(null);
 
-    // Optimistic: update state immediately
-    setReviews((prev) => [review, ...prev]);
-    updateSummary(review.rating, 1);
-
-    // Fire server action in background
     addProductReview(null, formData).then((result) => {
       if (result?.error) {
-        // Revert optimistic update
-        setReviews((prev) => prev.filter((r) => r.id !== review.id));
-        updateSummary(review.rating, -1);
         setFormError(result.error);
         setFormOpen(true);
+        return;
       }
+
+      setFormMessage(
+        "Thanks for your review. It has been submitted for moderation and will appear once approved.",
+      );
     });
   }
 
@@ -104,6 +71,11 @@ export function ProductReviews({
 
       <div className="mt-16 lg:col-span-7 lg:col-start-6 lg:mt-0">
         <h3 className="sr-only">Recent reviews</h3>
+        {formMessage && (
+          <p className="mb-6 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+            {formMessage}
+          </p>
+        )}
         <ReviewListClient reviews={reviews} />
 
         {hasMore && (
@@ -129,7 +101,6 @@ export function ProductReviews({
             setFormError(null);
           }}
           onSubmitted={handleReviewSubmitted}
-          customerName={customerName}
           serverError={formError}
         />
       )}

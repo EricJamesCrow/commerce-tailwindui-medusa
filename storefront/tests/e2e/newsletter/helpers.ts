@@ -1,4 +1,4 @@
-import { createHmac } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import {
   mkdirSync,
   readFileSync,
@@ -10,8 +10,10 @@ import { resolve } from "node:path";
 import type { Page } from "@playwright/test";
 import { BACKEND_URL, PUBLISHABLE_KEY } from "../fixtures/api.fixture";
 
-const TOKEN_EXPIRY_SECONDS = 30 * 24 * 60 * 60;
-const BACKEND_ENV_PATH = resolve(__dirname, "../../../../backend/.env");
+const DATABASE_URL =
+  process.env.DATABASE_URL || "postgres://localhost/medusa_db";
+const PSQL =
+  process.env.PSQL_PATH || "/opt/homebrew/opt/postgresql@17/bin/psql";
 const NEWSLETTER_RATE_LIMIT_DIR = resolve(
   process.cwd(),
   ".playwright-newsletter-rate-limit",
@@ -27,43 +29,6 @@ const NEWSLETTER_RATE_LIMIT_STATE_PATH = resolve(
 const NEWSLETTER_REQUEST_INTERVAL_MS = 13_000;
 const LOCK_RETRY_MS = 100;
 const LOCK_STALE_MS = 30_000;
-
-function parseEnvValue(content: string, key: string): string | null {
-  for (const rawLine of content.split(/\r?\n/)) {
-    const line = rawLine.trim();
-    if (!line || line.startsWith("#")) continue;
-
-    const separator = line.indexOf("=");
-    if (separator === -1) continue;
-
-    const currentKey = line.slice(0, separator).trim();
-    if (currentKey !== key) continue;
-
-    return line
-      .slice(separator + 1)
-      .trim()
-      .replace(/^["']|["']$/g, "");
-  }
-
-  return null;
-}
-
-function getNewsletterSecret(): string {
-  if (process.env.NEWSLETTER_HMAC_SECRET) {
-    return process.env.NEWSLETTER_HMAC_SECRET;
-  }
-
-  const envFile = readFileSync(BACKEND_ENV_PATH, "utf8");
-  const secret = parseEnvValue(envFile, "NEWSLETTER_HMAC_SECRET");
-
-  if (!secret) {
-    throw new Error(
-      `NEWSLETTER_HMAC_SECRET was not found in process.env or ${BACKEND_ENV_PATH}`,
-    );
-  }
-
-  return secret;
-}
 
 function sanitizeEmailPart(value?: string): string {
   if (!value) return "";
@@ -144,16 +109,40 @@ export function uniqueTestEmail(prefix: string, suffix?: string): string {
   return `${safePrefix}${safeSuffix ? `-${safeSuffix}` : ""}-${nonce}@example.com`;
 }
 
-export function generateUnsubscribeToken(email: string): string {
-  const normalizedEmail = email.toLowerCase();
-  const encodedEmail = Buffer.from(normalizedEmail).toString("base64url");
-  const expiry = Math.floor(Date.now() / 1000) + TOKEN_EXPIRY_SECONDS;
-  const payload = `${encodedEmail}:${expiry}`;
-  const signature = createHmac("sha256", getNewsletterSecret())
-    .update(payload)
-    .digest("hex");
+function runSql(sql: string): string {
+  return execFileSync(PSQL, [DATABASE_URL, "-t", "-A", "-c", sql], {
+    encoding: "utf8",
+    timeout: 10_000,
+  }).trim();
+}
 
-  return `${payload}:${signature}`;
+function escapeSqlString(value: string): string {
+  return value.replace(/'/g, "''");
+}
+
+export async function waitForUnsubscribeNonce(
+  email: string,
+  timeoutMs = 15_000,
+): Promise<string> {
+  const normalizedEmail = escapeSqlString(email.toLowerCase());
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt < timeoutMs) {
+    const nonce = runSql(
+      `SELECT unsubscribe_nonce
+       FROM newsletter_subscriber
+       WHERE email = '${normalizedEmail}' AND deleted_at IS NULL
+       LIMIT 1`,
+    );
+
+    if (nonce) {
+      return nonce;
+    }
+
+    await sleep(250);
+  }
+
+  throw new Error(`Timed out waiting for unsubscribe nonce for ${email}`);
 }
 
 export async function waitForNewsletterRequestSlot(): Promise<void> {

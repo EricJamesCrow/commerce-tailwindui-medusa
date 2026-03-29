@@ -61,6 +61,15 @@
           "nullable": true,
           "mappedType": "text"
         },
+        "unsubscribe_nonce": {
+          "name": "unsubscribe_nonce",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
         "unsubscribed_at": {
           "name": "unsubscribed_at",
           "type": "timestamptz",
@@ -124,6 +133,15 @@
           "primary": false,
           "unique": false,
           "expression": "CREATE UNIQUE INDEX IF NOT EXISTS \"IDX_newsletter_subscriber_email_unique\" ON \"newsletter_subscriber\" (\"email\") WHERE deleted_at IS NULL"
+        },
+        {
+          "keyName": "IDX_newsletter_subscriber_unsubscribe_nonce_unique",
+          "columnNames": [],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "CREATE UNIQUE INDEX IF NOT EXISTS \"IDX_newsletter_subscriber_unsubscribe_nonce_unique\" ON \"newsletter_subscriber\" (\"unsubscribe_nonce\") WHERE deleted_at IS NULL AND unsubscribe_nonce IS NOT NULL"
         },
         {
           "keyName": "newsletter_subscriber_pkey",

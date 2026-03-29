@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { unsubscribeNewsletter } from "./actions";
+import { stripUnsubscribeTokenFromPath } from "./url";
 
 type Result = { success?: boolean; error?: string } | null;
 
@@ -10,6 +11,15 @@ export function UnsubscribeForm({ token }: { token: string }) {
     async () => unsubscribeNewsletter(token),
     null,
   );
+
+  useEffect(() => {
+    const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const sanitizedPath = stripUnsubscribeTokenFromPath(window.location.href);
+
+    if (sanitizedPath !== currentPath) {
+      window.history.replaceState(null, "", sanitizedPath);
+    }
+  }, []);
 
   if (state?.success) {
     return (
