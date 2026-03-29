@@ -4,7 +4,16 @@ import type { MedusaContainer } from "@medusajs/framework/types";
  * Strip trailing slash from a URL string.
  */
 function stripTrailingSlash(url: string): string {
-  return url.replace(/\/$/, "");
+  return url.replace(/\/+$/, "");
+}
+
+function sanitizeUrlValue(url: string | null | undefined): string | null {
+  const sanitized = url?.replace(/[\r\n]+/g, "").trim();
+  if (!sanitized) {
+    return null;
+  }
+
+  return stripTrailingSlash(sanitized);
 }
 
 /**
@@ -12,9 +21,7 @@ function stripTrailingSlash(url: string): string {
  * Returns null if not configured.
  */
 export function resolveStorefrontUrl(): string | null {
-  const raw = process.env.STOREFRONT_URL;
-  if (!raw) return null;
-  return stripTrailingSlash(raw);
+  return sanitizeUrlValue(process.env.STOREFRONT_URL);
 }
 
 /**
@@ -28,7 +35,10 @@ export function resolveAdminUrl(container: MedusaContainer): string | null {
 
   if (!rawBackendUrl || rawBackendUrl === "/") return null;
 
-  const backendUrl = stripTrailingSlash(rawBackendUrl);
+  const backendUrl = sanitizeUrlValue(rawBackendUrl);
+  if (!backendUrl) {
+    return null;
+  }
   const adminPath = configModule.admin?.path || "/app";
 
   return `${backendUrl}${adminPath}`;

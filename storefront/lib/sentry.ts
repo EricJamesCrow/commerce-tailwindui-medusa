@@ -17,6 +17,7 @@ export function resolveStorefrontSentryEnvironment(): string {
   return (
     firstDefinedValue(
       process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT,
+      process.env.NEXT_PUBLIC_VERCEL_ENV,
       process.env.VERCEL_ENV,
       process.env.NODE_ENV,
     ) ?? "development"

@@ -157,10 +157,12 @@ function createReviewImages(
  */
 async function revalidateReviewsCache(): Promise<void> {
   try {
-    await fetch(
-      `${STOREFRONT_URL}/api/revalidate?secret=${REVALIDATE_SECRET}`,
-      { method: "POST" },
-    );
+    await fetch(`${STOREFRONT_URL}/api/revalidate`, {
+      method: "POST",
+      headers: {
+        "x-revalidate-secret": REVALIDATE_SECRET,
+      },
+    });
   } catch {
     // Storefront may not be ready; cache will be stale but tests can retry
   }

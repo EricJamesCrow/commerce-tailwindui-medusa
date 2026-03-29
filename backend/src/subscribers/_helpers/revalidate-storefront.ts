@@ -18,7 +18,7 @@ function resolveRevalidateSecret(): string | null {
 }
 
 function resolveRevalidateUrl(): string | null {
-  const storefrontUrl = resolveStorefrontUrl();
+  const storefrontUrl = sanitizeEnvValue(resolveStorefrontUrl() ?? undefined);
   return storefrontUrl ? `${storefrontUrl}${REVALIDATE_PATH}` : null;
 }
 

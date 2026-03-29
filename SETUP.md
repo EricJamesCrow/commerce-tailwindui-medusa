@@ -64,6 +64,7 @@ All other variables have working defaults for local development. See `backend/.e
 | `RESEND_API_KEY`                 | No               | —                                             | Enables email notifications                           |
 | `RESEND_FROM_EMAIL`              | No               | `onboarding@resend.dev`                       | Sender address for emails                             |
 | `STOREFRONT_URL`                 | No               | `http://localhost:3000`                       | Base URL for links in emails                          |
+| `REVALIDATE_SECRET`              | No               | —                                             | Must match the storefront revalidation secret         |
 | `MEDUSA_BACKEND_URL`             | Prod only        | —                                             | Public backend URL (admin UI build)                   |
 | `ADMIN_ORDER_EMAILS`             | No               | —                                             | Comma-separated emails for order alerts               |
 | `CART_RECOVERY_SECRET`           | If cart recovery | —                                             | HMAC secret for abandoned cart tokens                 |
@@ -74,6 +75,7 @@ All other variables have working defaults for local development. See `backend/.e
 | `S3_REGION`                      | No               | `auto`                                        | Always `auto` for Cloudflare R2                       |
 | `S3_ENDPOINT`                    | No               | —                                             | `https://<account-id>.r2.cloudflarestorage.com`       |
 | `SENTRY_DSN`                     | No               | —                                             | Sentry project DSN for error monitoring               |
+| `SENTRY_ENVIRONMENT`             | No               | `development`                                 | Backend Sentry environment tag                        |
 | `SENTRY_TRACES_SAMPLE_RATE`      | No               | `0.2`                                         | Trace sample rate (0.0-1.0)                           |
 | `MEILISEARCH_HOST`               | No               | —                                             | Meilisearch server URL (e.g. `http://127.0.0.1:7700`) |
 | `MEILISEARCH_API_KEY`            | If Meilisearch   | —                                             | Meilisearch master key (admin access)                 |

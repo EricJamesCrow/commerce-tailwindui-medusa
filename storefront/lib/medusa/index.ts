@@ -754,13 +754,32 @@ export async function getPages(): Promise<Page[]> {
 // --- Webhook Revalidation ---
 
 export async function revalidate(req: NextRequest): Promise<NextResponse> {
-  const secret =
-    req.headers.get("x-revalidate-secret") ??
-    req.nextUrl.searchParams.get("secret");
   const expectedSecret = sanitizeEnvValue(process.env.REVALIDATE_SECRET);
+  if (!expectedSecret) {
+    const error = new Error("REVALIDATE_SECRET is not configured");
 
-  if (!secret || !expectedSecret || secret !== expectedSecret) {
-    console.error("Invalid revalidation secret.");
+    Sentry.captureException(error, {
+      tags: {
+        action: "revalidate",
+        reason: "missing_revalidate_secret",
+      },
+      extra: {
+        method: req.method,
+        path: req.nextUrl.pathname,
+      },
+      level: "error",
+    });
+
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+
+  const secret = req.headers.get("x-revalidate-secret");
+
+  if (!secret || secret !== expectedSecret) {
+    console.warn("Invalid revalidation secret.");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
