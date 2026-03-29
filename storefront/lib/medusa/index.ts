@@ -140,26 +140,34 @@ function isHiddenProduct(product: HttpTypes.StoreProduct): boolean {
 // and TTLs without tripping that cache-components timeout path.
 const getProductCached = unstable_cache(
   async (handle: string): Promise<Product | undefined> => {
-    const region = await getDefaultRegion();
+    try {
+      const region = await getDefaultRegion();
 
-    const { products } = await sdk.client.fetch<{
-      products: HttpTypes.StoreProduct[];
-    }>("/store/products", {
-      method: "GET",
-      query: {
-        handle,
-        region_id: region.id,
-        fields: PRODUCT_FIELDS,
-        limit: 1,
-      },
-      cache: "force-cache",
-      next: { tags: [TAGS.products] },
-    });
+      const { products } = await sdk.client.fetch<{
+        products: HttpTypes.StoreProduct[];
+      }>("/store/products", {
+        method: "GET",
+        query: {
+          handle,
+          region_id: region.id,
+          fields: PRODUCT_FIELDS,
+          limit: 1,
+        },
+        cache: "force-cache",
+        next: { tags: [TAGS.products] },
+      });
 
-    const product = products[0];
-    if (!product) return undefined;
+      const product = products[0];
+      if (!product) return undefined;
 
-    return transformProduct(product);
+      return transformProduct(product);
+    } catch (error) {
+      Sentry.captureException(error, {
+        tags: { action: "get_product", handle },
+        level: "warning",
+      });
+      return undefined;
+    }
   },
   ["medusa-product"],
   {
@@ -184,28 +192,40 @@ const getProductsCached = unstable_cache(
     sortKey?: string;
     limit?: number;
   }): Promise<Product[]> => {
-    const region = await getDefaultRegion();
-    const order = buildSortOrder(sortKey, reverse);
+    try {
+      const region = await getDefaultRegion();
+      const order = buildSortOrder(sortKey, reverse);
 
-    const fetchQuery: ProductFetchQuery = {
-      region_id: region.id,
-      fields: PRODUCT_FIELDS,
-      limit,
-    };
+      const fetchQuery: ProductFetchQuery = {
+        region_id: region.id,
+        fields: PRODUCT_FIELDS,
+        limit,
+      };
 
-    if (query) fetchQuery.q = query;
-    if (order) fetchQuery.order = order;
+      if (query) fetchQuery.q = query;
+      if (order) fetchQuery.order = order;
 
-    const { products } = await sdk.client.fetch<{
-      products: HttpTypes.StoreProduct[];
-    }>("/store/products", {
-      method: "GET",
-      query: fetchQuery,
-      cache: "force-cache",
-      next: { tags: [TAGS.products] },
-    });
+      const { products } = await sdk.client.fetch<{
+        products: HttpTypes.StoreProduct[];
+      }>("/store/products", {
+        method: "GET",
+        query: fetchQuery,
+        cache: "force-cache",
+        next: { tags: [TAGS.products] },
+      });
 
-    return products.filter((p) => !isHiddenProduct(p)).map(transformProduct);
+      return products.filter((p) => !isHiddenProduct(p)).map(transformProduct);
+    } catch (error) {
+      Sentry.captureException(error, {
+        tags: {
+          action: "get_products",
+          sort_key: sortKey ?? "default",
+          has_query: query ? "true" : "false",
+        },
+        level: "warning",
+      });
+      return [];
+    }
   },
   ["medusa-products"],
   {
@@ -270,19 +290,27 @@ export async function getProductRecommendations(
 
 const getCollectionCached = unstable_cache(
   async (handle: string): Promise<Collection | undefined> => {
-    const { collections } = await sdk.client.fetch<{
-      collections: HttpTypes.StoreCollection[];
-    }>("/store/collections", {
-      method: "GET",
-      query: { handle, limit: 1 },
-      cache: "force-cache",
-      next: { tags: [TAGS.collections] },
-    });
+    try {
+      const { collections } = await sdk.client.fetch<{
+        collections: HttpTypes.StoreCollection[];
+      }>("/store/collections", {
+        method: "GET",
+        query: { handle, limit: 1 },
+        cache: "force-cache",
+        next: { tags: [TAGS.collections] },
+      });
 
-    const collection = collections[0];
-    if (!collection) return undefined;
+      const collection = collections[0];
+      if (!collection) return undefined;
 
-    return transformCollection(collection);
+      return transformCollection(collection);
+    } catch (error) {
+      Sentry.captureException(error, {
+        tags: { action: "get_collection", handle },
+        level: "warning",
+      });
+      return undefined;
+    }
   },
   ["medusa-collection"],
   {
@@ -307,43 +335,55 @@ const getCollectionProductsCached = unstable_cache(
     reverse?: boolean;
     sortKey?: string;
   }): Promise<Product[]> => {
-    const { collections } = await sdk.client.fetch<{
-      collections: HttpTypes.StoreCollection[];
-    }>("/store/collections", {
-      method: "GET",
-      query: { handle: collection, fields: "*products", limit: 1 },
-      cache: "force-cache",
-      next: { tags: [TAGS.collections] },
-    });
+    try {
+      const { collections } = await sdk.client.fetch<{
+        collections: HttpTypes.StoreCollection[];
+      }>("/store/collections", {
+        method: "GET",
+        query: { handle: collection, fields: "*products", limit: 1 },
+        cache: "force-cache",
+        next: { tags: [TAGS.collections] },
+      });
 
-    const col = collections[0];
-    if (!col) {
-      console.log(`No collection found for \`${collection}\``);
+      const col = collections[0];
+      if (!col) {
+        console.log(`No collection found for \`${collection}\``);
+        return [];
+      }
+
+      const region = await getDefaultRegion();
+      const order = buildSortOrder(sortKey, reverse);
+
+      const fetchQuery: ProductFetchQuery = {
+        collection_id: [col.id],
+        region_id: region.id,
+        fields: PRODUCT_FIELDS,
+        limit: 100,
+      };
+
+      if (order) fetchQuery.order = order;
+
+      const { products } = await sdk.client.fetch<{
+        products: HttpTypes.StoreProduct[];
+      }>("/store/products", {
+        method: "GET",
+        query: fetchQuery,
+        cache: "force-cache",
+        next: { tags: [TAGS.products, TAGS.collections] },
+      });
+
+      return products.filter((p) => !isHiddenProduct(p)).map(transformProduct);
+    } catch (error) {
+      Sentry.captureException(error, {
+        tags: {
+          action: "get_collection_products",
+          collection,
+          sort_key: sortKey ?? "default",
+        },
+        level: "warning",
+      });
       return [];
     }
-
-    const region = await getDefaultRegion();
-    const order = buildSortOrder(sortKey, reverse);
-
-    const fetchQuery: ProductFetchQuery = {
-      collection_id: [col.id],
-      region_id: region.id,
-      fields: PRODUCT_FIELDS,
-      limit: 100,
-    };
-
-    if (order) fetchQuery.order = order;
-
-    const { products } = await sdk.client.fetch<{
-      products: HttpTypes.StoreProduct[];
-    }>("/store/products", {
-      method: "GET",
-      query: fetchQuery,
-      cache: "force-cache",
-      next: { tags: [TAGS.products, TAGS.collections] },
-    });
-
-    return products.filter((p) => !isHiddenProduct(p)).map(transformProduct);
   },
   ["medusa-collection-products"],
   {
@@ -369,15 +409,6 @@ export async function getCollections(): Promise<Collection[]> {
   cacheTag(TAGS.collections);
   cacheLife("days");
 
-  const { collections } = await sdk.client.fetch<{
-    collections: HttpTypes.StoreCollection[];
-  }>("/store/collections", {
-    method: "GET",
-    query: { limit: 100, fields: "+metadata" },
-    cache: "force-cache",
-    next: { tags: [TAGS.collections] },
-  });
-
   const allCollection: Collection = {
     handle: "",
     title: "All",
@@ -387,11 +418,28 @@ export async function getCollections(): Promise<Collection[]> {
     updatedAt: new Date().toISOString(),
   };
 
-  const transformed = collections
-    .filter((c) => !c.handle?.startsWith("hidden"))
-    .map(transformCollection);
+  try {
+    const { collections } = await sdk.client.fetch<{
+      collections: HttpTypes.StoreCollection[];
+    }>("/store/collections", {
+      method: "GET",
+      query: { limit: 100, fields: "+metadata" },
+      cache: "force-cache",
+      next: { tags: [TAGS.collections] },
+    });
 
-  return [allCollection, ...transformed];
+    const transformed = collections
+      .filter((c) => !c.handle?.startsWith("hidden"))
+      .map(transformCollection);
+
+    return [allCollection, ...transformed];
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: { action: "get_collections" },
+      level: "warning",
+    });
+    return [allCollection];
+  }
 }
 
 // --- Cart ---
