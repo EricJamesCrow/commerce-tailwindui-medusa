@@ -44,6 +44,7 @@ export const meilisearchClient = MEILISEARCH_ENABLED
   : null;
 
 const DEFAULT_CURRENCY_CODE = "USD";
+const COLLECTION_HANDLE_RE = /^[a-zA-Z0-9_-]+$/;
 
 export type MeilisearchProductDocument = {
   id: string;
@@ -85,7 +86,7 @@ function buildFacetFilters({
 }: Omit<SearchIndexedProductsOptions, "limit" | "offset" | "sort">): string[] {
   const filters: string[] = [];
 
-  if (collection) {
+  if (collection && COLLECTION_HANDLE_RE.test(collection)) {
     filters.push(`collection_handles = "${collection}"`);
   }
 
