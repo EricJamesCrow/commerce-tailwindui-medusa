@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
+import { useNotification } from "components/notifications";
 import { subscribeToNewsletter, type NewsletterResult } from "./actions";
-import { useNotification } from "components/notifications/notification-context";
 
 export function FooterNewsletter({
   customerEmail,
@@ -10,7 +10,7 @@ export function FooterNewsletter({
   customerEmail?: string | null;
 }) {
   const { showNotification } = useNotification();
-  const hasNotified = useRef(false);
+  const handledState = useRef<NewsletterResult>(null);
 
   const [state, formAction, isPending] = useActionState<
     NewsletterResult,
@@ -18,21 +18,26 @@ export function FooterNewsletter({
   >(async (_prev, formData) => {
     const email = formData.get("email") as string;
     if (!email) return { error: "Email is required" };
-    hasNotified.current = false;
     return subscribeToNewsletter(email);
   }, null);
 
   useEffect(() => {
-    if (hasNotified.current) return;
-    if (state?.success) {
-      hasNotified.current = true;
+    if (!state || handledState.current === state) {
+      return;
+    }
+
+    handledState.current = state;
+
+    if (state.success) {
       showNotification(
         "success",
         "You're subscribed!",
         "A welcome email is on its way to your inbox.",
       );
-    } else if (state?.error) {
-      hasNotified.current = true;
+      return;
+    }
+
+    if (state.error) {
       showNotification(
         "error",
         "Subscription failed",

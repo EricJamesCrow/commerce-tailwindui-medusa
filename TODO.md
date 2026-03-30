@@ -52,8 +52,8 @@
 
 ## Maintenance / Docs
 
-- [ ] General codebase cleanup pass — audit recently touched storefront/backend files for duplication, dead code, inconsistent patterns, and obvious simplification opportunities before the next feature push
-- [ ] Update `README.md` to reflect current architecture, shipped scope, and the new fork-per-client ownership model
+- [x] General codebase cleanup pass — audit recently touched storefront/backend files for duplication, dead code, inconsistent patterns, and obvious simplification opportunities before the next feature push
+- [x] Update `README.md` to reflect current architecture, shipped scope, and the new fork-per-client ownership model
 - [ ] Install `nuqs`
 - [ ] Audit cursor-pointer behavior across interactive UI elements — ensure buttons, links, and other clickable controls consistently show the expected pointer cursor where appropriate
 
@@ -62,10 +62,10 @@
 - [ ] Discount / promo code UI — add a "Promo code" input to the checkout order summary (collapsible section below the line items). Use Medusa's `updateCart` with `promo_codes` to apply codes. Display applied discount as a removable chip/tag. The order summary already renders `discount_total` when present — this just needs the input to apply codes. Use TailwindPlus Ecommerce > Shopping Carts for input pattern reference. Server action: `applyPromoCode(cartId, code)` and `removePromoCode(cartId, code)`. Track: `promo_code_applied`, `promo_code_removed`, `promo_code_failed` events.
 - [ ] Testing discounts (apply promo codes, verify discount display in checkout + order confirmation)
 - [ ] Compare checkout page UI to TailwindUI components (ensure all checkout/order pages match TailwindUI patterns)
-- [ ] Order details page — build using TailwindPlus Ecommerce > Page Examples > Order Detail Pages > "With large images and progress bars" component. Features: product images, order progress bar (Order placed → Processing → Shipped → Delivered), delivery address, shipping updates, billing summary with payment info. Wire to Medusa order data (`/account/orders/[id]`). The TailwindPlus component includes a full navbar with mega menus, footer, and billing section — adapt to use existing layout components.
+- [x] Order details page — build using TailwindPlus Ecommerce > Page Examples > Order Detail Pages > "With large images and progress bars" component. Features: product images, order progress bar (Order placed → Processing → Shipped → Delivered), delivery address, shipping updates, billing summary with payment info. Wire to Medusa order data (`/account/orders/[id]`). The TailwindPlus component includes a full navbar with mega menus, footer, and billing section — adapt to use existing layout components.
 - [x] Create `playwright.config.ts`
-- [ ] Expand storefront Vitest coverage — add deterministic unit tests for `lib/medusa/transforms.ts`, `lib/analytics.ts` PII redaction, and `lib/validation.ts`
-- [ ] E2E test: browse products → add to cart flow
+- [x] Expand storefront Vitest coverage — add deterministic unit tests for `lib/medusa/transforms.ts`, `lib/analytics.ts` PII redaction, and `lib/validation.ts`
+- [x] E2E test: browse products → add to cart flow
 - [x] Wishlist E2E test suite (40 tests across 10 spec files — guest, authenticated, heart-button, heart-state, sharing, import, transfer, nav-badge, rename-delete, social-proof; 80 total with Firefox)
 - [x] Review E2E test suite (27 tests across 4 spec files — form, display, image-upload, lightbox; 54 total with Firefox)
 
