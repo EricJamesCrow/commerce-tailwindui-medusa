@@ -35,7 +35,7 @@ packages/
     src/integrations.ts
 
 storefront/
-  client/
+  site/
     components/
     content/
     lib/
@@ -43,7 +43,7 @@ storefront/
     theme.css
 
 backend/
-  src/client/
+  src/site/
     api/
     lib/
     modules/

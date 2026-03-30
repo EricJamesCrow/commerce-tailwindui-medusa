@@ -10,6 +10,7 @@ export type SiteNavigationConfig = {
 
 export const siteNavigation: SiteNavigationConfig = {
   pages: [
+    // Template placeholders; downstream sites can replace these with real routes.
     { href: "/search", name: "Company" },
     { href: "/search", name: "Stores" },
   ],
