@@ -1,5 +1,7 @@
+import * as Sentry from "@sentry/nextjs";
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
 import { MeiliSearch } from "meilisearch";
+import { Product } from "lib/types";
 import { sanitizeEnvValue } from "./env";
 
 const meilisearchHost = sanitizeEnvValue(
@@ -41,3 +43,222 @@ export const meilisearchClient = MEILISEARCH_ENABLED
       apiKey: meilisearchApiKey!,
     })
   : null;
+
+const DEFAULT_CURRENCY_CODE = "USD";
+const COLLECTION_HANDLE_RE = /^[a-zA-Z0-9_-]+$/;
+
+export type MeilisearchProductDocument = {
+  id: string;
+  title: string;
+  description?: string | null;
+  handle: string;
+  thumbnail?: string | null;
+  collection_titles?: string[];
+  collection_handles?: string[];
+  tag_values?: string[];
+  variant_prices?: number[];
+  min_variant_price?: number | null;
+  max_variant_price?: number | null;
+  availability?: boolean;
+  created_at?: string;
+  updated_at?: string;
+};
+
+type SearchIndexedProductsOptions = {
+  collection?: string | null;
+  availability?: boolean;
+  limit?: number;
+  maxPrice?: number | null;
+  minPrice?: number | null;
+  offset?: number;
+  sort?: string | null;
+};
+
+type SearchIndexedProductsResult = {
+  hits: MeilisearchProductDocument[];
+  totalCount: number;
+};
+
+function buildFacetFilters({
+  availability,
+  collection,
+  maxPrice,
+  minPrice,
+}: Omit<SearchIndexedProductsOptions, "limit" | "offset" | "sort">): string[] {
+  const filters: string[] = [];
+
+  if (collection && COLLECTION_HANDLE_RE.test(collection)) {
+    filters.push(`collection_handles = "${collection}"`);
+  }
+
+  if (availability) {
+    filters.push("availability = true");
+  }
+
+  if (typeof minPrice === "number") {
+    filters.push(`max_variant_price >= ${minPrice}`);
+  }
+
+  if (typeof maxPrice === "number") {
+    filters.push(`min_variant_price <= ${maxPrice}`);
+  }
+
+  return filters;
+}
+
+function hitMatchesPriceRange(
+  hit: MeilisearchProductDocument,
+  minPrice?: number | null,
+  maxPrice?: number | null,
+): boolean {
+  const prices = hit.variant_prices || [];
+
+  return prices.some((price) => {
+    if (typeof minPrice === "number" && price < minPrice) {
+      return false;
+    }
+
+    if (typeof maxPrice === "number" && price > maxPrice) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
+function getSortExpression(sort?: string | null): string[] | undefined {
+  switch (sort) {
+    case "latest-desc":
+    case "trending-desc":
+      return ["created_at:desc"];
+    case "price-asc":
+      return ["min_variant_price:asc"];
+    case "price-desc":
+      return ["max_variant_price:desc"];
+    default:
+      return undefined;
+  }
+}
+
+export function meilisearchHitToProduct(
+  hit: MeilisearchProductDocument,
+): Product {
+  const prices = hit.variant_prices || [];
+  const minPrice =
+    hit.min_variant_price ?? (prices.length ? Math.min(...prices) : 0);
+  const maxPrice =
+    hit.max_variant_price ?? (prices.length ? Math.max(...prices) : 0);
+
+  return {
+    id: hit.id,
+    handle: hit.handle,
+    availableForSale: hit.availability ?? true,
+    title: hit.title,
+    description: hit.description || "",
+    descriptionHtml: hit.description || "",
+    options: [],
+    priceRange: {
+      minVariantPrice: {
+        amount: Number(minPrice || 0).toFixed(2),
+        currencyCode: DEFAULT_CURRENCY_CODE,
+      },
+      maxVariantPrice: {
+        amount: Number(maxPrice || 0).toFixed(2),
+        currencyCode: DEFAULT_CURRENCY_CODE,
+      },
+    },
+    variants: [],
+    featuredImage: hit.thumbnail
+      ? {
+          url: hit.thumbnail,
+          altText: hit.title,
+          width: 0,
+          height: 0,
+        }
+      : { url: "", altText: hit.title, width: 0, height: 0 },
+    images: [],
+    seo: { title: hit.title, description: "" },
+    tags: hit.tag_values || [],
+    updatedAt: hit.updated_at || new Date().toISOString(),
+  };
+}
+
+export async function searchIndexedProducts(
+  query: string,
+  {
+    availability,
+    collection,
+    limit = 24,
+    maxPrice,
+    minPrice,
+    offset = 0,
+    sort,
+  }: SearchIndexedProductsOptions = {},
+): Promise<SearchIndexedProductsResult> {
+  if (!MEILISEARCH_ENABLED || !meilisearchClient) {
+    return { hits: [], totalCount: 0 };
+  }
+
+  const trimmedQuery = query.trim();
+  if (!trimmedQuery) {
+    return { hits: [], totalCount: 0 };
+  }
+
+  const filters = buildFacetFilters({
+    availability,
+    collection,
+    maxPrice,
+    minPrice,
+  });
+  const index = meilisearchClient.index(MEILISEARCH_INDEX_NAME);
+  const hasPriceFilter =
+    typeof minPrice === "number" || typeof maxPrice === "number";
+  const searchLimit = hasPriceFilter ? Math.max(offset + limit, 250) : limit;
+  const searchOffset = hasPriceFilter ? 0 : offset;
+
+  try {
+    const result = await index.search<MeilisearchProductDocument>(
+      trimmedQuery,
+      {
+        limit: searchLimit,
+        offset: searchOffset,
+        filter: filters.length ? filters : undefined,
+        sort: getSortExpression(sort),
+      },
+    );
+
+    if (!hasPriceFilter) {
+      return {
+        hits: result.hits,
+        totalCount: result.estimatedTotalHits ?? result.hits.length,
+      };
+    }
+
+    const filteredHits = result.hits.filter((hit) =>
+      hitMatchesPriceRange(hit, minPrice, maxPrice),
+    );
+
+    return {
+      hits: filteredHits.slice(offset, offset + limit),
+      totalCount: filteredHits.length,
+    };
+  } catch (error) {
+    Sentry.captureException(error, {
+      level: "error",
+      tags: {
+        error_category: "meilisearch",
+        sort: String(sort ?? ""),
+        has_availability_filter: availability ? "true" : "false",
+        has_collection_filter: collection ? "true" : "false",
+        has_price_filter: hasPriceFilter ? "true" : "false",
+      },
+      extra: {
+        limit,
+        offset,
+        query_length: trimmedQuery.length,
+      },
+    });
+
+    return { hits: [], totalCount: 0 };
+  }
+}

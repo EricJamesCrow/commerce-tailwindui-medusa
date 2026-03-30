@@ -14,6 +14,7 @@ The storefront supports two search backends: **Meilisearch** (full-text search w
 ```env
 MEILISEARCH_HOST=http://127.0.0.1:7700
 MEILISEARCH_API_KEY=<master-key>
+MEILISEARCH_REGION_ID=<region-id>             # required for calculated-price indexing
 MEILISEARCH_PRODUCT_INDEX_NAME=products    # optional, defaults to "products"
 ```
 
@@ -55,18 +56,18 @@ This indexes all published products. Subsequent changes sync automatically via e
 
 Each product document in Meilisearch contains:
 
-| Field | Type | Purpose |
-|---|---|---|
-| `id` | string | Medusa product ID |
-| `title` | string | Searchable |
-| `description` | string | Searchable |
-| `handle` | string | Searchable, used for product URLs |
-| `thumbnail` | string | Product image |
-| `collection_titles` | string[] | Filterable, searchable |
-| `tag_values` | string[] | Filterable, searchable |
-| `variant_prices` | number[] | Filterable (range), sortable |
-| `availability` | boolean | Filterable (in-stock toggle) |
-| `created_at` | string | Sortable |
+| Field               | Type     | Purpose                           |
+| ------------------- | -------- | --------------------------------- |
+| `id`                | string   | Medusa product ID                 |
+| `title`             | string   | Searchable                        |
+| `description`       | string   | Searchable                        |
+| `handle`            | string   | Searchable, used for product URLs |
+| `thumbnail`         | string   | Product image                     |
+| `collection_titles` | string[] | Filterable, searchable            |
+| `tag_values`        | string[] | Filterable, searchable            |
+| `variant_prices`    | number[] | Filterable (range), sortable      |
+| `availability`      | boolean  | Filterable (in-stock toggle)      |
+| `created_at`        | string   | Sortable                          |
 
 ## Customizing for Your Store
 
@@ -105,10 +106,10 @@ Update the `sortItems` array in `storefront/app/(store)/search/meilisearch-resul
 
 ## Troubleshooting
 
-| Symptom | Cause | Fix |
-|---|---|---|
-| Search returns no results | Index is empty | Run `POST /admin/meilisearch/sync` |
-| Facet counts show 0 | Attribute not in `filterableAttributes` | Add to `configureIndex()` and reindex |
-| "Invalid API key" error | Wrong key type | Use master key for backend, search-only key for storefront |
-| Products not updating | Subscriber not firing | Check backend logs for `[Meilisearch]` messages; verify module is loaded |
-| Storefront shows Medusa results | Missing env vars | Verify `NEXT_PUBLIC_MEILISEARCH_HOST` and `NEXT_PUBLIC_MEILISEARCH_API_KEY` are set |
+| Symptom                         | Cause                                   | Fix                                                                                 |
+| ------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------- |
+| Search returns no results       | Index is empty                          | Run `POST /admin/meilisearch/sync`                                                  |
+| Facet counts show 0             | Attribute not in `filterableAttributes` | Add to `configureIndex()` and reindex                                               |
+| "Invalid API key" error         | Wrong key type                          | Use master key for backend, search-only key for storefront                          |
+| Products not updating           | Subscriber not firing                   | Check backend logs for `[Meilisearch]` messages; verify module is loaded            |
+| Storefront shows Medusa results | Missing env vars                        | Verify `NEXT_PUBLIC_MEILISEARCH_HOST` and `NEXT_PUBLIC_MEILISEARCH_API_KEY` are set |
