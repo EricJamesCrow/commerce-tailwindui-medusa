@@ -157,14 +157,29 @@ function createReviewImages(
  */
 async function revalidateReviewsCache(): Promise<void> {
   try {
-    await fetch(`${STOREFRONT_URL}/api/revalidate`, {
+    const response = await fetch(`${STOREFRONT_URL}/api/revalidate`, {
       method: "POST",
       headers: {
         "x-revalidate-secret": REVALIDATE_SECRET,
       },
     });
-  } catch {
-    // Storefront may not be ready; cache will be stale but tests can retry
+
+    if (!response.ok) {
+      throw new Error(
+        `Review cache revalidation failed (${response.status}): ${await response.text()}`,
+      );
+    }
+  } catch (error) {
+    if (
+      error instanceof TypeError ||
+      (error instanceof Error &&
+        /fetch failed|ECONNREFUSED|ECONNRESET|ENOTFOUND/i.test(error.message))
+    ) {
+      // Storefront may not be ready; cache will be stale but tests can retry
+      return;
+    }
+
+    throw error;
   }
 }
 

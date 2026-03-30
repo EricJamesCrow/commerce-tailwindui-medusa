@@ -38,6 +38,16 @@ export async function triggerStorefrontCatalogRevalidation({
   if (!revalidateUrl) {
     if (!warnedMissingStorefrontUrl) {
       warnedMissingStorefrontUrl = true;
+      Sentry.captureException(new Error("STOREFRONT_URL is not configured"), {
+        tags: {
+          subscriber: "storefront_catalog_revalidate",
+          reason: "missing_storefront_url",
+        },
+        extra: {
+          resource_type: resourceType,
+        },
+        level: "error",
+      });
       logger.warn(
         "[StorefrontRevalidate] STOREFRONT_URL is not configured — skipping automatic catalog revalidation",
       );
@@ -48,6 +58,19 @@ export async function triggerStorefrontCatalogRevalidation({
   if (!secret) {
     if (!warnedMissingRevalidateSecret) {
       warnedMissingRevalidateSecret = true;
+      Sentry.captureException(
+        new Error("REVALIDATE_SECRET is not configured"),
+        {
+          tags: {
+            subscriber: "storefront_catalog_revalidate",
+            reason: "missing_revalidate_secret",
+          },
+          extra: {
+            resource_type: resourceType,
+          },
+          level: "error",
+        },
+      );
       logger.warn(
         "[StorefrontRevalidate] REVALIDATE_SECRET is not configured — skipping automatic catalog revalidation",
       );
