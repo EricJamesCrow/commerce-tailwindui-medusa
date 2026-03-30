@@ -1,3 +1,4 @@
+import { siteBrand } from "@repo/site-config";
 import Image from "next/image";
 import { Suspense } from "react";
 import FooterCopyright from "./footer-copyright";
@@ -6,7 +7,7 @@ import { FooterSocialLinks } from "./footer-social-links";
 import { FooterNewsletter } from "./footer-newsletter";
 import { retrieveCustomer } from "lib/medusa/customer";
 
-const { COMPANY_NAME } = process.env;
+const companyName = process.env.COMPANY_NAME?.trim() || siteBrand.companyName;
 
 // Loading skeleton for navigation sections
 const NavigationSkeleton = () => (
@@ -93,7 +94,7 @@ export default function Footer() {
               <div className="h-4 w-20 animate-pulse rounded-sm bg-gray-200" />
             }
           >
-            <FooterCopyright companyName={COMPANY_NAME} />
+            <FooterCopyright companyName={companyName} />
           </Suspense>
         </div>
       </div>

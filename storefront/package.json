@@ -23,6 +23,7 @@
     "@heroicons/react": "^2.2.0",
     "@medusajs/js-sdk": "^2.13.1",
     "@meilisearch/instant-meilisearch": "^0.30.0",
+    "@repo/site-config": "workspace:*",
     "@sentry/nextjs": "^10",
     "@sentry/profiling-node": "^10",
     "@stripe/react-stripe-js": "^5.6.0",

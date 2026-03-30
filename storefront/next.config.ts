@@ -8,6 +8,7 @@ export default withSentryConfig(
     cacheComponents: true,
     reactCompiler: true,
     skipTrailingSlashRedirect: true,
+    transpilePackages: ["@repo/site-config"],
     async headers() {
       return [
         {

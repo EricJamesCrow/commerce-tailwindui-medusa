@@ -33,6 +33,7 @@ Turborepo monorepo with bun workspaces. Single `bun install` at root, `turbo` fo
 ```text
 storefront/           # @repo/storefront — Next.js 16 frontend
 backend/              # @repo/backend — Medusa v2 backend
+packages/site-config/ # @repo/site-config — site-owned theme and config overrides
 tooling/typescript/   # @repo/typescript — shared tsconfig
 docs/                 # Project status, feature tracking, architecture, archive
 ```
@@ -267,7 +268,6 @@ This ensures every plan execution produces a clean Graphite branch with a pre-re
 - **Named exports** — `export function Foo()` not `export default function Foo()`
 - **kebab-case** directories, **PascalCase** component files
 - Minimize `useState` / `useEffect` — prefer server components, Server Actions, URL params
-- No `nuqs` — use native `URLSearchParams` for URL state
 
 ## Code Style (Backend)
 

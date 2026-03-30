@@ -235,7 +235,6 @@ This ensures every plan execution produces a clean Graphite branch with a pre-re
 - **Named exports** — `export function Foo()` not `export default function Foo()`
 - **kebab-case** directories, **PascalCase** component files
 - Minimize `useState` / `useEffect` — prefer server components, Server Actions, URL params
-- No `nuqs` — use native `URLSearchParams` for URL state
 
 ## Code Style (Backend)
 
