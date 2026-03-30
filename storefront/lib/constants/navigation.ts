@@ -6,6 +6,7 @@
  * no Medusa collections are available.
  */
 
+import { siteNavigation } from "@repo/site-config";
 import type { Navigation, NavigationLink } from "lib/types";
 
 /**
@@ -71,17 +72,11 @@ export const DEFAULT_NAVIGATION: Navigation = {
       ],
     },
   ],
-  pages: [
-    { name: "Company", href: "/search" },
-    { name: "Stores", href: "/search" },
-  ],
+  pages: [...siteNavigation.pages],
 };
 
 /**
  * Utility navigation items
  * Used for account, support, etc.
  */
-export const UTILITY_NAV: NavigationLink[] = [
-  { name: "Account", href: "/account" },
-  { name: "Support", href: "/support" },
-];
+export const UTILITY_NAV: NavigationLink[] = [...siteNavigation.utility];

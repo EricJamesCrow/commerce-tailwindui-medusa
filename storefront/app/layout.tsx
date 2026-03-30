@@ -1,3 +1,4 @@
+import { siteBrand } from "@repo/site-config";
 import { GeistSans } from "geist/font/sans";
 import { baseUrl } from "lib/utils";
 import { Metadata } from "next";
@@ -21,13 +22,13 @@ import { getCart } from "lib/medusa";
 import { retrieveCustomer } from "lib/medusa/customer";
 import { getPostHogAnonId } from "lib/posthog-cookies";
 
-const { SITE_NAME } = process.env;
+const siteName = process.env.SITE_NAME?.trim() || siteBrand.siteName;
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: SITE_NAME!,
-    template: `%s | ${SITE_NAME}`,
+    default: siteName,
+    template: `%s | ${siteName}`,
   },
   robots: {
     follow: true,
@@ -67,8 +68,8 @@ async function AppProviders({ children }: { children: ReactNode }) {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={GeistSans.variable}>
-      <body className="bg-neutral-50">
+    <html lang={siteBrand.locale} className={GeistSans.variable}>
+      <body className={siteBrand.bodyClassName}>
         <Suspense>
           <AppProviders>{children}</AppProviders>
         </Suspense>

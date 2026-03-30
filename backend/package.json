@@ -34,6 +34,7 @@
     "@medusajs/cli": "2.13.1",
     "@medusajs/framework": "2.13.1",
     "@medusajs/medusa": "2.13.1",
+    "@repo/site-config": "workspace:*",
     "@react-email/components": "^1.0.9",
     "@react-email/render": "^2.0.4",
     "@react-email/tailwind": "^2.0.5",
