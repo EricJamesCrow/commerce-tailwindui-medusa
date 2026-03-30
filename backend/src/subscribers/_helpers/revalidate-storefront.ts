@@ -113,6 +113,12 @@ export async function triggerStorefrontCatalogRevalidation({
         resource_id: resourceId,
         resource_type: resourceType,
       },
+      extra: {
+        revalidate_url: revalidateUrl,
+        timeout: REQUEST_TIMEOUT_MS,
+        error_message: error instanceof Error ? error.message : String(error),
+        error_stack: error instanceof Error ? error.stack : undefined,
+      },
       level: "warning",
     });
 
