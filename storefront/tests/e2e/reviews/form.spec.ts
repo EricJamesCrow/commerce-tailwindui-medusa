@@ -107,7 +107,10 @@ test.describe("Review Form", () => {
 
     // Pending reviews should not appear in the public list before approval.
     await expect(
-      page.locator(sel.REVIEW_CONTENT_TEXT).filter({ hasText: uniqueContent }).first(),
+      page
+        .locator(sel.REVIEW_CONTENT_TEXT)
+        .filter({ hasText: uniqueContent })
+        .first(),
     ).toHaveCount(0);
   });
 
