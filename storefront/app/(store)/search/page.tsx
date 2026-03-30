@@ -63,15 +63,18 @@ export default async function SearchPage(props: {
         meilisearchResults.hits.map((hit) => hit.handle),
       )
     : await getProducts({ sortKey, reverse, query: searchValue });
-  const resultCount = meilisearchResults?.totalCount ?? products.length;
-  const resultsText = resultCount === 1 ? "result" : "results";
+  const shownCount = products.length;
+  const totalCount = meilisearchResults?.totalCount ?? shownCount;
+  const resultsText = totalCount === 1 ? "result" : "results";
 
   return (
     <div>
       <p className="mb-4">
-        {resultCount === 0
+        {totalCount === 0
           ? "There are no products that match "
-          : `Showing ${resultCount} ${resultsText} for `}
+          : totalCount > shownCount
+            ? `Showing ${shownCount} of ${totalCount} ${resultsText} for `
+            : `Showing ${shownCount} ${resultsText} for `}
         <span className="font-bold">&quot;{searchValue}&quot;</span>
       </p>
       {products.length > 0 ? <ProductGrid products={products} /> : null}

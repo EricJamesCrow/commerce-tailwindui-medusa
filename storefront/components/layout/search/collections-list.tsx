@@ -165,7 +165,8 @@ export default function CollectionsList({
                   <input
                     type="number"
                     min="0"
-                    step="1"
+                    step="0.01"
+                    inputMode="decimal"
                     name="minPrice"
                     defaultValue={minPrice}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900"
@@ -177,7 +178,8 @@ export default function CollectionsList({
                   <input
                     type="number"
                     min="0"
-                    step="1"
+                    step="0.01"
+                    inputMode="decimal"
                     name="maxPrice"
                     defaultValue={maxPrice}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900"

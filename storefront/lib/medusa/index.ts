@@ -265,6 +265,8 @@ export async function getProductsByHandles(
       .filter((product): product is Product => Boolean(product));
   };
 
+  let transformed: Product[] = [];
+
   try {
     const region = await getDefaultRegion();
     const { products } = await sdk.client.fetch<{
@@ -281,11 +283,12 @@ export async function getProductsByHandles(
       next: { tags: [TAGS.products] },
     });
 
-    const transformed = products
+    transformed = products
       .filter((product) => !isHiddenProduct(product))
       .map(transformProduct);
 
-    if (transformed.length > 0) {
+    const foundHandles = new Set(transformed.map((product) => product.handle));
+    if (foundHandles.size === uniqueHandles.length) {
       return orderProducts(transformed);
     }
   } catch (error) {
@@ -298,13 +301,54 @@ export async function getProductsByHandles(
     });
   }
 
+  const foundHandles = new Set(transformed.map((product) => product.handle));
+  const missingHandles = uniqueHandles.filter(
+    (handle) => !foundHandles.has(handle),
+  );
   const fallbackProducts = await Promise.all(
-    uniqueHandles.map((handle) => getProduct(handle)),
+    missingHandles.map((handle) => getVisibleProductByHandle(handle)),
   );
 
-  return orderProducts(
-    fallbackProducts.filter((product): product is Product => Boolean(product)),
-  );
+  return orderProducts([
+    ...transformed,
+    ...fallbackProducts.filter((product): product is Product =>
+      Boolean(product),
+    ),
+  ]);
+}
+
+async function getVisibleProductByHandle(
+  handle: string,
+): Promise<Product | undefined> {
+  try {
+    const region = await getDefaultRegion();
+    const { products } = await sdk.client.fetch<{
+      products: HttpTypes.StoreProduct[];
+    }>("/store/products", {
+      method: "GET",
+      query: {
+        handle,
+        region_id: region.id,
+        fields: PRODUCT_FIELDS,
+        limit: 1,
+      },
+      cache: "force-cache",
+      next: { tags: [TAGS.products] },
+    });
+
+    const product = products[0];
+    if (!product || isHiddenProduct(product)) {
+      return undefined;
+    }
+
+    return transformProduct(product);
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: { action: "get_visible_product_by_handle", handle },
+      level: "warning",
+    });
+    return undefined;
+  }
 }
 
 const getProductRecommendationsCached = unstable_cache(

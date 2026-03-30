@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
 import { MeiliSearch } from "meilisearch";
 import { Product } from "lib/types";
@@ -95,14 +96,34 @@ function buildFacetFilters({
   }
 
   if (typeof minPrice === "number") {
-    filters.push(`variant_prices >= ${minPrice}`);
+    filters.push(`max_variant_price >= ${minPrice}`);
   }
 
   if (typeof maxPrice === "number") {
-    filters.push(`variant_prices <= ${maxPrice}`);
+    filters.push(`min_variant_price <= ${maxPrice}`);
   }
 
   return filters;
+}
+
+function hitMatchesPriceRange(
+  hit: MeilisearchProductDocument,
+  minPrice?: number | null,
+  maxPrice?: number | null,
+): boolean {
+  const prices = hit.variant_prices || [];
+
+  return prices.some((price) => {
+    if (typeof minPrice === "number" && price < minPrice) {
+      return false;
+    }
+
+    if (typeof maxPrice === "number" && price > maxPrice) {
+      return false;
+    }
+
+    return true;
+  });
 }
 
 function getSortExpression(sort?: string | null): string[] | undefined {
@@ -190,15 +211,54 @@ export async function searchIndexedProducts(
     minPrice,
   });
   const index = meilisearchClient.index(MEILISEARCH_INDEX_NAME);
-  const result = await index.search<MeilisearchProductDocument>(trimmedQuery, {
-    limit,
-    offset,
-    filter: filters.length ? filters : undefined,
-    sort: getSortExpression(sort),
-  });
+  const hasPriceFilter =
+    typeof minPrice === "number" || typeof maxPrice === "number";
+  const searchLimit = hasPriceFilter ? Math.max(offset + limit, 250) : limit;
+  const searchOffset = hasPriceFilter ? 0 : offset;
 
-  return {
-    hits: result.hits,
-    totalCount: result.estimatedTotalHits ?? result.hits.length,
-  };
+  try {
+    const result = await index.search<MeilisearchProductDocument>(
+      trimmedQuery,
+      {
+        limit: searchLimit,
+        offset: searchOffset,
+        filter: filters.length ? filters : undefined,
+        sort: getSortExpression(sort),
+      },
+    );
+
+    if (!hasPriceFilter) {
+      return {
+        hits: result.hits,
+        totalCount: result.estimatedTotalHits ?? result.hits.length,
+      };
+    }
+
+    const filteredHits = result.hits.filter((hit) =>
+      hitMatchesPriceRange(hit, minPrice, maxPrice),
+    );
+
+    return {
+      hits: filteredHits.slice(offset, offset + limit),
+      totalCount: filteredHits.length,
+    };
+  } catch (error) {
+    Sentry.captureException(error, {
+      level: "error",
+      tags: {
+        error_category: "meilisearch",
+        sort: String(sort ?? ""),
+        has_availability_filter: availability ? "true" : "false",
+        has_collection_filter: collection ? "true" : "false",
+        has_price_filter: hasPriceFilter ? "true" : "false",
+      },
+      extra: {
+        limit,
+        offset,
+        query_length: trimmedQuery.length,
+      },
+    });
+
+    return { hits: [], totalCount: 0 };
+  }
 }
