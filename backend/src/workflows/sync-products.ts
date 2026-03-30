@@ -3,13 +3,13 @@ import {
   transform,
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk";
-import { useQueryGraphStep } from "@medusajs/medusa/core-flows";
-import { QueryContext } from "@medusajs/framework/utils";
 import { syncProductsStep, SyncProductsStepInput } from "./steps/sync-products";
 import { deleteProductsFromMeilisearchStep } from "./steps/delete-products-from-meilisearch";
+import { fetchProductsForMeilisearchStep } from "./steps/fetch-products-for-meilisearch";
 
 type SyncProductsWorkflowInput = {
   filters?: Record<string, unknown>;
+  regionId?: string;
 };
 
 type QueriedCalculatedPrice = {
@@ -23,49 +23,36 @@ type QueriedVariant = {
   manage_inventory?: boolean | null;
 };
 
-const preferredRegionId = process.env.NEXT_PUBLIC_DEFAULT_REGION_ID;
-const pricingContext = {
-  variants: {
-    calculated_price: QueryContext(
-      preferredRegionId
-        ? { region_id: preferredRegionId }
-        : { currency_code: "usd" },
-    ),
-  },
+type QueriedProduct = {
+  id: string;
+  title: string;
+  description?: string | null;
+  handle: string;
+  thumbnail?: string | null;
+  status: string;
+  created_at: string | Date;
+  updated_at: string | Date;
+  collection?: {
+    title?: string | null;
+    handle?: string | null;
+  } | null;
+  tags?: { value?: string | null }[] | null;
+  variants?: QueriedVariant[] | null;
 };
 
 export const syncProductsWorkflow = createWorkflow(
   "sync-products-to-meilisearch",
-  ({ filters }: SyncProductsWorkflowInput) => {
-    const { data: products } = useQueryGraphStep({
-      entity: "product",
-      fields: [
-        "id",
-        "title",
-        "description",
-        "handle",
-        "thumbnail",
-        "status",
-        "created_at",
-        "updated_at",
-        "collection.title",
-        "collection.handle",
-        "tags.value",
-        "variants.calculated_price.*",
-        "variants.inventory_quantity",
-        "variants.manage_inventory",
-      ],
-      context: pricingContext,
-      filters: filters || {},
-    }).config({ name: "query-products-for-meilisearch" });
+  ({ filters, regionId }: SyncProductsWorkflowInput) => {
+    const products = fetchProductsForMeilisearchStep({ filters, regionId });
 
     const { publishedProducts, unpublishedIds } = transform(
       { products },
       (data) => {
         const publishedProducts: SyncProductsStepInput["products"] = [];
         const unpublishedIds: string[] = [];
+        const queriedProducts = data.products as QueriedProduct[];
 
-        for (const product of data.products) {
+        for (const product of queriedProducts) {
           if (product.status === "published") {
             const variants = (product.variants || []) as QueriedVariant[];
             const collection_titles: string[] = [];
