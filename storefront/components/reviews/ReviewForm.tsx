@@ -6,25 +6,22 @@ import {
   DialogPanel,
   DialogTitle,
 } from "@headlessui/react";
+import { useEffect, useMemo, useState } from "react";
 import { XMarkIcon, StarIcon } from "@heroicons/react/24/outline";
 import { StarIcon as StarIconSolid } from "@heroicons/react/20/solid";
 import clsx from "clsx";
-import { useState } from "react";
-import type { Review } from "lib/types";
 
 export function ReviewForm({
   productId,
   open,
   onClose,
   onSubmitted,
-  customerName,
   serverError,
 }: {
   productId: string;
   open: boolean;
   onClose: () => void;
-  onSubmitted: (review: Review, formData: FormData) => void;
-  customerName: { firstName: string; lastName: string } | null;
+  onSubmitted: (formData: FormData) => Promise<boolean>;
   serverError?: string | null;
 }) {
   const [rating, setRating] = useState(0);
@@ -32,6 +29,18 @@ export function ReviewForm({
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const previewUrls = useMemo(
+    () => selectedFiles.map((file) => URL.createObjectURL(file)),
+    [selectedFiles],
+  );
+
+  useEffect(() => {
+    return () => {
+      for (const url of previewUrls) {
+        URL.revokeObjectURL(url);
+      }
+    };
+  }, [previewUrls]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -77,35 +86,21 @@ export function ReviewForm({
       }
     }
 
-    // Build optimistic Review object
-    const title = (formData.get("title") as string)?.trim() || "";
-    const content = (formData.get("content") as string)?.trim() || "";
+    try {
+      const submitted = await onSubmitted(formData);
 
-    const optimisticReview: Review = {
-      id: `optimistic_${Date.now()}`,
-      title,
-      content,
-      rating,
-      first_name: customerName?.firstName || "You",
-      last_name: customerName?.lastName || "",
-      created_at: new Date().toISOString(),
-      images: uploadedImages.map((img, i) => ({
-        id: `optimistic_img_${i}`,
-        url: img.url,
-        sort_order: img.sort_order,
-      })),
-      response: null,
-    };
+      if (!submitted) {
+        return;
+      }
 
-    setIsSubmitting(false);
-
-    // Reset form state for next time
-    setRating(0);
-    setSelectedFiles([]);
-    setError(null);
-
-    // Hand off to parent — parent handles optimistic update + server action
-    onSubmitted(optimisticReview, formData);
+      setRating(0);
+      setSelectedFiles([]);
+      setError(null);
+    } catch {
+      setError("Failed to submit review. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const displayRating = hoverRating || rating;
@@ -212,7 +207,7 @@ export function ReviewForm({
                   {selectedFiles.map((file, i) => (
                     <div key={i} className="relative">
                       <img
-                        src={URL.createObjectURL(file)}
+                        src={previewUrls[i]}
                         alt=""
                         className="size-16 rounded-md object-cover"
                       />

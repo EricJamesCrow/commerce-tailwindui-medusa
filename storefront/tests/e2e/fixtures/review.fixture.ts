@@ -127,6 +127,17 @@ function createReviewResponse(reviewId: string, content: string): string {
   return id;
 }
 
+function markReviewVerified(reviewId: string): void {
+  assertMedusaId(reviewId, "");
+  runSql(`
+    UPDATE review
+    SET
+      order_id = 'order_' || substr(md5(random()::text), 1, 26),
+      order_line_item_id = 'item_' || substr(md5(random()::text), 1, 27)
+    WHERE id = '${reviewId}'
+  `);
+}
+
 /**
  * Insert images for a review directly in the database.
  * Bypasses API hostname validation so E2E tests can use
@@ -237,6 +248,7 @@ export {
   cleanupReview,
   createReview,
   createReviewImages,
+  markReviewVerified,
   storeHeaders,
 };
 
@@ -257,6 +269,12 @@ type ReviewFixtures = {
     productId: string;
     productHandle: string;
     responseContent: string;
+  };
+  /** Creates an approved review linked to a purchase */
+  verifiedReview: {
+    reviewId: string;
+    productId: string;
+    productHandle: string;
   };
   /** First available product handle for navigation */
   testProductHandle: string;
@@ -340,6 +358,35 @@ export const test = authTest.extend<ReviewFixtures>({
       productId: product.id,
       productHandle: product.handle,
       responseContent,
+    });
+
+    cleanupReview(reviewId);
+  },
+
+  verifiedReview: async ({ api }, use) => {
+    const products = await api.getProducts();
+    if (products.length < 1) {
+      throw new Error("No products found. Run seed script.");
+    }
+    const product = products[0]!;
+
+    const reviewId = await createReview(api.getAuthToken(), {
+      product_id: product.id,
+      title: "Verified purchase review",
+      content: "This approved review should display the verified badge.",
+      rating: 5,
+      first_name: "Verified",
+      last_name: "Buyer",
+    });
+
+    approveReview(reviewId);
+    markReviewVerified(reviewId);
+    await revalidateReviewsCache();
+
+    await use({
+      reviewId,
+      productId: product.id,
+      productHandle: product.handle,
     });
 
     cleanupReview(reviewId);

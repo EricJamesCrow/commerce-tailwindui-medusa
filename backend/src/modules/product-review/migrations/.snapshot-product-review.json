@@ -87,6 +87,24 @@
           "nullable": true,
           "mappedType": "text"
         },
+        "order_id": {
+          "name": "order_id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
+        "order_line_item_id": {
+          "name": "order_line_item_id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz",
@@ -155,6 +173,11 @@
           "name": "rating_range",
           "expression": "rating >= 1 AND rating <= 5",
           "definition": "check ((rating >= 1 AND rating <= 5))"
+        },
+        {
+          "name": "review_order_link_requires_order",
+          "expression": "order_line_item_id IS NULL OR order_id IS NOT NULL",
+          "definition": "check ((order_line_item_id IS NULL OR order_id IS NOT NULL))"
         }
       ],
       "foreignKeys": {},

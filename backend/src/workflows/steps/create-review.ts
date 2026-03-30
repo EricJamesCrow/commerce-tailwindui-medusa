@@ -8,6 +8,8 @@ export type CreateReviewStepInput = {
   rating: number;
   product_id: string;
   customer_id?: string;
+  order_id?: string;
+  order_line_item_id?: string;
   first_name: string;
   last_name: string;
   status?: "pending" | "approved" | "flagged";

@@ -85,13 +85,9 @@ test.describe("Review Display", () => {
   }) => {
     await gotoProductWithReviews(page, approvedReview.productHandle);
 
-    await expect(page.locator(sel.REVIEW_LIST_ITEM).first()).toBeVisible({
-      timeout: 10_000,
-    });
-
-    await expect(
-      page.getByText("Great product for testing").first(),
-    ).toBeVisible({ timeout: 10_000 });
+    const reviewTitle = page.getByText("Great product for testing").first();
+    await waitUntilVisible(page, reviewTitle);
+    await expect(reviewTitle).toBeVisible({ timeout: 10_000 });
   });
 
   test("shows star rating for reviews", async ({
@@ -221,5 +217,16 @@ test.describe("Review Display", () => {
     );
     const responseInItem = reviewItem.locator('p:has-text("Store response")');
     await expect(responseInItem).toHaveCount(0);
+  });
+
+  test("shows a verified purchase badge when the review is linked to an order", async ({
+    guestPage: page,
+    verifiedReview,
+  }) => {
+    await gotoProductWithReviews(page, verifiedReview.productHandle);
+
+    const verifiedBadge = page.locator(sel.REVIEW_VERIFIED_BADGE).first();
+    await waitUntilVisible(page, verifiedBadge);
+    await expect(verifiedBadge).toBeVisible({ timeout: 10_000 });
   });
 });

@@ -43,6 +43,10 @@ const fetchReviewStep = createStep(
           product_id: input.product_id,
           rating: review.rating,
           has_images: (review.images?.length ?? 0) > 0,
+          status: review.status,
+          verified_purchase: Boolean(
+            review.order_id && review.order_line_item_id,
+          ),
         },
       });
     } catch {

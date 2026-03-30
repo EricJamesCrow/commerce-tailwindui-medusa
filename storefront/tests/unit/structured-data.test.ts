@@ -73,6 +73,7 @@ function makeReviews(overrides: Partial<ProductReviews> = {}): ProductReviews {
         first_name: "Alex",
         last_name: "Rivera",
         created_at: "2026-03-20T00:00:00.000Z",
+        verified_purchase: false,
         images: [],
         response: null,
       },
