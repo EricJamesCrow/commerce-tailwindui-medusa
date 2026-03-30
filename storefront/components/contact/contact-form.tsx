@@ -1,77 +1,103 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useActionState } from "react";
+import { submitContactForm, type ContactFormState } from "./actions";
 
-type FormState = "idle" | "submitting" | "success";
-
-export function ContactForm() {
-  const [state, setState] = useState<FormState>("idle");
-
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setState("submitting");
-    // TODO: wire up to a real form backend (e.g. Resend, Formspree)
-    setTimeout(() => setState("success"), 1000);
+function FieldError({ error }: { error?: string }) {
+  if (!error) {
+    return null;
   }
 
-  if (state === "success") {
+  return <p className="mt-2 text-sm text-red-600">{error}</p>;
+}
+
+export function ContactForm() {
+  const [state, formAction, isPending] = useActionState<
+    ContactFormState,
+    FormData
+  >(submitContactForm, null);
+  const fieldErrors = state?.fieldErrors ?? {};
+
+  if (state?.success) {
     return (
       <div className="mx-auto max-w-xl rounded-2xl bg-green-50 px-8 py-10 text-center">
         <p className="text-base/7 font-semibold text-green-800">
-          Message sent — thanks for reaching out!
+          Message sent. Thanks for reaching out.
         </p>
         <p className="mt-2 text-sm/6 text-green-700">
           We typically respond within one business day.
         </p>
-        <button
-          type="button"
-          onClick={() => setState("idle")}
-          className="mt-6 text-sm font-semibold text-indigo-600 hover:text-indigo-500"
-        >
-          Send another message
-        </button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto mt-16 max-w-xl sm:mt-20">
+    <form action={formAction} className="mx-auto mt-16 max-w-xl sm:mt-20">
+      {state?.error && (
+        <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {state.error}
+        </div>
+      )}
+
+      <div
+        aria-hidden="true"
+        className="absolute top-auto left-[-9999px] h-px w-px overflow-hidden"
+      >
+        <label htmlFor="company">Company</label>
+        <input
+          id="company"
+          name="company"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          defaultValue={state?.values?.company ?? ""}
+        />
+      </div>
+
       <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
         <div>
           <label
-            htmlFor="first-name"
+            htmlFor="first_name"
             className="block text-sm/6 font-semibold text-gray-900"
           >
             First name
           </label>
           <div className="mt-2.5">
             <input
-              id="first-name"
-              name="first-name"
+              id="first_name"
+              name="first_name"
               type="text"
               autoComplete="given-name"
               required
-              className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+              disabled={isPending}
+              aria-invalid={Boolean(fieldErrors.first_name)}
+              defaultValue={state?.values?.first_name ?? ""}
+              className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 disabled:opacity-50"
             />
           </div>
+          <FieldError error={fieldErrors.first_name} />
         </div>
         <div>
           <label
-            htmlFor="last-name"
+            htmlFor="last_name"
             className="block text-sm/6 font-semibold text-gray-900"
           >
             Last name
           </label>
           <div className="mt-2.5">
             <input
-              id="last-name"
-              name="last-name"
+              id="last_name"
+              name="last_name"
               type="text"
               autoComplete="family-name"
               required
-              className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+              disabled={isPending}
+              aria-invalid={Boolean(fieldErrors.last_name)}
+              defaultValue={state?.values?.last_name ?? ""}
+              className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 disabled:opacity-50"
             />
           </div>
+          <FieldError error={fieldErrors.last_name} />
         </div>
         <div className="sm:col-span-2">
           <label
@@ -87,9 +113,13 @@ export function ContactForm() {
               type="email"
               autoComplete="email"
               required
-              className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+              disabled={isPending}
+              aria-invalid={Boolean(fieldErrors.email)}
+              defaultValue={state?.values?.email ?? ""}
+              className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 disabled:opacity-50"
             />
           </div>
+          <FieldError error={fieldErrors.email} />
         </div>
         <div className="sm:col-span-2">
           <label
@@ -104,9 +134,13 @@ export function ContactForm() {
               name="subject"
               type="text"
               required
-              className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+              disabled={isPending}
+              aria-invalid={Boolean(fieldErrors.subject)}
+              defaultValue={state?.values?.subject ?? ""}
+              className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 disabled:opacity-50"
             />
           </div>
+          <FieldError error={fieldErrors.subject} />
         </div>
         <div className="sm:col-span-2">
           <label
@@ -121,18 +155,22 @@ export function ContactForm() {
               name="message"
               rows={4}
               required
-              className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+              disabled={isPending}
+              aria-invalid={Boolean(fieldErrors.message)}
+              defaultValue={state?.values?.message ?? ""}
+              className="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 disabled:opacity-50"
             />
           </div>
+          <FieldError error={fieldErrors.message} />
         </div>
       </div>
       <div className="mt-10">
         <button
           type="submit"
-          disabled={state === "submitting"}
-          className="block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
+          disabled={isPending}
+          className="block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
         >
-          {state === "submitting" ? "Sending\u2026" : "Send message"}
+          {isPending ? "Sending..." : "Send message"}
         </button>
       </div>
     </form>

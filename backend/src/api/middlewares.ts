@@ -7,12 +7,14 @@ import {
 import { MedusaError } from "@medusajs/framework/utils";
 import multer from "multer";
 import { authRateLimit } from "./middlewares/rate-limit";
+import { contactRateLimit } from "./middlewares/contact-rate-limit";
 import { newsletterRateLimit } from "./middlewares/newsletter-rate-limit";
 import { PostStoreReviewSchema } from "./store/reviews/route";
 import { PostAdminUpdateReviewsStatusSchema } from "./admin/reviews/status/route";
 import { PostAdminReviewResponseSchema } from "./admin/reviews/[id]/response/route";
 import { GetAdminReviewsSchema } from "./admin/reviews/route";
 import { GetStoreReviewsSchema } from "./store/products/[id]/reviews/route";
+import { PostStoreContactSchema } from "./store/contact/validators";
 import {
   WishlistNameSchema,
   PostCreateWishlistItemSchema,
@@ -102,6 +104,29 @@ export default defineMiddlewares({
       middlewares: [
         authenticate("customer", ["session", "bearer"]),
         validateAndTransformBody(PostStoreReviewSchema),
+      ],
+    },
+    // --- Contact form route ---
+    {
+      matcher: "/store/contact",
+      method: ["POST"],
+      middlewares: [
+        (req, _res, next) => {
+          req.app.set("trust proxy", true);
+          next();
+        },
+        contactRateLimit(),
+        authenticate("customer", ["session", "bearer"], {
+          allowUnauthenticated: true,
+        }),
+        (req, _res, next) => {
+          const body = req.body as Record<string, unknown>;
+          if (body?.email && typeof body.email === "string") {
+            body.email = body.email.toLowerCase();
+          }
+          next();
+        },
+        validateAndTransformBody(PostStoreContactSchema),
       ],
     },
     {

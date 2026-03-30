@@ -32,7 +32,7 @@ tooling/typescript/   Shared TypeScript configuration
 | [Wishlist](docs/features/wishlist.md)                         | ✅ Shipped | Full feature + E2E tests                                                                                                | Code review follow-ups only                      |
 | Invoice generation                                            | ✅ Shipped | On-demand PDF with product thumbnails, admin config, email toggle, customer + admin download, code review fixes applied | —                                                |
 | Newsletter signup                                             | ✅ Shipped | Footer form, welcome + welcome-back emails, Resend Audience sync, HMAC unsubscribe, rate limiting, PostHog events       | Email preferences page, opaque unsubscribe token |
-| Company pages (About, Contact, FAQ)                           | 🟡 Partial | Static `/about`, `/contact`, `/faq` pages with TailwindPlus components                                                  | Contact form backend (Resend wiring)             |
+| [Company pages](docs/features/contact-form.md)                | ✅ Shipped | Static `/about`, `/faq`, and backend-backed `/contact` with Resend delivery, validation, analytics, and spam protection | —                                                |
 
 ## Infrastructure & Tooling
 

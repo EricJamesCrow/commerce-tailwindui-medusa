@@ -126,6 +126,17 @@ export type AnalyticsEvents = {
   newsletter_subscribed: { source: "footer" };
   newsletter_subscribe_failed: { source: "footer"; error: string };
 
+  // --- Contact ---
+  contact_form_submitted: {
+    source: "contact_page";
+    subject_length: number;
+    message_length_bucket: "short" | "medium" | "long";
+  };
+  contact_form_failed: {
+    source: "contact_page";
+    error_type: "validation" | "rate_limited" | "backend" | "unknown";
+  };
+
   // --- Client-side UI ---
   cart_drawer_opened: Record<string, never>;
   product_quick_view_opened: { product_id: string };
