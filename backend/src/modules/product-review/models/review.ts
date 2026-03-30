@@ -13,6 +13,8 @@ const Review = model
     status: model.enum(["pending", "approved", "flagged"]).default("pending"),
     product_id: model.text().index("IDX_REVIEW_PRODUCT_ID"),
     customer_id: model.text().nullable(),
+    order_id: model.text().nullable(),
+    order_line_item_id: model.text().nullable(),
     response: model.hasOne(() => ReviewResponse).nullable(),
     images: model.hasMany(() => ReviewImage),
   })
@@ -21,6 +23,11 @@ const Review = model
       name: "rating_range",
       expression: (columns) =>
         `${columns.rating} >= 1 AND ${columns.rating} <= 5`,
+    },
+    {
+      name: "review_order_link_requires_order",
+      expression: (columns) =>
+        `${columns.order_line_item_id} IS NULL OR ${columns.order_id} IS NOT NULL`,
     },
   ]);
 

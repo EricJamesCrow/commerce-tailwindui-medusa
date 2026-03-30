@@ -31,6 +31,7 @@ type Review = {
   product_id: string;
   customer_id?: string;
   status: "pending" | "approved" | "flagged";
+  verified_purchase: boolean;
   created_at: Date;
   updated_at: Date;
   product?: HttpTypes.AdminProduct;
@@ -164,6 +165,14 @@ const ReviewDetailDrawer = ({
                 <Label>Content</Label>
                 <p className="txt-compact-small">{review.content}</p>
               </div>
+              <div>
+                <Label>Purchase</Label>
+                <p className="txt-compact-small">
+                  {review.verified_purchase
+                    ? "Verified purchase"
+                    : "Not linked to a purchase"}
+                </p>
+              </div>
               <div className="border-t pt-4">
                 <Label htmlFor="admin-response">Admin Response</Label>
                 <Textarea
@@ -253,6 +262,15 @@ const ReviewsPage = () => {
             <StatusBadge color="grey">No response</StatusBadge>
           );
         },
+      }),
+      columnHelper.accessor("verified_purchase", {
+        header: "Verified",
+        cell: ({ row }) =>
+          row.original.verified_purchase ? (
+            <StatusBadge color="green">Verified</StatusBadge>
+          ) : (
+            <StatusBadge color="grey">Unverified</StatusBadge>
+          ),
       }),
       columnHelper.accessor("product", {
         header: "Product",

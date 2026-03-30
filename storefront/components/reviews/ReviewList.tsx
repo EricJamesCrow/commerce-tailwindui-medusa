@@ -1,5 +1,6 @@
 "use client";
 
+import { CheckBadgeIcon } from "@heroicons/react/20/solid";
 import { StarIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
 import type { Review } from "lib/types";
@@ -38,9 +39,20 @@ export function ReviewList({ reviews }: { reviews: Review[] }) {
                     {review.last_name.charAt(0)}
                   </div>
                   <div className="ml-4">
-                    <h4 className="text-sm font-bold text-gray-900">
-                      {review.first_name} {review.last_name.charAt(0)}.
-                    </h4>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h4 className="text-sm font-bold text-gray-900">
+                        {review.first_name} {review.last_name.charAt(0)}.
+                      </h4>
+                      {review.verified_purchase && (
+                        <span className="bg-primary-50 text-primary-700 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium">
+                          <CheckBadgeIcon
+                            className="size-4"
+                            aria-hidden="true"
+                          />
+                          Verified purchase
+                        </span>
+                      )}
+                    </div>
                     <div className="mt-1 flex items-center">
                       {[0, 1, 2, 3, 4].map((rating) => (
                         <StarIcon

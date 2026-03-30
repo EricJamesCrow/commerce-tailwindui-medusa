@@ -157,6 +157,7 @@ export type Review = {
   first_name: string;
   last_name: string;
   created_at: string;
+  verified_purchase: boolean;
   images: ReviewImage[];
   response: ReviewResponse | null;
 };

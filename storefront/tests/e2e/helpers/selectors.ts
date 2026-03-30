@@ -73,6 +73,8 @@ export const REVIEW_SUBMIT_BUTTON = 'button[type="submit"]';
 export const REVIEW_SUCCESS_TITLE = 'h2:has-text("Thank you!")';
 export const REVIEW_SUCCESS_DONE = 'button:has-text("Done")';
 export const REVIEW_ERROR_MESSAGE = "p.text-red-600";
+export const REVIEW_SUBMISSION_NOTICE =
+  '[data-testid="review-submission-notice"]';
 
 // Reviews — star rating (form dialog)
 export const REVIEW_STAR_BUTTON = (n: number) =>
@@ -91,6 +93,7 @@ export const REVIEW_LIST_ITEM = "div.py-12";
 export const REVIEW_REVIEWER_NAME = "h4.text-sm.font-bold";
 export const REVIEW_CONTENT_TEXT = "div.py-12 p.text-sm.text-gray-600";
 export const REVIEW_TITLE_TEXT = "div.py-12 h5.text-sm.font-semibold";
+export const REVIEW_VERIFIED_BADGE = 'span:has-text("Verified purchase")';
 
 // Reviews — admin response (in list)
 export const REVIEW_STORE_RESPONSE =

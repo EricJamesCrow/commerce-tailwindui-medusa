@@ -65,9 +65,20 @@ export const POST = async (
     input: {
       ...input,
       customer_id: req.auth_context?.actor_id,
-      status: "approved",
     },
   });
 
-  res.json(result);
+  const review = result.review;
+  const {
+    order_id: _orderId,
+    order_line_item_id: _orderLineItemId,
+    ...rest
+  } = review;
+
+  res.json({
+    review: {
+      ...rest,
+      verified_purchase: Boolean(review.order_id && review.order_line_item_id),
+    },
+  });
 };

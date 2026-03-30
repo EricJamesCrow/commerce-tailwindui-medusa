@@ -1,12 +1,12 @@
 ---
 status: in-progress
 created: 2026-02-21
-updated: 2026-03-18
+updated: 2026-03-28
 ---
 
 # Product Reviews
 
-> **Phases 1-2 shipped (backend module, storefront UI, admin moderation, admin responses, review images). Phase 3 deferred.**
+> **Phases 1-2 shipped (backend module, storefront UI, admin moderation, admin responses, review images). Phase 3 in progress: verified purchase shipped, admin review search/editing deferred until after launch.**
 
 ## What it does
 
@@ -32,10 +32,12 @@ Full product review system with 5-star ratings, verified purchase flow, admin mo
 - [x] Image upload UI in review form dialog (max 3, JPEG/PNG/WebP)
 
 ### Phase 3: Verified Purchase & Search ⏳
-- [ ] Order linking (`order_id`, `order_line_item_id`) for verified purchase badge
+- [x] Order linking (`order_id`, `order_line_item_id`) for verified purchase badge
 - [ ] Full-text search on review content + name in admin
 - [ ] Review editing (upsert pattern — one review per customer per product)
-- **Deferred:** Resume after production launch validates the core review flow.
+- **Migration status:** `review` now stores nullable `order_id` and `order_line_item_id` columns to derive the verified purchase signal.
+- **Verification:** Targeted review E2E coverage passes for moderated submission, admin response display, and verified purchase badge rendering.
+- **Deferred:** Resume the remaining Phase 3 work after production launch validates the core review flow.
 
 ## Code review follow-ups
 
