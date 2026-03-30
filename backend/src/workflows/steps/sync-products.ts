@@ -10,8 +10,11 @@ export type SyncProductsStepInput = {
     handle: string;
     thumbnail?: string | null;
     collection_titles: string[];
+    collection_handles: string[];
     tag_values: string[];
     variant_prices: number[];
+    min_variant_price: number;
+    max_variant_price: number;
     availability: boolean;
     created_at: string | Date;
     updated_at: string | Date;

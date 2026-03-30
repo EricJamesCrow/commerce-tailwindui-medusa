@@ -48,8 +48,8 @@ import HomePage from "app/page";
 import ProductPage, {
   generateMetadata as generateProductMetadata,
 } from "app/product/[handle]/page";
-import ProductsCollectionPage from "app/(store)/products/[collection]/page";
-import ProductsPage from "app/(store)/products/page";
+import ProductsCollectionPage from "app/(store)/(listing)/products/[collection]/page";
+import ProductsPage from "app/(store)/(listing)/products/page";
 
 const product = {
   id: "prod_123",

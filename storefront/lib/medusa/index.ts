@@ -47,6 +47,7 @@ type ProductFetchQuery = {
   region_id: string;
   fields: string;
   limit: number;
+  handle?: string | string[];
   q?: string;
   order?: string;
   collection_id?: string[];
@@ -245,6 +246,109 @@ export async function getProducts({
   limit?: number;
 }): Promise<Product[]> {
   return getProductsCached({ query, reverse, sortKey, limit });
+}
+
+export async function getProductsByHandles(
+  handles: string[],
+): Promise<Product[]> {
+  const uniqueHandles = [...new Set(handles.filter(Boolean))];
+  if (uniqueHandles.length === 0) {
+    return [];
+  }
+
+  const orderProducts = (products: Product[]) => {
+    const productMap = new Map(
+      products.map((product) => [product.handle, product]),
+    );
+    return uniqueHandles
+      .map((handle) => productMap.get(handle))
+      .filter((product): product is Product => Boolean(product));
+  };
+
+  let transformed: Product[] = [];
+
+  try {
+    const region = await getDefaultRegion();
+    const { products } = await sdk.client.fetch<{
+      products: HttpTypes.StoreProduct[];
+    }>("/store/products", {
+      method: "GET",
+      query: {
+        handle: uniqueHandles,
+        region_id: region.id,
+        fields: PRODUCT_FIELDS,
+        limit: uniqueHandles.length,
+      },
+      cache: "force-cache",
+      next: { tags: [TAGS.products] },
+    });
+
+    transformed = products
+      .filter((product) => !isHiddenProduct(product))
+      .map(transformProduct);
+
+    const foundHandles = new Set(transformed.map((product) => product.handle));
+    if (foundHandles.size === uniqueHandles.length) {
+      return orderProducts(transformed);
+    }
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: {
+        action: "get_products_by_handles",
+        handle_count: String(uniqueHandles.length),
+      },
+      level: "warning",
+    });
+  }
+
+  const foundHandles = new Set(transformed.map((product) => product.handle));
+  const missingHandles = uniqueHandles.filter(
+    (handle) => !foundHandles.has(handle),
+  );
+  const fallbackProducts = await Promise.all(
+    missingHandles.map((handle) => getVisibleProductByHandle(handle)),
+  );
+
+  return orderProducts([
+    ...transformed,
+    ...fallbackProducts.filter((product): product is Product =>
+      Boolean(product),
+    ),
+  ]);
+}
+
+async function getVisibleProductByHandle(
+  handle: string,
+): Promise<Product | undefined> {
+  try {
+    const region = await getDefaultRegion();
+    const { products } = await sdk.client.fetch<{
+      products: HttpTypes.StoreProduct[];
+    }>("/store/products", {
+      method: "GET",
+      query: {
+        handle,
+        region_id: region.id,
+        fields: PRODUCT_FIELDS,
+        limit: 1,
+      },
+      cache: "force-cache",
+      next: { tags: [TAGS.products] },
+    });
+
+    const product = products[0];
+    if (!product || isHiddenProduct(product)) {
+      return undefined;
+    }
+
+    return transformProduct(product);
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: { action: "get_visible_product_by_handle", handle },
+      level: "warning",
+    });
+    return undefined;
+  }
 }
 
 const getProductRecommendationsCached = unstable_cache(

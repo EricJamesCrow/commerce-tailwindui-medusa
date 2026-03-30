@@ -3,18 +3,39 @@
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import { FunnelIcon } from "@heroicons/react/20/solid";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { trackClient } from "lib/analytics";
+import clsx from "clsx";
+import { redactPiiFromQuery, trackClient } from "lib/analytics";
+import { MEILISEARCH_ENABLED } from "lib/meilisearch";
+import { createUrl } from "lib/utils";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-export default function MobileFilters({
+export function MobileFilters({
   collections,
 }: {
-  collections: Array<{ name: string; href: string }>;
+  collections: Array<{ name: string; handle: string }>;
 }) {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const query = searchParams.get("q") || "";
+  const selectedCollection = searchParams.get("collection") || "";
+  const isSearchPage = pathname === "/search" && MEILISEARCH_ENABLED && !!query;
+
+  const buildSearchHref = (overrides: Record<string, string | null>) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    for (const [key, value] of Object.entries(overrides)) {
+      if (value) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+    }
+
+    return createUrl("/search", params);
+  };
 
   return (
     <>
@@ -65,12 +86,37 @@ export default function MobileFilters({
               <h3 className="sr-only">Collections</h3>
               <ul role="list" className="px-2 py-3 font-medium text-gray-900">
                 {collections.map((collection) => {
-                  const isActive = pathname === collection.href;
+                  const href = isSearchPage
+                    ? buildSearchHref({
+                        collection: collection.handle || null,
+                      })
+                    : collection.handle
+                      ? `/products/${collection.handle}`
+                      : "/products";
+                  const isActive = isSearchPage
+                    ? selectedCollection === collection.handle
+                    : pathname === href;
+
                   return (
                     <li key={collection.name}>
                       <Link
-                        href={collection.href}
-                        className={`block px-2 py-3 ${isActive ? "underline underline-offset-4" : ""}`}
+                        href={href}
+                        onClick={() => {
+                          setMobileFiltersOpen(false);
+                          if (!isSearchPage) {
+                            return;
+                          }
+
+                          trackClient("search_facet_applied", {
+                            facet_type: "collection",
+                            facet_value: collection.handle || "all",
+                            query: redactPiiFromQuery(query),
+                          });
+                        }}
+                        className={clsx(
+                          "block px-2 py-3",
+                          isActive && "underline underline-offset-4",
+                        )}
                       >
                         {collection.name}
                       </Link>

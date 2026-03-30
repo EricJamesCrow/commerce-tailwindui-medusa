@@ -79,6 +79,7 @@ All other variables have working defaults for local development. See `backend/.e
 | `SENTRY_TRACES_SAMPLE_RATE`      | No               | `0.2`                                         | Trace sample rate (0.0-1.0)                           |
 | `MEILISEARCH_HOST`               | No               | —                                             | Meilisearch server URL (e.g. `http://127.0.0.1:7700`) |
 | `MEILISEARCH_API_KEY`            | If Meilisearch   | —                                             | Meilisearch master key (admin access)                 |
+| `MEILISEARCH_REGION_ID`          | If Meilisearch   | —                                             | Region ID used for calculated-price indexing          |
 | `MEILISEARCH_PRODUCT_INDEX_NAME` | No               | `products`                                    | Meilisearch index name for products                   |
 
 ### Storefront
@@ -281,6 +282,7 @@ When migrating to a CMS (e.g., Payload), swap the import source in each route fi
    SENTRY_ENVIRONMENT=     # "production" in prod, "staging" in non-prod Railway envs
    MEILISEARCH_HOST=        # Meilisearch server URL (e.g. https://ms-xxx.meilisearch.io or self-hosted)
    MEILISEARCH_API_KEY=     # Meilisearch master key (admin access for indexing)
+   MEILISEARCH_REGION_ID=   # Region ID used for accurate calculated-price indexing
    ```
 
 4. **Deploy** — Railway detects the `Dockerfile` and `railway.toml` automatically. The container runs migrations on startup (`bunx medusa db:migrate && bun run start`).
