@@ -53,6 +53,8 @@ const faqs = [
   },
 ];
 
+import Link from "next/link";
+
 export function FaqSection() {
   return (
     <div className="bg-white">
@@ -63,12 +65,12 @@ export function FaqSection() {
           </h1>
           <p className="mt-6 text-base/7 text-gray-600">
             Can&apos;t find what you&apos;re looking for?{" "}
-            <a
+            <Link
               href="/contact"
               className="font-semibold text-indigo-600 hover:text-indigo-500"
             >
               Reach out to our support team
-            </a>{" "}
+            </Link>{" "}
             and we&apos;ll get back to you as soon as we can.
           </p>
         </div>
