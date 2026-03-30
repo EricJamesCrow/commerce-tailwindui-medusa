@@ -1,9 +1,9 @@
 import { test, expect } from "@playwright/test";
 import {
-  generateUnsubscribeToken,
   subscribeEmailViaApi,
   uniqueTestEmail,
   waitForNewsletterRequestSlot,
+  waitForUnsubscribeNonce,
 } from "./helpers";
 
 test.setTimeout(180_000);
@@ -13,9 +13,9 @@ test.describe("Newsletter Unsubscribe", () => {
     page,
   }, testInfo) => {
     const email = uniqueTestEmail("unsub-test", testInfo.project.name);
-    const token = generateUnsubscribeToken(email);
 
     await subscribeEmailViaApi(email);
+    const token = await waitForUnsubscribeNonce(email);
 
     await page.goto(
       `/newsletter/unsubscribe?token=${encodeURIComponent(token)}`,
@@ -25,6 +25,7 @@ test.describe("Newsletter Unsubscribe", () => {
     await expect(
       page.getByRole("heading", { name: "Unsubscribe from newsletter" }),
     ).toBeVisible();
+    await expect(page).toHaveURL(/\/newsletter\/unsubscribe$/);
 
     const confirmButton = page.getByRole("button", {
       name: "Confirm unsubscribe",

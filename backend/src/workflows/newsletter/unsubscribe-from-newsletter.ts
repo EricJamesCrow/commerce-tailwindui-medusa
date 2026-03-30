@@ -11,20 +11,36 @@ import { emitEventStep } from "@medusajs/medusa/core-flows";
 import { NEWSLETTER_MODULE } from "../../modules/newsletter";
 import NewsletterModuleService from "../../modules/newsletter/service";
 
-type UnsubscribeInput = {
+type UnsubscribeByNonceInput = {
+  subscriber_id: string;
+  unsubscribe_nonce: string;
+};
+
+type UnsubscribeByEmailInput = {
   email: string;
 };
 
+type UnsubscribeInput = UnsubscribeByNonceInput | UnsubscribeByEmailInput;
+
 const unsubscribeStep = createStep(
   "unsubscribe-newsletter",
-  async (input: { email: string }, { container }) => {
+  async (input: UnsubscribeInput, { container }) => {
     const newsletterService: NewsletterModuleService =
       container.resolve(NEWSLETTER_MODULE);
 
-    const [subscriber] = await newsletterService.listSubscribers(
-      { email: input.email.toLowerCase() },
-      { take: 1 },
-    );
+    const [subscriber] =
+      "unsubscribe_nonce" in input
+        ? await newsletterService.listSubscribers(
+            {
+              id: input.subscriber_id,
+              unsubscribe_nonce: input.unsubscribe_nonce,
+            },
+            { take: 1 },
+          )
+        : await newsletterService.listSubscribers(
+            { email: input.email.toLowerCase() },
+            { take: 1 },
+          );
 
     if (!subscriber) {
       throw new MedusaError(
@@ -38,10 +54,13 @@ const unsubscribeStep = createStep(
     }
 
     const previousStatus = subscriber.status;
+    const previousNonce = subscriber.unsubscribe_nonce;
+    const previousUnsubscribedAt = subscriber.unsubscribed_at ?? null;
 
     const updated = await newsletterService.updateSubscribers({
       id: subscriber.id,
       status: "unsubscribed",
+      unsubscribe_nonce: null,
       unsubscribed_at: new Date(),
     });
 
@@ -50,6 +69,8 @@ const unsubscribeStep = createStep(
       {
         id: subscriber.id,
         previousStatus,
+        previousNonce,
+        previousUnsubscribedAt,
       },
     );
   },
@@ -62,7 +83,8 @@ const unsubscribeStep = createStep(
     await newsletterService.updateSubscribers({
       id: compensationData.id,
       status: compensationData.previousStatus,
-      unsubscribed_at: null,
+      unsubscribe_nonce: compensationData.previousNonce,
+      unsubscribed_at: compensationData.previousUnsubscribedAt,
     });
   },
 );
@@ -70,7 +92,7 @@ const unsubscribeStep = createStep(
 export const unsubscribeFromNewsletterWorkflow = createWorkflow(
   "unsubscribe-from-newsletter",
   function (input: UnsubscribeInput) {
-    const result = unsubscribeStep({ email: input.email });
+    const result = unsubscribeStep(input);
 
     when(result, (data) => data.wasChanged).then(() => {
       const eventData = transform({ result }, (data) => ({

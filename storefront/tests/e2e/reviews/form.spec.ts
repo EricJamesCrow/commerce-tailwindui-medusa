@@ -94,12 +94,18 @@ test.describe("Review Form", () => {
     await expect(submitBtn).toBeEnabled();
     await submitBtn.click();
 
-    // Dialog closes immediately (optimistic submission)
+    // Dialog closes after submission
     await expect(page.locator(sel.REVIEW_DIALOG_TITLE)).not.toBeVisible({
       timeout: 5_000,
     });
 
-    // Review appears in the list (use .first() since prior runs may leave matching reviews)
+    await expect(
+      page.getByText(
+        "Thanks for your review. It has been submitted for moderation and will appear once approved.",
+      ),
+    ).toBeVisible({ timeout: 10_000 });
+
+    // Pending reviews should not appear in the public list before approval.
     await expect(
       page
         .locator(sel.REVIEW_CONTENT_TEXT)
@@ -107,7 +113,7 @@ test.describe("Review Form", () => {
           hasText: "This product exceeded my expectations",
         })
         .first(),
-    ).toBeVisible({ timeout: 5_000 });
+    ).toHaveCount(0);
   });
 
   test("shows error when content is empty", async ({

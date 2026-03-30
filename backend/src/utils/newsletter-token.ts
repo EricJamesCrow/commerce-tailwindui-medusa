@@ -2,60 +2,56 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 const TOKEN_EXPIRY_SECONDS = 30 * 24 * 60 * 60; // 30 days
 
-function getSecret(): string {
-  const secret = process.env.NEWSLETTER_HMAC_SECRET;
-  if (!secret) {
-    throw new Error("NEWSLETTER_HMAC_SECRET environment variable is required");
-  }
-  return secret;
+function getLegacySecret(): string | null {
+  return process.env.NEWSLETTER_HMAC_SECRET || null;
 }
 
-function hmac(payload: string): string {
-  return createHmac("sha256", getSecret()).update(payload).digest("hex");
-}
-
-function toBase64Url(str: string): string {
-  return Buffer.from(str).toString("base64url");
+function hmac(payload: string, secret: string): string {
+  return createHmac("sha256", secret).update(payload).digest("hex");
 }
 
 function fromBase64Url(str: string): string {
   return Buffer.from(str, "base64url").toString("utf8");
 }
 
-export function signUnsubscribeToken(email: string): string {
-  const encodedEmail = toBase64Url(email.toLowerCase());
-  const expiry = Math.floor(Date.now() / 1000) + TOKEN_EXPIRY_SECONDS;
-  const payload = `${encodedEmail}:${expiry}`;
-  const signature = hmac(payload);
-  return `${payload}:${signature}`;
-}
-
-export function verifyUnsubscribeToken(
+// Temporary bridge for already-issued unsubscribe links until legacy emails age out.
+export function verifyLegacyUnsubscribeToken(
   token: string,
 ): { email: string } | null {
+  const secret = getLegacySecret();
+  if (!secret) return null;
+
   const parts = token.split(":");
   if (parts.length !== 3) return null;
 
   const [encodedEmail, expiryStr, providedHmac] = parts;
   if (!encodedEmail || !expiryStr || !providedHmac) return null;
 
-  // Verify HMAC with constant-time comparison
   const payload = `${encodedEmail}:${expiryStr}`;
-  const expectedHmac = hmac(payload);
+  const expectedHmac = hmac(payload, secret);
 
-  const a = Buffer.from(providedHmac, "hex");
-  const b = Buffer.from(expectedHmac, "hex");
-  if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
+  const providedBuffer = Buffer.from(providedHmac, "hex");
+  const expectedBuffer = Buffer.from(expectedHmac, "hex");
+  if (
+    providedBuffer.length !== expectedBuffer.length ||
+    !timingSafeEqual(providedBuffer, expectedBuffer)
+  ) {
+    return null;
+  }
 
-  // Check expiry
-  const expiry = parseInt(expiryStr, 10);
-  if (isNaN(expiry) || expiry <= Date.now() / 1000) return null;
+  const expiry = Number.parseInt(expiryStr, 10);
+  if (!Number.isFinite(expiry) || expiry <= Date.now() / 1000) {
+    return null;
+  }
 
-  // Decode email
   try {
-    const email = fromBase64Url(encodedEmail);
+    const email = fromBase64Url(encodedEmail).toLowerCase();
+    if (!email) return null;
+
     return { email };
   } catch {
     return null;
   }
 }
+
+export const LEGACY_NEWSLETTER_TOKEN_EXPIRY_SECONDS = TOKEN_EXPIRY_SECONDS;

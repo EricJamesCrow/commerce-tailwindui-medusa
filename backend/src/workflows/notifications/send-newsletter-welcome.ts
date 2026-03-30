@@ -5,9 +5,11 @@ import {
   transform,
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk";
+import { MedusaError } from "@medusajs/framework/utils";
 import { sendNotificationsStep } from "@medusajs/medusa/core-flows";
+import { NEWSLETTER_MODULE } from "../../modules/newsletter";
+import type NewsletterModuleService from "../../modules/newsletter/service";
 import { EmailTemplates } from "../../modules/resend/templates/template-registry";
-import { signUnsubscribeToken } from "../../utils/newsletter-token";
 import { resolveStorefrontUrl } from "../../subscribers/_helpers/resolve-urls";
 
 type SendWelcomeInput = {
@@ -18,26 +20,62 @@ type SendWelcomeInput = {
 
 const buildWelcomeNotificationStep = createStep(
   "build-newsletter-welcome-notification",
-  async (input: SendWelcomeInput) => {
+  async (input: SendWelcomeInput, { container }) => {
     const storefrontUrl = resolveStorefrontUrl();
     if (!storefrontUrl) {
       return new StepResponse(null);
     }
 
-    const token = signUnsubscribeToken(input.email);
-    const unsubscribeUrl = `${storefrontUrl}/newsletter/unsubscribe?token=${token}`;
+    const newsletterService: NewsletterModuleService =
+      container.resolve(NEWSLETTER_MODULE);
+    const unsubscribeNonce = newsletterService.generateUnsubscribeNonce();
+    const [subscriber] = await newsletterService.listSubscribers(
+      { id: input.subscriber_id },
+      { take: 1 },
+    );
 
-    return new StepResponse({
-      to: input.email,
-      channel: "email" as const,
-      template: input.template || EmailTemplates.NEWSLETTER_WELCOME,
-      data: {
-        email: input.email,
-        unsubscribeUrl,
+    if (!subscriber) {
+      throw new MedusaError(
+        MedusaError.Types.NOT_FOUND,
+        "Subscriber not found",
+      );
+    }
+
+    await newsletterService.updateSubscribers({
+      id: input.subscriber_id,
+      unsubscribe_nonce: unsubscribeNonce,
+    });
+
+    const unsubscribeUrl = `${storefrontUrl}/newsletter/unsubscribe?token=${unsubscribeNonce}`;
+
+    return new StepResponse(
+      {
+        to: input.email,
+        channel: "email" as const,
+        template: input.template || EmailTemplates.NEWSLETTER_WELCOME,
+        data: {
+          email: input.email,
+          unsubscribeUrl,
+        },
+        trigger_type: "newsletter.subscribed",
+        resource_id: input.subscriber_id,
+        resource_type: "newsletter_subscriber",
       },
-      trigger_type: "newsletter.subscribed",
-      resource_id: input.subscriber_id,
-      resource_type: "newsletter_subscriber",
+      {
+        subscriber_id: input.subscriber_id,
+        previousNonce: subscriber.unsubscribe_nonce ?? null,
+      },
+    );
+  },
+  async (compensationData, { container }) => {
+    if (!compensationData) return;
+
+    const newsletterService: NewsletterModuleService =
+      container.resolve(NEWSLETTER_MODULE);
+
+    await newsletterService.updateSubscribers({
+      id: compensationData.subscriber_id,
+      unsubscribe_nonce: compensationData.previousNonce,
     });
   },
 );

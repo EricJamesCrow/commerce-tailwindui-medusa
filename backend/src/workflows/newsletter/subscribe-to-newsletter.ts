@@ -48,6 +48,7 @@ const upsertSubscriberStep = createStep(
       if (wasUnsubscribed) {
         updates.status = "active";
         updates.unsubscribed_at = null;
+        updates.unsubscribe_nonce = null;
         needsUpdate = true;
       }
 
@@ -77,6 +78,7 @@ const upsertSubscriberStep = createStep(
       source: input.source,
       customer_id: input.customer_id || null,
       status: "active",
+      unsubscribe_nonce: null,
     });
 
     return new StepResponse(
