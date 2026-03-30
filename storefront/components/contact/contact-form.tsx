@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 
-type FormState = "idle" | "submitting" | "success" | "error";
+type FormState = "idle" | "submitting" | "success";
 
 export function ContactForm() {
   const [state, setState] = useState<FormState>("idle");
@@ -135,11 +135,6 @@ export function ContactForm() {
           {state === "submitting" ? "Sending\u2026" : "Send message"}
         </button>
       </div>
-      {state === "error" && (
-        <p className="mt-4 text-center text-sm text-red-600">
-          Something went wrong. Please try again or email us directly.
-        </p>
-      )}
     </form>
   );
 }

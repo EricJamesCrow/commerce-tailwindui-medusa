@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const faqs = [
   // Shipping & Delivery
   {
@@ -52,8 +54,6 @@ const faqs = [
       "We never store raw card numbers. When you save a card for future purchases, it is tokenized by Stripe and stored on their PCI-compliant servers — your details never touch ours.",
   },
 ];
-
-import Link from "next/link";
 
 export function FaqSection() {
   return (

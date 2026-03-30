@@ -1,4 +1,6 @@
 // storefront/components/about/about-team.tsx
+import Image from "next/image";
+
 const team = [
   {
     name: "Alex Rivera",
@@ -56,9 +58,11 @@ export function AboutTeam() {
       >
         {team.map((person) => (
           <li key={person.name}>
-            <img
+            <Image
               alt={person.name}
               src={person.imageUrl}
+              width={96}
+              height={96}
               className="mx-auto size-24 rounded-full outline outline-1 -outline-offset-1 outline-black/5"
             />
             <h3 className="mt-6 text-base/7 font-semibold tracking-tight text-gray-900">

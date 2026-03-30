@@ -1,4 +1,6 @@
 // storefront/components/about/about-mission.tsx
+import Image from "next/image";
+
 const stats = [
   { label: "Products shipped to date", value: "12,000+" },
   { label: "Countries we deliver to", value: "42" },
@@ -51,9 +53,11 @@ export function AboutMission() {
 
       {/* Wide image banner */}
       <div className="mt-32 sm:mt-40 xl:mx-auto xl:max-w-7xl xl:px-8">
-        <img
+        <Image
           alt="Our team at work"
           src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?ixlib=rb-4.0.3&auto=format&fit=crop&w=2832&q=80"
+          width={2832}
+          height={1133}
           className="aspect-[5/2] w-full object-cover outline outline-1 -outline-offset-1 outline-black/5 xl:rounded-3xl"
         />
       </div>
