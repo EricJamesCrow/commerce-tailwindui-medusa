@@ -325,7 +325,7 @@ export function NavbarClient({
         >
           <div className="border-b border-gray-200">
             <div className="flex h-16 items-center justify-between">
-              <div className="relative z-50 flex flex-1 items-center lg:hidden">
+              <div className="relative flex flex-1 items-center lg:hidden">
                 <button
                   ref={hamburgerButtonRef}
                   type="button"
