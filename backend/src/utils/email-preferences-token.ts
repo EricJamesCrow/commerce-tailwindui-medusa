@@ -11,7 +11,19 @@ type EmailPreferencesTokenPayload = {
 };
 
 function getEmailPreferencesSecret(): string {
-  return process.env.JWT_SECRET || "supersecret";
+  const secret = process.env.JWT_SECRET;
+
+  if (secret) {
+    return secret;
+  }
+
+  if (process.env.NODE_ENV === "test") {
+    return "test-email-preferences-secret";
+  }
+
+  throw new Error(
+    "JWT_SECRET is required to issue or verify email preferences tokens",
+  );
 }
 
 export function issueEmailPreferencesToken(email: string): string {
@@ -64,6 +76,9 @@ export function verifyEmailPreferencesToken(token: string): string {
 export function buildEmailPreferencesUrl(email: string): string | null {
   const storefrontUrl = resolveStorefrontUrl();
   if (!storefrontUrl) {
+    console.warn(
+      "[email-preferences-token] STOREFRONT_URL not configured; skipping preferences link injection",
+    );
     return null;
   }
 

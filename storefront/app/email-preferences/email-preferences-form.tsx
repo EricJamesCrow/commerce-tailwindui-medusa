@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useNotification } from "components/notifications";
 import {
   updateEmailPreferencesFromToken,
@@ -9,13 +9,17 @@ import {
 } from "lib/medusa/email-preferences";
 
 type EmailPreferencesLinkFormProps = {
-  preferences: EmailPreferences;
-  token: string;
+  initialPreferences: EmailPreferences | null;
+  initialToken: string | null;
 };
 
+export const EMAIL_PREFERENCES_TOKEN_STORAGE_KEY = "__email_preferences_token";
+export const EMAIL_PREFERENCES_STORAGE_KEY =
+  "__email_preferences_initial_preferences";
+
 export function EmailPreferencesLinkForm({
-  preferences,
-  token,
+  initialPreferences,
+  initialToken,
 }: EmailPreferencesLinkFormProps) {
   const [state, formAction, isPending] = useActionState<
     EmailPreferencesState,
@@ -23,6 +27,40 @@ export function EmailPreferencesLinkForm({
   >(updateEmailPreferencesFromToken, null);
   const { showNotification } = useNotification();
   const handledState = useRef<EmailPreferencesState>(null);
+  const [preferences, setPreferences] = useState<EmailPreferences | null>(
+    initialPreferences,
+  );
+  const [token, setToken] = useState<string | null>(initialToken);
+  const [hasLoadedStoredState, setHasLoadedStoredState] = useState(
+    Boolean(initialPreferences && initialToken),
+  );
+
+  useEffect(() => {
+    if (hasLoadedStoredState) {
+      return;
+    }
+
+    const storedToken = sessionStorage.getItem(
+      EMAIL_PREFERENCES_TOKEN_STORAGE_KEY,
+    );
+    const storedPreferences = sessionStorage.getItem(
+      EMAIL_PREFERENCES_STORAGE_KEY,
+    );
+
+    if (storedToken) {
+      setToken(storedToken);
+    }
+
+    if (storedPreferences) {
+      try {
+        setPreferences(JSON.parse(storedPreferences) as EmailPreferences);
+      } catch {
+        sessionStorage.removeItem(EMAIL_PREFERENCES_STORAGE_KEY);
+      }
+    }
+
+    setHasLoadedStoredState(true);
+  }, [hasLoadedStoredState]);
 
   useEffect(() => {
     if (!state || handledState.current === state) {
@@ -32,6 +70,14 @@ export function EmailPreferencesLinkForm({
     handledState.current = state;
 
     if (state.success) {
+      if (state.preferences) {
+        setPreferences(state.preferences);
+        sessionStorage.setItem(
+          EMAIL_PREFERENCES_STORAGE_KEY,
+          JSON.stringify(state.preferences),
+        );
+      }
+
       showNotification(
         "success",
         "Preferences updated",
@@ -44,6 +90,37 @@ export function EmailPreferencesLinkForm({
       showNotification("error", "Could not save preferences", state.error);
     }
   }, [showNotification, state]);
+
+  if (!hasLoadedStoredState) {
+    return (
+      <div className="mx-auto w-full max-w-2xl rounded-3xl border border-gray-200 bg-white px-8 py-10 shadow-sm">
+        <p className="text-primary-600 text-sm/6 font-medium">
+          Email preferences
+        </p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900">
+          Loading your preferences
+        </h1>
+        <p className="mt-4 text-sm/6 text-gray-600">
+          Preparing your secure preferences page.
+        </p>
+      </div>
+    );
+  }
+
+  if (!token || !preferences) {
+    return (
+      <div className="mx-auto w-full max-w-2xl rounded-3xl border border-red-200 bg-white px-8 py-10 shadow-sm">
+        <p className="text-sm/6 font-medium text-red-600">Invalid link</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900">
+          This preferences link can&apos;t be used
+        </h1>
+        <p className="mt-4 text-sm/6 text-gray-600">
+          Please open the latest email from us and use the “manage your email
+          preferences” link in the footer.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <form action={formAction} className="mx-auto w-full max-w-2xl">

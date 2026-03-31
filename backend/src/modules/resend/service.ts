@@ -150,13 +150,6 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
     },
   };
   private customerFacingTemplates = new Set<string>([
-    EmailTemplates.ORDER_CONFIRMATION,
-    EmailTemplates.PASSWORD_RESET,
-    EmailTemplates.WELCOME,
-    EmailTemplates.SHIPPING_CONFIRMATION,
-    EmailTemplates.ORDER_CANCELED,
-    EmailTemplates.REFUND_CONFIRMATION,
-    EmailTemplates.ABANDONED_CART,
     EmailTemplates.NEWSLETTER_WELCOME,
     EmailTemplates.NEWSLETTER_WELCOME_BACK,
   ]);

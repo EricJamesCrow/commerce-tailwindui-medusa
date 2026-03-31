@@ -50,27 +50,45 @@ export async function GET(
   req: AuthenticatedMedusaRequest,
   res: MedusaResponse,
 ) {
-  const email = await resolveCustomerEmail(req);
-  const newsletterService: NewsletterModuleService =
-    req.scope.resolve(NEWSLETTER_MODULE);
+  try {
+    const email = await resolveCustomerEmail(req);
+    const newsletterService: NewsletterModuleService =
+      req.scope.resolve(NEWSLETTER_MODULE);
 
-  const [subscriber] = await newsletterService.listSubscribers(
-    { email },
-    { take: 1 },
-  );
+    const [subscriber] = await newsletterService.listSubscribers(
+      { email },
+      { take: 1 },
+    );
 
-  res.status(200).json({
-    preferences: mapPreferences(email, subscriber),
-  });
+    res.status(200).json({
+      preferences: mapPreferences(email, subscriber),
+    });
+  } catch (error) {
+    if (error instanceof MedusaError) {
+      throw error;
+    }
+
+    Sentry.captureException(error, {
+      tags: {
+        route: "customer_email_preferences",
+        source: "account",
+        method: "GET",
+      },
+      extra: {
+        customer_id: req.auth_context.actor_id,
+      },
+      level: "warning",
+    });
+    throw error;
+  }
 }
 
 export async function POST(
   req: AuthenticatedMedusaRequest<PostBody>,
   res: MedusaResponse,
 ) {
-  const email = await resolveCustomerEmail(req);
-
   try {
+    const email = await resolveCustomerEmail(req);
     const { result } = await updateEmailPreferencesWorkflow(req.scope).run({
       input: {
         email,
@@ -93,6 +111,7 @@ export async function POST(
       tags: {
         route: "customer_email_preferences",
         source: "account",
+        method: "POST",
       },
       extra: {
         customer_id: req.auth_context.actor_id,

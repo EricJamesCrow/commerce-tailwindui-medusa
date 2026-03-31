@@ -9,6 +9,7 @@ import {
   sendNotificationsStep,
 } from "@medusajs/medusa/core-flows";
 import { formatOrderForEmailStep } from "../steps/format-order-for-email";
+import { shouldSendOrderUpdateEmailStep } from "../steps/should-send-order-update-email";
 import { createCurrencyFormatter } from "./_format-helpers";
 import { EmailTemplates } from "../../modules/resend/templates/template-registry";
 
@@ -78,6 +79,9 @@ export const sendOrderCanceledWorkflow = createWorkflow(
     );
 
     const formatted = formatOrderForEmailStep({ order });
+    const shouldSendOrderUpdateEmail = shouldSendOrderUpdateEmailStep({
+      email: order.email,
+    });
 
     const notifications = transform(
       { formatted, refundMessage },
@@ -111,8 +115,13 @@ export const sendOrderCanceledWorkflow = createWorkflow(
         ];
       },
     );
+    const filteredNotifications = transform(
+      { notifications, shouldSendOrderUpdateEmail },
+      ({ notifications: queuedNotifications, shouldSendOrderUpdateEmail }) =>
+        shouldSendOrderUpdateEmail ? queuedNotifications : [],
+    );
 
-    sendNotificationsStep(notifications);
+    sendNotificationsStep(filteredNotifications);
 
     return new WorkflowResponse({
       orderId: input.orderId,

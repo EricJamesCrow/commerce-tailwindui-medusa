@@ -30,26 +30,45 @@ function mapPreferences(
 
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const { token } = req.validatedQuery as GetQuery;
-  const email = verifyEmailPreferencesToken(token);
-  const newsletterService: NewsletterModuleService =
-    req.scope.resolve(NEWSLETTER_MODULE);
 
-  const [subscriber] = await newsletterService.listSubscribers(
-    { email },
-    { take: 1 },
-  );
+  try {
+    const email = verifyEmailPreferencesToken(token);
+    const newsletterService: NewsletterModuleService =
+      req.scope.resolve(NEWSLETTER_MODULE);
+    const [subscriber] = await newsletterService.listSubscribers(
+      { email },
+      { take: 1 },
+    );
 
-  res.status(200).json({
-    preferences: mapPreferences(email, subscriber),
-  });
+    res.status(200).json({
+      preferences: mapPreferences(email, subscriber),
+    });
+  } catch (error) {
+    if (error instanceof MedusaError) {
+      throw error;
+    }
+
+    Sentry.captureException(error, {
+      tags: {
+        route: "newsletter_preferences",
+        source: "email_link",
+        method: "GET",
+      },
+      extra: {
+        has_token: Boolean(token),
+      },
+      level: "warning",
+    });
+    throw error;
+  }
 }
 
 export async function POST(req: MedusaRequest<PostBody>, res: MedusaResponse) {
   const { token, newsletter_enabled, order_updates_enabled } =
     req.validatedBody;
-  const email = verifyEmailPreferencesToken(token);
 
   try {
+    const email = verifyEmailPreferencesToken(token);
     const { result } = await updateEmailPreferencesWorkflow(req.scope).run({
       input: {
         email,
@@ -71,8 +90,10 @@ export async function POST(req: MedusaRequest<PostBody>, res: MedusaResponse) {
       tags: {
         route: "newsletter_preferences",
         source: "email_link",
+        method: "POST",
       },
       extra: {
+        has_token: Boolean(token),
         newsletter_enabled,
         order_updates_enabled,
       },

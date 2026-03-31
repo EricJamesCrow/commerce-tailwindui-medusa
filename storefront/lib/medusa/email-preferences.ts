@@ -46,7 +46,10 @@ function parseCheckbox(formData: FormData, key: string): boolean {
     .some((value) => value === "true" || value === "on");
 }
 
-function classifyEmailPreferencesError(error: unknown): {
+function classifyEmailPreferencesError(
+  source: "account" | "email_link",
+  error: unknown,
+): {
   errorType: "validation" | "backend" | "unknown";
   userMessage: string;
 } {
@@ -59,7 +62,21 @@ function classifyEmailPreferencesError(error: unknown): {
   }
 
   if (isEmailPreferencesFetchError(error)) {
-    if (error.status === 400 || error.status === 401 || error.status === 422) {
+    if (error.status === 401) {
+      return source === "account"
+        ? {
+            errorType: "validation",
+            userMessage:
+              "Your session expired. Please sign in again and try once more.",
+          }
+        : {
+            errorType: "validation",
+            userMessage:
+              "We couldn't verify this preferences link. Please use the latest email you received.",
+          };
+    }
+
+    if (error.status === 400 || error.status === 422) {
       return {
         errorType: "validation",
         userMessage:
@@ -155,7 +172,10 @@ export async function updateAccountEmailPreferences(
       preferences,
     };
   } catch (error) {
-    const { errorType, userMessage } = classifyEmailPreferencesError(error);
+    const { errorType, userMessage } = classifyEmailPreferencesError(
+      "account",
+      error,
+    );
 
     if (errorType === "backend" || errorType === "unknown") {
       Sentry.captureException(error, {
@@ -217,7 +237,10 @@ export async function updateEmailPreferencesFromToken(
       preferences,
     };
   } catch (error) {
-    const { errorType, userMessage } = classifyEmailPreferencesError(error);
+    const { errorType, userMessage } = classifyEmailPreferencesError(
+      "email_link",
+      error,
+    );
 
     if (errorType === "backend" || errorType === "unknown") {
       Sentry.captureException(error, {

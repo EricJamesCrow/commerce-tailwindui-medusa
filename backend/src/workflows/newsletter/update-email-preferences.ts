@@ -52,6 +52,83 @@ type CompensationData =
       };
     };
 
+type ExistingSubscriber = {
+  id: string;
+  customer_id?: string | null;
+  email: string;
+  order_updates_enabled?: boolean | null;
+  status: "active" | "pending" | "unsubscribed";
+  unsubscribe_token?: string | null;
+  unsubscribe_token_expires_at?: Date | null;
+  unsubscribed_at?: Date | null;
+};
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    (("code" in error && (error as { code?: string }).code === "23505") ||
+      error.message.includes("unique") ||
+      error.message.includes("duplicate"))
+  );
+}
+
+async function findSubscriberByEmail(
+  newsletterService: NewsletterModuleService,
+  email: string,
+): Promise<ExistingSubscriber | null> {
+  const [subscriber] = await newsletterService.listSubscribers(
+    { email },
+    { take: 1 },
+  );
+
+  return (subscriber as ExistingSubscriber | undefined) ?? null;
+}
+
+function buildSubscriberUpdatePayload(
+  existing: ExistingSubscriber,
+  input: UpdateEmailPreferencesInput,
+  nextStatus: "active" | "unsubscribed",
+  unsubscribeCredential: {
+    token: string;
+    expiresAt: Date;
+  } | null,
+  nextUnsubscribedAt: Date | null,
+) {
+  return {
+    id: existing.id,
+    customer_id: input.customer_id || existing.customer_id || null,
+    order_updates_enabled: input.order_updates_enabled,
+    status: nextStatus,
+    unsubscribe_token: input.newsletter_enabled
+      ? (unsubscribeCredential?.token ?? existing.unsubscribe_token)
+      : null,
+    unsubscribe_token_expires_at: input.newsletter_enabled
+      ? (unsubscribeCredential?.expiresAt ??
+        existing.unsubscribe_token_expires_at)
+      : null,
+    unsubscribed_at: input.newsletter_enabled
+      ? null
+      : existing.status === "unsubscribed"
+        ? (existing.unsubscribed_at ?? nextUnsubscribedAt)
+        : nextUnsubscribedAt,
+  };
+}
+
+function buildCompensationData(existing: ExistingSubscriber): CompensationData {
+  return {
+    operation: "update",
+    previous: {
+      id: existing.id,
+      customer_id: existing.customer_id,
+      order_updates_enabled: existing.order_updates_enabled,
+      status: existing.status,
+      unsubscribe_token: existing.unsubscribe_token,
+      unsubscribe_token_expires_at: existing.unsubscribe_token_expires_at,
+      unsubscribed_at: existing.unsubscribed_at,
+    },
+  } satisfies CompensationData;
+}
+
 const updateEmailPreferencesStep = createStep<
   UpdateEmailPreferencesInput,
   UpdateEmailPreferencesStepOutput,
@@ -65,42 +142,82 @@ const updateEmailPreferencesStep = createStep<
     const nextStatus = input.newsletter_enabled ? "active" : "unsubscribed";
     const nextUnsubscribedAt = input.newsletter_enabled ? null : new Date();
 
-    const [existing] = await newsletterService.listSubscribers(
-      { email },
-      { take: 1 },
-    );
+    const existing = await findSubscriberByEmail(newsletterService, email);
 
     if (!existing) {
       const unsubscribeCredential = input.newsletter_enabled
         ? issueUnsubscribeToken()
         : null;
 
-      const subscriber = await newsletterService.createSubscribers({
-        email,
-        source: input.source,
-        customer_id: input.customer_id || null,
-        order_updates_enabled: input.order_updates_enabled,
-        status: nextStatus,
-        unsubscribe_token: unsubscribeCredential?.token ?? null,
-        unsubscribe_token_expires_at: unsubscribeCredential?.expiresAt ?? null,
-        unsubscribed_at: nextUnsubscribedAt,
-      });
+      try {
+        const subscriber = await newsletterService.createSubscribers({
+          email,
+          source: input.source,
+          customer_id: input.customer_id || null,
+          order_updates_enabled: input.order_updates_enabled,
+          status: nextStatus,
+          unsubscribe_token: unsubscribeCredential?.token ?? null,
+          unsubscribe_token_expires_at:
+            unsubscribeCredential?.expiresAt ?? null,
+          unsubscribed_at: nextUnsubscribedAt,
+        });
 
-      return new StepResponse<
-        UpdateEmailPreferencesStepOutput,
-        CompensationData
-      >(
-        {
-          subscriber,
-          is_new_subscriber: true,
-          previous_status: null,
-          status_changed: input.newsletter_enabled,
-        },
-        {
-          operation: "create",
-          id: subscriber.id,
-        } satisfies CompensationData,
-      );
+        return new StepResponse<
+          UpdateEmailPreferencesStepOutput,
+          CompensationData
+        >(
+          {
+            subscriber,
+            is_new_subscriber: true,
+            previous_status: null,
+            status_changed: input.newsletter_enabled,
+          },
+          {
+            operation: "create",
+            id: subscriber.id,
+          } satisfies CompensationData,
+        );
+      } catch (error) {
+        if (!isUniqueViolation(error)) {
+          throw error;
+        }
+
+        const winner = await findSubscriberByEmail(newsletterService, email);
+
+        if (!winner) {
+          throw error;
+        }
+
+        const shouldIssueToken =
+          input.newsletter_enabled &&
+          (!winner.unsubscribe_token ||
+            isUnsubscribeTokenExpired(winner.unsubscribe_token_expires_at));
+        const winnerCredential = shouldIssueToken
+          ? issueUnsubscribeToken()
+          : null;
+        const subscriber = await newsletterService.updateSubscribers(
+          buildSubscriberUpdatePayload(
+            winner,
+            input,
+            nextStatus,
+            winnerCredential,
+            nextUnsubscribedAt,
+          ),
+        );
+
+        return new StepResponse<
+          UpdateEmailPreferencesStepOutput,
+          CompensationData
+        >(
+          {
+            subscriber,
+            is_new_subscriber: false,
+            previous_status: winner.status,
+            status_changed: winner.status !== nextStatus,
+          },
+          buildCompensationData(winner),
+        );
+      }
     }
 
     const shouldIssueToken =
@@ -111,20 +228,15 @@ const updateEmailPreferencesStep = createStep<
       ? issueUnsubscribeToken()
       : null;
 
-    const subscriber = await newsletterService.updateSubscribers({
-      id: existing.id,
-      customer_id: input.customer_id || existing.customer_id || null,
-      order_updates_enabled: input.order_updates_enabled,
-      status: nextStatus,
-      unsubscribe_token: input.newsletter_enabled
-        ? (unsubscribeCredential?.token ?? existing.unsubscribe_token)
-        : null,
-      unsubscribe_token_expires_at: input.newsletter_enabled
-        ? (unsubscribeCredential?.expiresAt ??
-          existing.unsubscribe_token_expires_at)
-        : null,
-      unsubscribed_at: input.newsletter_enabled ? null : nextUnsubscribedAt,
-    });
+    const subscriber = await newsletterService.updateSubscribers(
+      buildSubscriberUpdatePayload(
+        existing,
+        input,
+        nextStatus,
+        unsubscribeCredential,
+        nextUnsubscribedAt,
+      ),
+    );
 
     return new StepResponse<UpdateEmailPreferencesStepOutput, CompensationData>(
       {
@@ -133,18 +245,7 @@ const updateEmailPreferencesStep = createStep<
         previous_status: existing.status,
         status_changed: existing.status !== nextStatus,
       },
-      {
-        operation: "update",
-        previous: {
-          id: existing.id,
-          customer_id: existing.customer_id,
-          order_updates_enabled: existing.order_updates_enabled,
-          status: existing.status,
-          unsubscribe_token: existing.unsubscribe_token,
-          unsubscribe_token_expires_at: existing.unsubscribe_token_expires_at,
-          unsubscribed_at: existing.unsubscribed_at,
-        },
-      } satisfies CompensationData,
+      buildCompensationData(existing),
     );
   },
   async (compensationData, { container }) => {
@@ -194,7 +295,9 @@ export const updateEmailPreferencesWorkflow = createWorkflow(
         },
       }));
 
-      emitEventStep(eventData);
+      emitEventStep(eventData).config({
+        name: "emit-email-preferences-subscribed",
+      });
     });
 
     when(
@@ -209,7 +312,9 @@ export const updateEmailPreferencesWorkflow = createWorkflow(
         },
       }));
 
-      emitEventStep(eventData);
+      emitEventStep(eventData).config({
+        name: "emit-email-preferences-unsubscribed",
+      });
     });
 
     const response = transform({ result }, (data) => ({

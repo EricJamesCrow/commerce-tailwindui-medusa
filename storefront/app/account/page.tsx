@@ -11,12 +11,15 @@ export const metadata = {
 export default async function AccountPage() {
   const customer = await retrieveCustomer();
   const preferences = await getAccountEmailPreferences().catch((error) => {
-    Sentry.captureException(error, {
-      tags: {
+    Sentry.withScope((scope) => {
+      scope.setLevel("warning");
+      scope.setTags({
         page: "account",
         section: "email_preferences",
-      },
-      level: "warning",
+      });
+      scope.setExtra("route", "/account");
+      scope.setExtra("function", "AccountPage.getAccountEmailPreferences");
+      Sentry.captureException(error);
     });
     return null;
   });
