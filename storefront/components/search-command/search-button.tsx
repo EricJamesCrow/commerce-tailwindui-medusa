@@ -11,7 +11,7 @@ export function SearchButton({ onClick }: SearchButtonProps) {
     <button
       onClick={onClick}
       type="button"
-      className="group flex items-center gap-x-3 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+      className="group flex cursor-pointer items-center gap-x-3 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
     >
       <MagnifyingGlassIcon className="h-5 w-5 flex-none text-gray-400 group-hover:text-gray-500" />
       <span className="flex-auto">Search products...</span>

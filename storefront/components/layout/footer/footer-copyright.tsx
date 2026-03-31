@@ -21,7 +21,7 @@ export default function FooterCopyright({
           <button
             type="button"
             onClick={consent.openPreferences}
-            className="underline-offset-2 transition-colors hover:text-gray-700 hover:underline"
+            className="cursor-pointer underline-offset-2 transition-colors hover:text-gray-700 hover:underline"
           >
             Cookie preferences
           </button>

@@ -38,7 +38,7 @@ export function ReviewImageLightbox({
             onClick={onClose}
             aria-label="Close image"
             data-testid="review-lightbox-close"
-            className="absolute -top-10 right-0 text-white hover:text-gray-300"
+            className="absolute -top-10 right-0 cursor-pointer text-white hover:text-gray-300"
           >
             <XMarkIcon className="size-8" />
           </button>
@@ -61,7 +61,7 @@ export function ReviewImageLightbox({
                 }
                 aria-label="Previous image"
                 data-testid="review-lightbox-prev"
-                className="rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
+                className="cursor-pointer rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
               >
                 <ChevronLeftIcon className="size-6" />
               </button>
@@ -72,7 +72,7 @@ export function ReviewImageLightbox({
                 }
                 aria-label="Next image"
                 data-testid="review-lightbox-next"
-                className="rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
+                className="cursor-pointer rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
               >
                 <ChevronRightIcon className="size-6" />
               </button>

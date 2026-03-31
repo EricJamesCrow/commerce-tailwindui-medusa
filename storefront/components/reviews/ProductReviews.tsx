@@ -115,7 +115,7 @@ export function ProductReviews({
               type="button"
               onClick={loadMore}
               disabled={isLoadingMore}
-              className="rounded-md border border-gray-300 bg-white px-6 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50"
+              className="cursor-pointer rounded-md border border-gray-300 bg-white px-6 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50 disabled:cursor-not-allowed"
             >
               {isLoadingMore ? "Loading..." : "Load more reviews"}
             </button>

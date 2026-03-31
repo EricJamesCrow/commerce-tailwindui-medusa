@@ -49,7 +49,7 @@ export function ReorderButton({
           "inline-flex items-center gap-x-1.5 text-sm font-medium",
           state === "loading"
             ? "cursor-wait text-gray-400"
-            : "text-primary-600 hover:text-primary-500",
+            : "text-primary-600 hover:text-primary-500 cursor-pointer",
           className,
         )}
       >

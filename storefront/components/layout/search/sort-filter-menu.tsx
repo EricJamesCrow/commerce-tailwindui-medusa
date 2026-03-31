@@ -37,7 +37,7 @@ export function SortFilterMenu() {
 
   return (
     <Menu as="div" className="relative inline-block text-left">
-      <MenuButton className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
+      <MenuButton className="group inline-flex cursor-pointer justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
         Sort
         <ChevronDownIcon
           aria-hidden="true"

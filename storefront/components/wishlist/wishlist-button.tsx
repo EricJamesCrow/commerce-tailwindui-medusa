@@ -122,7 +122,7 @@ export function WishlistButton({
       onClick={handleClick}
       disabled={isPending}
       className={clsx(
-        "group/heart rounded-full p-2 transition-colors",
+        "group/heart cursor-pointer rounded-full p-2 transition-colors",
         isWishlisted
           ? "text-red-500 hover:text-red-600"
           : "text-gray-400 hover:text-red-500",

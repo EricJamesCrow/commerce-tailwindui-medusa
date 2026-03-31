@@ -61,7 +61,7 @@ export function Cart() {
       {/* Cart Button */}
       <button
         onClick={openCart}
-        className="group focus-visible:outline-primary-600 -m-2 flex items-center rounded-md p-2 focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="group focus-visible:outline-primary-600 -m-2 flex cursor-pointer items-center rounded-md p-2 focus-visible:outline-2 focus-visible:outline-offset-2"
       >
         <ShoppingBagIcon
           aria-hidden="true"
@@ -99,7 +99,7 @@ export function Cart() {
                         <button
                           type="button"
                           onClick={closeCart}
-                          className="focus-visible:outline-primary-600 relative -m-2 rounded-md p-2 text-gray-400 hover:text-gray-500 focus-visible:outline-2 focus-visible:outline-offset-2"
+                          className="focus-visible:outline-primary-600 relative -m-2 cursor-pointer rounded-md p-2 text-gray-400 hover:text-gray-500 focus-visible:outline-2 focus-visible:outline-offset-2"
                         >
                           <span className="absolute -inset-0.5" />
                           <span className="sr-only">Close panel</span>
@@ -249,7 +249,7 @@ export function Cart() {
                         <button
                           type="button"
                           onClick={closeCart}
-                          className="text-primary-600 hover:text-primary-500 focus-visible:outline-primary-600 rounded font-medium focus-visible:outline-2 focus-visible:outline-offset-2"
+                          className="text-primary-600 hover:text-primary-500 focus-visible:outline-primary-600 cursor-pointer rounded font-medium focus-visible:outline-2 focus-visible:outline-offset-2"
                         >
                           Continue Shopping
                           <span aria-hidden="true"> &rarr;</span>
@@ -272,7 +272,7 @@ function CheckoutButton() {
 
   return (
     <button
-      className="bg-primary-600 hover:bg-primary-700 focus-visible:ring-primary-500 flex w-full items-center justify-center rounded-md px-6 py-3 text-base font-medium text-white shadow-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
+      className="bg-primary-600 hover:bg-primary-700 focus-visible:ring-primary-500 flex w-full cursor-pointer items-center justify-center rounded-md px-6 py-3 text-base font-medium text-white shadow-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
       type="submit"
       disabled={pending}
     >

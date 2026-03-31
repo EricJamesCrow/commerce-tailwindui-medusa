@@ -52,7 +52,7 @@ export function NotificationContainer() {
                     <button
                       type="button"
                       onClick={() => dismissNotification(notification.id)}
-                      className="focus:ring-primary-500 inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2 focus:outline-none"
+                      className="focus:ring-primary-500 inline-flex cursor-pointer rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2 focus:outline-none"
                     >
                       <span className="sr-only">Close</span>
                       <XMarkIcon className="size-5" />

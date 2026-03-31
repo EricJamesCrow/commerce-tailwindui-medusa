@@ -89,7 +89,7 @@ export function ReviewList({ reviews }: { reviews: Review[] }) {
                         onClick={() =>
                           setLightbox({ images: sortedImages, index: i })
                         }
-                        className="overflow-hidden rounded-md"
+                        className="cursor-pointer overflow-hidden rounded-md"
                       >
                         <img
                           src={img.url}

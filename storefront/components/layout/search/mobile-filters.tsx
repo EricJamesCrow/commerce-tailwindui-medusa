@@ -46,7 +46,7 @@ export function MobileFilters({
           setMobileFiltersOpen(true);
           trackClient("mobile_filters_opened", {});
         }}
-        className="-m-2 ml-4 p-2 text-gray-400 hover:text-gray-500 sm:ml-6 lg:hidden"
+        className="-m-2 ml-4 cursor-pointer p-2 text-gray-400 hover:text-gray-500 sm:ml-6 lg:hidden"
       >
         <span className="sr-only">Filters</span>
         <FunnelIcon aria-hidden="true" className="size-5" />
@@ -73,7 +73,7 @@ export function MobileFilters({
               <button
                 type="button"
                 onClick={() => setMobileFiltersOpen(false)}
-                className="focus-visible:ring-primary-500 relative -mr-2 flex size-10 items-center justify-center rounded-md bg-white p-2 text-gray-400 hover:bg-gray-50 focus:outline-hidden focus-visible:ring-2"
+                className="focus-visible:ring-primary-500 relative -mr-2 flex size-10 cursor-pointer items-center justify-center rounded-md bg-white p-2 text-gray-400 hover:bg-gray-50 focus:outline-hidden focus-visible:ring-2"
               >
                 <span className="absolute -inset-0.5" />
                 <span className="sr-only">Close menu</span>
