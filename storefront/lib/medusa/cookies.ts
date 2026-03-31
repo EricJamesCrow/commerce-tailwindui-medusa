@@ -1,5 +1,10 @@
 import "server-only";
 import { cookies as nextCookies } from "next/headers";
+import {
+  NEWSLETTER_UNSUBSCRIBE_COOKIE,
+  getExpiredNewsletterUnsubscribeCookieOptions,
+  getNewsletterUnsubscribeCookieOptions,
+} from "../newsletter-unsubscribe-cookie";
 
 // --- Cart Cookie ---
 
@@ -71,6 +76,35 @@ export async function setWishlistId(wishlistId: string): Promise<void> {
 export async function removeWishlistId(): Promise<void> {
   const cookies = await nextCookies();
   cookies.set(WISHLIST_COOKIE, "", { maxAge: -1 });
+}
+
+// --- Newsletter Unsubscribe Token ---
+
+export async function getNewsletterUnsubscribeToken(): Promise<
+  string | undefined
+> {
+  const cookies = await nextCookies();
+  return cookies.get(NEWSLETTER_UNSUBSCRIBE_COOKIE)?.value;
+}
+
+export async function setNewsletterUnsubscribeToken(
+  token: string,
+): Promise<void> {
+  const cookies = await nextCookies();
+  cookies.set(
+    NEWSLETTER_UNSUBSCRIBE_COOKIE,
+    token,
+    getNewsletterUnsubscribeCookieOptions(),
+  );
+}
+
+export async function removeNewsletterUnsubscribeToken(): Promise<void> {
+  const cookies = await nextCookies();
+  cookies.set(
+    NEWSLETTER_UNSUBSCRIBE_COOKIE,
+    "",
+    getExpiredNewsletterUnsubscribeCookieOptions(),
+  );
 }
 
 // --- Auth Headers ---

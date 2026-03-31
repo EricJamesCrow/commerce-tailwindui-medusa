@@ -136,6 +136,16 @@ export function getStoredUnsubscribeToken(email: string): string {
   return token;
 }
 
+export function expireStoredUnsubscribeToken(email: string): void {
+  const normalizedEmail = escapeSqlString(email.toLowerCase());
+
+  runSql(
+    `UPDATE newsletter_subscriber
+     SET unsubscribe_token_expires_at = NOW() - INTERVAL '1 minute'
+     WHERE email = '${normalizedEmail}' AND deleted_at IS NULL`,
+  );
+}
+
 export function newsletterSubscriberExists(email: string): boolean {
   const normalizedEmail = escapeSqlString(email.toLowerCase());
   const count = runSql(

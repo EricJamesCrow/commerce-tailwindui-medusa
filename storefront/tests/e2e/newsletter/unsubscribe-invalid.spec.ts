@@ -1,5 +1,11 @@
 import { test, expect } from "@playwright/test";
-import { waitForNewsletterRequestSlot } from "./helpers";
+import {
+  expireStoredUnsubscribeToken,
+  getStoredUnsubscribeToken,
+  subscribeEmailViaApi,
+  uniqueTestEmail,
+  waitForNewsletterRequestSlot,
+} from "./helpers";
 
 test.setTimeout(180_000);
 
@@ -31,6 +37,38 @@ test.describe("Newsletter Unsubscribe Invalid Token", () => {
 
     await expect(
       page.getByRole("heading", { name: "Invalid Link" }),
+    ).toBeVisible();
+  });
+
+  test("shows an expired-link error after confirming with an expired token", async ({
+    page,
+  }, testInfo) => {
+    const email = uniqueTestEmail("unsub-expired", testInfo.project.name);
+
+    await subscribeEmailViaApi(email);
+    const token = getStoredUnsubscribeToken(email);
+    expireStoredUnsubscribeToken(email);
+
+    await page.goto(
+      `/newsletter/unsubscribe?token=${encodeURIComponent(token)}`,
+    );
+    await page.waitForLoadState("networkidle");
+    await expect.poll(() => page.url()).not.toContain("token=");
+
+    await expect(
+      page.getByRole("heading", { name: "Unsubscribe from newsletter" }),
+    ).toBeVisible();
+
+    await waitForNewsletterRequestSlot();
+    await page.getByRole("button", { name: "Confirm unsubscribe" }).click();
+
+    await expect(
+      page.getByRole("heading", { name: "Something went wrong" }),
+    ).toBeVisible({ timeout: 10_000 });
+    await expect(
+      page.getByText(
+        "This unsubscribe link is invalid or has expired. Please use the link in your most recent email.",
+      ),
     ).toBeVisible();
   });
 });

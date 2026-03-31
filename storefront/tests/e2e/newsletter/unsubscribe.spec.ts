@@ -39,4 +39,48 @@ test.describe("Newsletter Unsubscribe", () => {
       page.getByRole("heading", { name: "You've been unsubscribed" }),
     ).toBeVisible({ timeout: 10_000 });
   });
+
+  test("rejects replaying a previously used unsubscribe link", async ({
+    page,
+  }, testInfo) => {
+    const email = uniqueTestEmail("unsub-replay", testInfo.project.name);
+
+    await subscribeEmailViaApi(email);
+    const token = getStoredUnsubscribeToken(email);
+
+    await page.goto(
+      `/newsletter/unsubscribe?token=${encodeURIComponent(token)}`,
+    );
+    await page.waitForLoadState("networkidle");
+    await expect.poll(() => page.url()).not.toContain("token=");
+
+    await waitForNewsletterRequestSlot();
+    await page.getByRole("button", { name: "Confirm unsubscribe" }).click();
+
+    await expect(
+      page.getByRole("heading", { name: "You've been unsubscribed" }),
+    ).toBeVisible({ timeout: 10_000 });
+
+    await page.goto(
+      `/newsletter/unsubscribe?token=${encodeURIComponent(token)}`,
+    );
+    await page.waitForLoadState("networkidle");
+    await expect.poll(() => page.url()).not.toContain("token=");
+
+    await expect(
+      page.getByRole("heading", { name: "Unsubscribe from newsletter" }),
+    ).toBeVisible();
+
+    await waitForNewsletterRequestSlot();
+    await page.getByRole("button", { name: "Confirm unsubscribe" }).click();
+
+    await expect(
+      page.getByRole("heading", { name: "Something went wrong" }),
+    ).toBeVisible({ timeout: 10_000 });
+    await expect(
+      page.getByText(
+        "This unsubscribe link is invalid or has expired. Please use the link in your most recent email.",
+      ),
+    ).toBeVisible();
+  });
 });
