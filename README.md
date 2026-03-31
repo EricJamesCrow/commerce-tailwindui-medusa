@@ -1,7 +1,7 @@
 # CrowCommerce
 
 ![Version](https://img.shields.io/badge/version-0.0.0-2563eb)
-![License](https://img.shields.io/badge/license-TBD-6b7280)
+![License](https://img.shields.io/badge/license-MIT%20%2B%20third--party%20terms-6b7280)
 ![Stack](https://img.shields.io/badge/stack-Next.js%2016%20%7C%20Medusa%202.13%20%7C%20Tailwind%204-111827)
 ![Monorepo](https://img.shields.io/badge/monorepo-Bun%20workspaces%20%2B%20Turbo-f59e0b)
 
@@ -11,6 +11,7 @@ Last updated: 2026-03-30
 
 - **[Setup Guide](SETUP.md)** — local development through production deployment
 - **[Fork-Per-Client Ownership Model](docs/forking.md)** — template boundaries, site-owned paths, and backport rules
+- **Downstream forks:** keep `LICENSE` and `storefront/license.md`, review Tailwind Plus rights before redistribution, and preserve any required third-party notices
 
 **Vercel ownership:** This storefront is deployed from the **CrowCommerce** Vercel team with slug `crow-commerce`. The correct Vercel project path is `crow-commerce/commerce-tailwindui-medusa`.
 
@@ -137,4 +138,9 @@ Completed plans and specs: [docs/archive/](docs/archive/)
 
 ## License
 
-Project-level license: TBD. The storefront inherits Vercel Commerce's MIT license (`storefront/license.md`); a root LICENSE file covering the full monorepo is pending.
+This monorepo uses layered licensing:
+
+- Repo-authored template code and documentation are licensed under the root [LICENSE](LICENSE).
+- The storefront preserves the upstream Vercel Commerce MIT notice in [`storefront/license.md`](storefront/license.md). Downstream forks should keep that notice in place for inherited storefront portions.
+- Tailwind Plus / Tailwind UI components, templates, and design assets remain subject to Tailwind Labs' commercial license. This repository does not grant or transfer Tailwind Plus rights. If a downstream fork keeps Tailwind Plus-derived UI, the fork owner is responsible for holding their own valid Tailwind Plus license or access and for replacing that material if they cannot satisfy those terms.
+- Other upstream code, npm packages, and third-party assets remain under their own licenses. When redistributing a fork, preserve existing notices and add any new notices required by the dependencies or assets you introduce.

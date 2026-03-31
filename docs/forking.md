@@ -144,6 +144,48 @@ Avoid:
 - embedding site-specific business rules in shared Medusa modules
 - mixing generic and site-specific logic in the same file when a delegation boundary is possible
 
+## Licensing in Downstream Forks
+
+This section is practical fork guidance. It is meant to make the day-to-day
+actions clear for template consumers without trying to collapse every upstream
+or third-party term into one repo-wide rule.
+
+### What the Template Licenses
+
+- The root `LICENSE` covers repo-authored template code and documentation.
+- `storefront/license.md` preserves the upstream Vercel Commerce MIT notice for
+  inherited storefront code. Keep it in downstream forks unless you fully
+  replace that upstream-derived code.
+- Other upstream code, packages, and assets may carry their own license terms.
+  The root `LICENSE` does not replace or override those terms.
+
+### Tailwind Plus / Tailwind UI Expectations
+
+- This template assumes the repository owner already holds valid Tailwind Plus
+  access for any Tailwind Plus-derived material kept in the repo.
+- This template uses Tailwind Plus / Tailwind UI patterns and may include
+  Tailwind Plus-derived components, templates, or design assets.
+- Those materials remain governed by Tailwind Labs' commercial license. This
+  repository does not transfer Tailwind Plus access or grant downstream users a
+  new right to reuse Tailwind Plus outside the scope of Tailwind Labs' terms.
+- If your fork keeps Tailwind Plus-derived UI, make sure the people using and
+  maintaining that fork have their own valid Tailwind Plus rights.
+- If you cannot satisfy those Tailwind Plus terms, replace the affected UI
+  blocks and any related proprietary assets before redistributing the fork.
+
+### Fork Release Checklist
+
+Before publishing, redistributing, or handing a fork to a client:
+
+1. Keep the root `LICENSE` with the fork.
+2. Keep upstream notices such as `storefront/license.md` for inherited code.
+3. Review your dependencies and bundled assets for any required third-party
+   notices.
+4. Replace any commercial or proprietary materials you are not licensed to
+   keep using.
+5. Do not assume this template relicenses third-party or upstream materials
+   under MIT just because the repo has a root `LICENSE`.
+
 ## Manual Sync Strategy
 
 For now, keep syncing intentionally simple:

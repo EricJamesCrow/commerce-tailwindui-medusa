@@ -220,7 +220,7 @@ Implementation scope:
 
 ## Template Hardening
 
-- [ ] Add a root `LICENSE` covering the full monorepo and document downstream fork usage, Tailwind Plus licensing expectations, and inherited third-party licenses in `README.md`
+- [x] Add a root `LICENSE` covering the full monorepo and document downstream fork usage, Tailwind Plus licensing expectations, and inherited third-party licenses in `README.md`
 - [ ] Close the last newsletter privacy gap for production-template use — PR #66 already shipped opaque server-stored unsubscribe tokens plus a tokenless confirmation redirect. Remaining work is to verify analytics never retain the initial tokenized landing URL and to add regression coverage around expiry/replay behavior.
 - [ ] Build a real email preferences flow and wire the footer preferences link to it — support both logged-in account management and link-based access from emails
 - [ ] Expand CI/CD from code quality to deploy confidence — add preview/health checks against the deployed storefront/backend, plus a documented failure triage path for preview-only regressions
