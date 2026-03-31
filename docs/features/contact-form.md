@@ -24,7 +24,7 @@ The `/contact` page now uses a real submission pipeline:
 ### Happy Path
 
 1. Start the stack with working `RESEND_API_KEY` and `RESEND_FROM_EMAIL` values.
-2. Confirm the support inbox in [`backend/src/modules/resend/templates/_config/email-config.ts`](/Users/itsjusteric/.codex/worktrees/7b78/commerce-tailwindui-medusa/backend/src/modules/resend/templates/_config/email-config.ts) points to an inbox you can inspect for the current fork.
+2. Confirm the support inbox in [`backend/src/modules/resend/templates/_config/email-config.ts`](../../backend/src/modules/resend/templates/_config/email-config.ts) points to an inbox you can inspect for the current fork.
 3. Open `/contact` and submit a valid message.
 4. Verify the page only shows the success panel after the request finishes successfully.
 5. Verify the email arrived in the configured support inbox or appears as delivered in the Resend dashboard/logs.

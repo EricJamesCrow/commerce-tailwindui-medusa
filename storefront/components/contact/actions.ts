@@ -118,7 +118,7 @@ function classifyContactError(error: unknown): {
   }
 
   return {
-    errorType: error instanceof Error ? "unknown" : "unknown",
+    errorType: "unknown",
     userMessage:
       "We couldn't send your message right now. Please try again later.",
   };

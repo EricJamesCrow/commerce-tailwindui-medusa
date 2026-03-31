@@ -55,7 +55,7 @@ function contactForm(page: Page) {
     subjectInput: form.getByLabel("Subject"),
     messageInput: form.getByLabel("Message"),
     submitButton: form.getByRole("button", { name: "Send message" }),
-    successHeading: page.getByText("Message sent. Thanks for reaching out."),
+    successMessage: page.getByText("Message sent. Thanks for reaching out."),
   };
 }
 
@@ -73,7 +73,7 @@ test.describe("Contact form", () => {
       subjectInput,
       messageInput,
       submitButton,
-      successHeading,
+      successMessage,
     } = contactForm(page);
 
     await firstNameInput.fill("Casey");
@@ -95,7 +95,7 @@ test.describe("Contact form", () => {
       })
       .toBe(true);
 
-    await expect(successHeading).toHaveCount(0);
+    await expect(successMessage).toHaveCount(0);
     await expect(submitButton).toBeVisible();
   });
 
@@ -117,7 +117,7 @@ test.describe("Contact form", () => {
       subjectInput,
       messageInput,
       submitButton,
-      successHeading,
+      successMessage,
       form,
     } = contactForm(page);
 
@@ -131,7 +131,7 @@ test.describe("Contact form", () => {
 
     await submitButton.click();
 
-    await expect(successHeading).toBeVisible({ timeout: 15_000 });
+    await expect(successMessage).toBeVisible({ timeout: 15_000 });
     await expect(form).toHaveCount(0);
     await expect(
       page.getByText("We typically respond within one business day."),
