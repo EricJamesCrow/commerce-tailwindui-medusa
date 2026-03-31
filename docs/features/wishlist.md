@@ -1,7 +1,7 @@
 ---
-status: in-progress
+status: shipped
 created: 2026-02-22
-updated: 2026-03-18
+updated: 2026-03-30
 ---
 
 # Wishlist
@@ -15,6 +15,7 @@ Full wishlist system with guest support (cookie-based), multiple named wishlists
 ## Phases
 
 ### Phase 1: Core ✅
+
 - [x] Backend module (models, service, migration, module links)
 - [x] 10 workflow steps with compensation for saga rollback
 - [x] 6 workflows (create, add/delete item, delete, update, transfer)
@@ -27,6 +28,7 @@ Full wishlist system with guest support (cookie-based), multiple named wishlists
 - [x] Heart toggle button, account wishlist page, shared wishlist page
 
 ### Phase 2: Polish ✅
+
 - [x] Nav badge (heart icon with count)
 - [x] Heart button server state (product cards + PDP)
 - [x] Rename/delete wishlist UI
@@ -37,10 +39,12 @@ Full wishlist system with guest support (cookie-based), multiple named wishlists
 - [x] Code simplification (-179 lines)
 
 ### E2E Testing ✅
+
 - [x] 10 spec files, 40 tests (80 with Firefox)
 - [x] Custom fixtures for API, auth, and wishlist setup
 
 ### Remaining
+
 - No deferred phases. Remaining items are code review follow-ups — not feature work.
 
 ## Key references

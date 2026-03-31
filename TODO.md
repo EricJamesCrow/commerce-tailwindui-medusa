@@ -198,13 +198,13 @@ Implementation scope:
 
 ### From PR #33 (Newsletter Signup)
 
-- [ ] Replace HMAC bearer unsubscribe token with opaque server-stored nonce — current token embeds email in reversible base64url and is replayable for 30 days. PostHog pageview captures the full tokenized URL, leaking the token to analytics pipelines. Fix: store a one-time nonce on the subscriber record, invalidate on re-subscribe, and strip the token from the address bar via `window.history.replaceState` after the unsubscribe page loads.
-- [ ] Email preferences page — currently the "manage your email preferences" link is hidden in email footers because no page exists. Two approaches: (1) for logged-in customers, add an email preferences section to `/account/settings` where they can toggle newsletter, order updates, and marketing emails; (2) for account-agnostic access, create a standalone `/email-preferences` page that accepts a signed token (same pattern as unsubscribe) and lets anyone with a valid link manage preferences for their email address without requiring an account. Ideal: support both — account settings for logged-in users, token-based page for email links. Wire the `legalLinks.preferences` config in the email footer to point to the appropriate URL.
+- [x] Replace the old HMAC-style unsubscribe flow with an opaque server-stored token — PR #66 now stores the token on the subscriber record, clears it on unsubscribe, reissues it on re-subscribe, and redirects tokenized links onto the tokenless `/newsletter/unsubscribe` page before the form loads
+- [ ] Email preferences page — the footer preferences link still has no real destination. Support both a logged-in `/account/settings` email preferences section and an email-link flow that works without an account, then wire `legalLinks.preferences` to the right page.
 
 ### From PR #32 (Meilisearch Integration)
 
-- [ ] Faceted search results page — the current `meilisearch-results.tsx` was reverted because it conflicts with the shared `(store)` layout (duplicate sort dropdown, nested grid). The proper approach: integrate Meilisearch faceted filters (collections, price range, availability) INTO the existing `(store)` layout components (`components/layout/search/collections.tsx`, `sort-filter-menu.tsx`, `mobile-filters.tsx`) rather than rendering a separate InstantSearch layout. The Cmd+K palette Meilisearch integration works correctly — only the search results page needs this redesign.
-- [ ] Investigate `variant_prices` indexing — price range filter shows $0–$0 in Meilisearch results, suggesting variant prices may not be indexed correctly. Check whether `variants.prices.*` in the `useQueryGraphStep` query returns the expected amounts. May need to use `variants.calculated_price.*` with a `QueryContext` instead.
+- [ ] Faceted search results UI — the backend index, Cmd+K Meilisearch path, and `/search` query-param filtering are shipped, but the search results page still lacks the shared Tailwind listing filter UI. Finish this by integrating collection/price/availability controls into `components/layout/search/collections.tsx`, `sort-filter-menu.tsx`, and `mobile-filters.tsx` instead of reintroducing a standalone InstantSearch page shell.
+- [x] Fix Meilisearch price indexing — the sync workflow now reads `variants.calculated_price.*` with `QueryContext`, stores `variant_prices`, and derives `min_variant_price` / `max_variant_price` for sorting and range filtering
 
 ### From PR #29 (PostHog Integration)
 
@@ -221,13 +221,13 @@ Implementation scope:
 ## Template Hardening
 
 - [ ] Add a root `LICENSE` covering the full monorepo and document downstream fork usage, Tailwind Plus licensing expectations, and inherited third-party licenses in `README.md`
-- [ ] Harden newsletter unsubscribe for production-template use — replace the current tokenized URL flow with an opaque server-stored nonce, scrub the token from the address bar before analytics can observe it, and add regression coverage for replay/expiry behavior
+- [ ] Close the last newsletter privacy gap for production-template use — PR #66 already shipped opaque server-stored unsubscribe tokens plus a tokenless confirmation redirect. Remaining work is to verify analytics never retain the initial tokenized landing URL and to add regression coverage around expiry/replay behavior.
 - [ ] Build a real email preferences flow and wire the footer preferences link to it — support both logged-in account management and link-based access from emails
 - [ ] Expand CI/CD from code quality to deploy confidence — add preview/health checks against the deployed storefront/backend, plus a documented failure triage path for preview-only regressions
 - [ ] Fix Vercel Sentry env configuration and verify the next production build successfully creates releases and uploads sourcemaps
 - [ ] Verify catalog revalidation end-to-end in production and write the operational runbook (trigger source, storefront webhook, cache invalidation expectations, failure checks)
 - [ ] Complete template boundary adoption — move more client-owned branding/navigation/theme concerns behind `packages/site-config`, add at least one real `storefront/site` extension point used by shared code, and document a concrete `backend/src/site` extension example
-- [ ] Add a docs hygiene checkpoint for shipped work — keep `TODO.md`, `README.md`, and feature docs in sync so template consumers are not misled by stale status claims
+- [x] Add a docs hygiene checkpoint for shipped work — when a feature status changes, update `README.md`, `TODO.md`, and any touched `docs/features/*` entries in the same PR before marking it ready
 
 ## Testing
 

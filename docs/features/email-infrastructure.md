@@ -1,7 +1,7 @@
 ---
 status: in-progress
 created: 2026-03-13
-updated: 2026-03-18
+updated: 2026-03-30
 ---
 
 # Email Infrastructure
@@ -15,6 +15,7 @@ Complete email notification system for the CrowCommerce storefront — transacti
 ## Phases
 
 ### Stack 1: Foundation ✅
+
 - [x] Resend module provider with template resolver map
 - [x] UntitledUI-based shared email components restyled with TailwindUI tokens
 - [x] Order confirmation template + subscriber + workflow
@@ -23,6 +24,7 @@ Complete email notification system for the CrowCommerce storefront — transacti
 - PRs: #13–#16 (merged 2026-03-14)
 
 ### Stack 2: Core Auth & Admin Emails ✅
+
 - [x] Password reset template + subscriber
 - [x] Admin user invite template + subscriber (handles both `invite.created` and `invite.resent`)
 - [x] Customer welcome template + subscriber
@@ -32,18 +34,21 @@ Complete email notification system for the CrowCommerce storefront — transacti
 - PR: #17 (merged 2026-03-15)
 
 ### Stack 3: Order Lifecycle Emails ✅
+
 - [x] Shipping confirmation (`shipment.created`)
 - [x] Order canceled with refund status (`order.canceled`)
 - [x] Refund confirmation (`payment.refunded`)
 - [x] Admin new order alert (dual subscriber on `order.placed`, `ADMIN_ORDER_EMAILS` env var)
 
 ### Stack 4: Abandoned Cart Recovery ✅
+
 - [x] Scheduled job (every 15 min)
 - [x] HMAC-signed recovery links
 - [x] Abandoned cart email template
 - [x] Storefront recovery route handler
 
 ### Stack 5: Invoice Generator ✅
+
 - [x] Invoice data model (custom Medusa v2 module with Invoice + InvoiceConfig)
 - [x] PDF generation with @react-pdf/renderer (Modern Minimal layout)
 - [x] Invoice download API routes (store + admin)
@@ -53,6 +58,7 @@ Complete email notification system for the CrowCommerce storefront — transacti
 - [x] Storefront download button on order history
 
 ### Stack 6: Premium Notifications ⏳
+
 - [ ] Return flow emails (return requested, return approved/declined)
 - [ ] Gift card delivery email
 - [ ] Admin low stock alert
@@ -60,13 +66,15 @@ Complete email notification system for the CrowCommerce storefront — transacti
 - **Deferred:** Resume after production testing of Stacks 1-4.
 
 ### Stack 7: Quote Management ⏳
+
 - [ ] Quote data model + backend workflows
 - [ ] Quote lifecycle email templates + subscribers
 - **Deferred:** Wholesale/B2B specific. Lowest priority — implement when hemp/kratom store needs it.
 
 ## Remaining non-stack items
+
 - [x] Add product thumbnail images to email templates
-- [ ] Order detail page (`/account/orders/[id]`) — email "View your order" links currently 404
+- [x] Order detail page (`/account/orders/[orderId]`) — email "View your order" links now land on the shipped account order detail route
 
 ## Key references
 

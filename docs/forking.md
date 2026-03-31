@@ -16,15 +16,16 @@ The immediate goal is not full bidirectional automation. The goal is to keep for
 4. Prefer explicit ownership boundaries over hidden `.gitignore` rules.
 5. Start with manual sync and backport workflows. Add automation later only if the boundaries hold up.
 
-## Recommended Repo Shape
+## Current Repo Shape
 
-This repo currently has three workspace roots:
+This repo already has four workspace roots:
 
 - `storefront`
 - `backend`
+- `packages/*`
 - `tooling/*`
 
-The recommended fork-per-client evolution is:
+The active fork-per-client scaffold in this repo is:
 
 ```text
 packages/
@@ -167,16 +168,20 @@ When comparing a site fork against the base template:
 3. Reject changes that only encode site branding, site content, or site-specific business rules.
 4. If a shared file mixes generic and site-specific changes, extract the site-specific portion behind a config or delegation boundary before backporting.
 
-## Initial Implementation Checklist
+## Scaffold Status
 
-When this repo is ready to move from spec to scaffold:
+Already in place:
 
-- add `packages/site-config` to root workspaces
-- create `storefront/site/`
-- create `backend/src/site/`
-- move storefront branding tokens out of shared files where practical
-- make root layout and backend config delegate to site-owned zones
-- document the sync/backport workflow in `README.md` and setup docs
+- [x] `packages/site-config` is part of the root workspaces
+- [x] `storefront/site/` exists as the storefront override zone
+- [x] `backend/src/site/` exists as the backend override zone
+- [x] shared storefront code already reads brand/navigation/theme config from `@repo/site-config`
+- [x] the sync/backport workflow is documented in `README.md` and this file
+
+Still to improve:
+
+- [ ] move more branding and client-owned behavior out of shared files where practical
+- [ ] add at least one concrete shared-code delegation example that executes through `storefront/site` and `backend/src/site`
 
 ## Non-Goals For Phase 1
 

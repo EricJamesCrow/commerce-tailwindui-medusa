@@ -1,12 +1,12 @@
 ---
 status: in-progress
 created: 2026-02-21
-updated: 2026-03-28
+updated: 2026-03-30
 ---
 
 # Product Reviews
 
-> **Phases 1-2 shipped (backend module, storefront UI, admin moderation, admin responses, review images). Phase 3 in progress: verified purchase shipped, admin review search/editing deferred until after launch.**
+> **Core reviews are shipped: backend module, storefront UI, admin moderation, admin responses, review images, and verified purchase badges. Remaining Phase 3 work is limited to admin review search and review editing after launch hardening.**
 
 ## What it does
 
@@ -15,6 +15,7 @@ Full product review system with 5-star ratings, verified purchase flow, admin mo
 ## Phases
 
 ### Phase 1: Core Backend + Storefront ✅
+
 - [x] `productReview` custom module (model, service, workflows, API routes)
 - [x] Storefront UI (form, list, summary, star ratings, Suspense streaming)
 - [x] Admin moderation table with bulk actions
@@ -24,6 +25,7 @@ Full product review system with 5-star ratings, verified purchase flow, admin mo
 - [x] Event emission (`product_review.created`, `product_review.updated`)
 
 ### Phase 2: Admin Responses & Review Images ✅
+
 - [x] `ProductReviewResponse` entity — admin replies to reviews (full CRUD)
 - [x] `ProductReviewImage` entity — image upload endpoint
 - [x] Display admin responses on storefront review list
@@ -31,7 +33,8 @@ Full product review system with 5-star ratings, verified purchase flow, admin mo
 - [x] Admin response management drawer
 - [x] Image upload UI in review form dialog (max 3, JPEG/PNG/WebP)
 
-### Phase 3: Verified Purchase & Search ⏳
+### Phase 3: Verified Purchase & Admin Search/Edit ⏳
+
 - [x] Order linking (`order_id`, `order_line_item_id`) for verified purchase badge
 - [ ] Full-text search on review content + name in admin
 - [ ] Review editing (upsert pattern — one review per customer per product)
@@ -41,23 +44,7 @@ Full product review system with 5-star ratings, verified purchase flow, admin mo
 
 ## Code review follow-ups
 
-Independent cleanup tasks from code review, not gated on Phase 3.
-
-### From PR #8
-- [ ] Migrate admin review drawer to `@medusajs/ui` primitives (Drawer, Button, Textarea, Label) for consistency with admin UI conventions
-- [ ] Validate `images[].url` hostname against storage provider domain, or switch to opaque upload IDs instead of raw URLs (security hardening)
-- [ ] Refactor `uploadReviewImages` server action to accept `FormData` instead of `File[]` for proper Server Action serialization
-- [ ] Add `data-testid` attributes to review components and migrate E2E selectors from Tailwind classes to stable `data-testid` selectors
-- [ ] Extract ReviewList lightbox state into a thin client wrapper so the list itself can be a server component
-- [ ] Add regex validation for Medusa IDs in E2E fixture SQL interpolation (e.g. `/^rev_[a-z0-9]+$/`)
-- [ ] Add fail-fast env var checks in E2E fixtures for CI environments
-- [ ] Rename `prev_img` ID prefix to `revi` on ReviewImage model (requires migration)
-- [ ] Revoke `URL.createObjectURL` blobs in ReviewForm on file remove and component cleanup
-- [ ] Add explicit `multer` to backend `package.json` dependencies (currently works via transitive dep from `@medusajs/medusa`)
-
-### From PR #9
-- [ ] Strip `payment_sessions` from checkout cart serialization — only pass `client_secret` to client via dedicated server action (Finding #1: broad payment-session exposure)
-- [ ] Add Zod schema validation to checkout server actions for `email`, address payloads, `providerId`, and `data` params (Finding #2: no input validation at action boundaries)
+The code review follow-ups from PR #8 and PR #9 are complete. The remaining work for this feature is product-review-specific Phase 3 scope only, not cross-cutting cleanup.
 
 ## Key references
 
