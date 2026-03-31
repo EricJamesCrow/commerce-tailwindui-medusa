@@ -144,7 +144,8 @@ export function newsletterSubscriberExists(email: string): boolean {
      WHERE email = '${normalizedEmail}' AND deleted_at IS NULL`,
   );
 
-  return count === "1";
+  const total = Number.parseInt(count, 10);
+  return Number.isFinite(total) && total > 0;
 }
 
 export async function waitForNewsletterRequestSlot(): Promise<void> {

@@ -3,7 +3,12 @@ import { z } from "@medusajs/framework/zod";
 export const SubscribeSchema = z.object({
   email: z.string().email(),
   source: z.enum(["footer", "checkout", "account", "import"]).default("footer"),
-  company: z.string().optional(),
+  company: z
+    .string()
+    .trim()
+    .max(200)
+    .transform((value) => value.replace(/[\u0000-\u001F\u007F]/g, ""))
+    .optional(),
 });
 
 export const UnsubscribeSchema = z.object({
