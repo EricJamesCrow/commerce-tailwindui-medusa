@@ -99,7 +99,7 @@ export function NavbarClient({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="focus-visible:outline-primary-600 relative -m-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 focus-visible:outline-2"
+                className="focus-visible:outline-primary-600 relative -m-2 inline-flex cursor-pointer items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 focus-visible:outline-2"
                 aria-label="Close menu"
                 data-testid="close-mobile-menu"
               >
@@ -286,7 +286,7 @@ export function NavbarClient({
                     <form action={signout}>
                       <button
                         type="submit"
-                        className="-m-2 block p-2 font-medium text-gray-900"
+                        className="-m-2 block cursor-pointer p-2 font-medium text-gray-900"
                       >
                         Sign out
                       </button>

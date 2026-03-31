@@ -34,7 +34,7 @@ export function NavbarSkeleton() {
                 </button>
                 <button
                   type="button"
-                  className="ml-2 rounded-md p-2 text-gray-400"
+                  className="ml-2 cursor-pointer rounded-md p-2 text-gray-400"
                   aria-label="Search"
                 >
                   <span className="sr-only">Search</span>

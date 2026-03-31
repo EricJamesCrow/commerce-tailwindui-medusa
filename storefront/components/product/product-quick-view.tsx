@@ -110,7 +110,7 @@ export function ProductQuickView({
               <button
                 type="button"
                 onClick={onClose}
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-500 sm:top-8 sm:right-6 md:top-6 md:right-6 lg:top-8 lg:right-8"
+                className="absolute top-4 right-4 cursor-pointer text-gray-400 hover:text-gray-500 sm:top-8 sm:right-6 md:top-6 md:right-6 lg:top-8 lg:right-8"
               >
                 <span className="sr-only">Close</span>
                 <XMarkIcon aria-hidden="true" className="size-6" />
@@ -315,7 +315,7 @@ export function ProductQuickView({
                             disabled={
                               !selectedVariant?.availableForSale || isPending
                             }
-                            className="bg-primary-600 hover:bg-primary-700 focus:ring-primary-500 flex w-full items-center justify-center rounded-md border border-transparent px-8 py-3 text-base font-medium text-white focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+                            className="bg-primary-600 hover:bg-primary-700 focus:ring-primary-500 flex w-full cursor-pointer items-center justify-center rounded-md border border-transparent px-8 py-3 text-base font-medium text-white focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             {!selectedVariant?.availableForSale
                               ? "Out of stock"

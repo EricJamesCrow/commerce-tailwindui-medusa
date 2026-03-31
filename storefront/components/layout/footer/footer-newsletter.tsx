@@ -90,7 +90,7 @@ export function FooterNewsletter({
             <button
               type="submit"
               disabled={isPending}
-              className="bg-primary-600 hover:bg-primary-700 focus-visible:ring-primary-500 flex w-full items-center justify-center rounded-md border border-transparent px-4 py-2 text-base font-medium text-white shadow-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50"
+              className="bg-primary-600 hover:bg-primary-700 focus-visible:ring-primary-500 flex w-full cursor-pointer items-center justify-center rounded-md border border-transparent px-4 py-2 text-base font-medium text-white shadow-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isPending ? "..." : "Sign up"}
             </button>

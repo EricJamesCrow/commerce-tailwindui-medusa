@@ -71,7 +71,7 @@ export function UnsubscribeForm({
           {flowId ? <input type="hidden" name="flow" value={flowId} /> : null}
           <button
             type="submit"
-            className="bg-primary-600 hover:bg-primary-700 rounded-md px-6 py-2 text-sm font-medium text-white"
+            className="bg-primary-600 hover:bg-primary-700 cursor-pointer rounded-md px-6 py-2 text-sm font-medium text-white"
           >
             Confirm unsubscribe
           </button>

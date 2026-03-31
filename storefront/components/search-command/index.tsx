@@ -218,7 +218,7 @@ export function SearchDialog() {
               {query && (
                 <button
                   onClick={() => setQuery("")}
-                  className="focus-visible:outline-primary-600 absolute top-3.5 right-4 rounded text-gray-400 hover:text-gray-500 focus-visible:outline-2 focus-visible:outline-offset-2"
+                  className="focus-visible:outline-primary-600 absolute top-3.5 right-4 cursor-pointer rounded text-gray-400 hover:text-gray-500 focus-visible:outline-2 focus-visible:outline-offset-2"
                   type="button"
                 >
                   <XMarkIcon className="h-5 w-5" />
