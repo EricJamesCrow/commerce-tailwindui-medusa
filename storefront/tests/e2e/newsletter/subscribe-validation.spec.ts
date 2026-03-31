@@ -1,6 +1,14 @@
 import { test, expect } from "@playwright/test";
 import type { Page } from "@playwright/test";
-import { gotoHomepageNewsletter, newsletterFooter } from "./helpers";
+import {
+  gotoHomepageNewsletter,
+  newsletterFooter,
+  newsletterSubscriberExists,
+  uniqueTestEmail,
+  waitForNewsletterRequestSlot,
+} from "./helpers";
+
+test.setTimeout(180_000);
 
 async function expectHtml5ValidationMessage(page: Page): Promise<void> {
   const { emailInput, successMessage } = newsletterFooter(page);
@@ -38,5 +46,26 @@ test.describe("Newsletter Subscribe Validation", () => {
     await emailInput.fill("not-an-email");
     await signUpButton.click();
     await expectHtml5ValidationMessage(page);
+  });
+
+  test("ignores submissions that fill the honeypot field", async ({
+    page,
+  }, testInfo) => {
+    const email = uniqueTestEmail("honeypot", testInfo.project.name);
+
+    await gotoHomepageNewsletter(page);
+
+    const { emailInput, signUpButton, successMessage } = newsletterFooter(page);
+
+    await emailInput.fill(email);
+    await page.locator('input[name="company"]').evaluate((element) => {
+      (element as HTMLInputElement).value = "Acme Bot";
+    });
+
+    await waitForNewsletterRequestSlot();
+    await signUpButton.click();
+
+    await expect(successMessage).toBeVisible({ timeout: 10_000 });
+    await expect.poll(() => newsletterSubscriberExists(email)).toBe(false);
   });
 });

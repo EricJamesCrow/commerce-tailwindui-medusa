@@ -9,6 +9,7 @@ test.describe("Newsletter Unsubscribe Invalid Token", () => {
   }) => {
     await page.goto("/newsletter/unsubscribe?token=invalid-garbage");
     await page.waitForLoadState("networkidle");
+    await expect.poll(() => page.url()).not.toContain("token=");
 
     await expect(
       page.getByRole("heading", { name: "Unsubscribe from newsletter" }),

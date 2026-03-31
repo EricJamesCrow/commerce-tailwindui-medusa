@@ -6,7 +6,12 @@ import { SubscribeSchema } from "../validators";
 type PostBody = z.infer<typeof SubscribeSchema>;
 
 export async function POST(req: MedusaRequest<PostBody>, res: MedusaResponse) {
-  const { email, source } = req.validatedBody;
+  const { company, email, source } = req.validatedBody;
+
+  if (company?.trim()) {
+    res.status(200).json({ success: true });
+    return;
+  }
 
   const customerId = (req as any).auth_context?.actor_id as string | undefined;
 

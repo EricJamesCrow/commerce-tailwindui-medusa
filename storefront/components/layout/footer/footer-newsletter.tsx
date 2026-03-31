@@ -18,7 +18,8 @@ export function FooterNewsletter({
   >(async (_prev, formData) => {
     const email = formData.get("email") as string;
     if (!email) return { error: "Email is required" };
-    return subscribeToNewsletter(email);
+    const company = formData.get("company") as string | null;
+    return subscribeToNewsletter({ email, company: company ?? undefined });
   }, null);
 
   useEffect(() => {
@@ -59,6 +60,20 @@ export function FooterNewsletter({
         <p className="mt-2 text-sm text-green-600">Thanks! Check your inbox.</p>
       ) : (
         <form action={formAction} className="mt-2 flex sm:max-w-md">
+          <div
+            aria-hidden="true"
+            className="absolute top-auto left-[-9999px] h-px w-px overflow-hidden"
+          >
+            <label htmlFor="company-name">Company</label>
+            <input
+              id="company-name"
+              name="company"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              defaultValue=""
+            />
+          </div>
           <input
             id="email-address"
             name="email"

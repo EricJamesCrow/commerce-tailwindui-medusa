@@ -10,17 +10,20 @@ export type NewsletterResult = {
   error?: string;
 } | null;
 
-export async function subscribeToNewsletter(
-  email: string,
-): Promise<NewsletterResult> {
+export async function subscribeToNewsletter(input: {
+  email: string;
+  company?: string;
+}): Promise<NewsletterResult> {
   const headers = await getAuthHeaders();
+  const email = input.email.toLowerCase();
 
   try {
     await sdk.client.fetch<{ success: true }>("/store/newsletter/subscribe", {
       method: "POST",
       headers,
       body: {
-        email: email.toLowerCase(),
+        company: input.company,
+        email,
         source: "footer" as const,
       },
     });

@@ -8,6 +8,10 @@ import {
 import { emitEventStep } from "@medusajs/medusa/core-flows";
 import { NEWSLETTER_MODULE } from "../../modules/newsletter";
 import NewsletterModuleService from "../../modules/newsletter/service";
+import {
+  isUnsubscribeTokenExpired,
+  issueUnsubscribeToken,
+} from "../../utils/newsletter-token";
 
 type SubscribeInput = {
   email: string;
@@ -51,6 +55,17 @@ const upsertSubscriberStep = createStep(
         needsUpdate = true;
       }
 
+      if (
+        wasUnsubscribed ||
+        !existing.unsubscribe_token ||
+        isUnsubscribeTokenExpired(existing.unsubscribe_token_expires_at)
+      ) {
+        const { token, expiresAt } = issueUnsubscribeToken();
+        updates.unsubscribe_token = token;
+        updates.unsubscribe_token_expires_at = expiresAt;
+        needsUpdate = true;
+      }
+
       if (needsUpdate) {
         const updated = await newsletterService.updateSubscribers({
           id: existing.id,
@@ -72,11 +87,14 @@ const upsertSubscriberStep = createStep(
       );
     }
 
+    const { token, expiresAt } = issueUnsubscribeToken();
     const subscriber = await newsletterService.createSubscribers({
       email,
       source: input.source,
       customer_id: input.customer_id || null,
       status: "active",
+      unsubscribe_token: token,
+      unsubscribe_token_expires_at: expiresAt,
     });
 
     return new StepResponse(

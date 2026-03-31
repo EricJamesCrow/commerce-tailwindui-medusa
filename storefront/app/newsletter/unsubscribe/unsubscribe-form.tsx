@@ -1,15 +1,58 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { unsubscribeNewsletter } from "./actions";
 
 type Result = { success?: boolean; error?: string } | null;
+const UNSUBSCRIBE_TOKEN_STORAGE_KEY = "__newsletter_unsubscribe_token";
 
-export function UnsubscribeForm({ token }: { token: string }) {
+export function UnsubscribeForm({ token }: { token: string | null }) {
+  const [initialToken, setInitialToken] = useState(token);
   const [state, formAction, isPending] = useActionState<Result, FormData>(
-    async () => unsubscribeNewsletter(token),
+    async (_previousState, formData) => {
+      const submittedToken = formData.get("token");
+
+      if (typeof submittedToken !== "string" || submittedToken.length === 0) {
+        return { error: "Unable to process your request" };
+      }
+
+      return unsubscribeNewsletter(submittedToken);
+    },
     null,
   );
+
+  useEffect(() => {
+    if (initialToken) {
+      return;
+    }
+
+    const storedToken = sessionStorage.getItem(UNSUBSCRIBE_TOKEN_STORAGE_KEY);
+
+    if (storedToken) {
+      setInitialToken(storedToken);
+    }
+  }, [initialToken]);
+
+  useEffect(() => {
+    if (!state?.success) {
+      return;
+    }
+
+    sessionStorage.removeItem(UNSUBSCRIBE_TOKEN_STORAGE_KEY);
+  }, [state?.success]);
+
+  if (!initialToken) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900">Invalid Link</h1>
+          <p className="mt-2 text-gray-500">
+            This unsubscribe link is missing or malformed.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (state?.success) {
     return (
@@ -49,6 +92,7 @@ export function UnsubscribeForm({ token }: { token: string }) {
               Click below to stop receiving newsletter emails.
             </p>
             <form action={formAction} className="mt-6">
+              <input type="hidden" name="token" value={initialToken} />
               <button
                 type="submit"
                 disabled={isPending}

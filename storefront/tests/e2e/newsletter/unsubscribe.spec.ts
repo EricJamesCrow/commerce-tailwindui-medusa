@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import {
-  generateUnsubscribeToken,
+  getStoredUnsubscribeToken,
   subscribeEmailViaApi,
   uniqueTestEmail,
   waitForNewsletterRequestSlot,
@@ -13,14 +13,15 @@ test.describe("Newsletter Unsubscribe", () => {
     page,
   }, testInfo) => {
     const email = uniqueTestEmail("unsub-test", testInfo.project.name);
-    const token = generateUnsubscribeToken(email);
 
     await subscribeEmailViaApi(email);
+    const token = getStoredUnsubscribeToken(email);
 
     await page.goto(
       `/newsletter/unsubscribe?token=${encodeURIComponent(token)}`,
     );
     await page.waitForLoadState("networkidle");
+    await expect.poll(() => page.url()).not.toContain("token=");
 
     await expect(
       page.getByRole("heading", { name: "Unsubscribe from newsletter" }),
