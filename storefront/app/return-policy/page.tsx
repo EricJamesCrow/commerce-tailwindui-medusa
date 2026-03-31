@@ -5,7 +5,7 @@ import { RETURN_POLICY } from "lib/constants/legal-content";
 export const metadata: Metadata = {
   title: "Return Policy",
   description: "Understand our return and refund process.",
-  robots: { index: false }, // Set to true after replacing placeholder content
+  robots: { index: true },
 };
 
 export default function ReturnPolicyPage() {

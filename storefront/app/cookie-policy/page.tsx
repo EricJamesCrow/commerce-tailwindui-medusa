@@ -5,7 +5,7 @@ import { COOKIE_POLICY } from "lib/constants/legal-content";
 export const metadata: Metadata = {
   title: "Cookie Policy",
   description: "Learn how we use cookies and similar tracking technologies.",
-  robots: { index: false }, // Set to true after replacing placeholder content
+  robots: { index: true },
 };
 
 export default function CookiePolicyPage() {

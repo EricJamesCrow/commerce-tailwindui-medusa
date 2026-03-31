@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: "Shipping Policy",
   description:
     "Learn about our shipping methods, rates, and delivery timeframes.",
-  robots: { index: false }, // Set to true after replacing placeholder content
+  robots: { index: true },
 };
 
 export default function ShippingPolicyPage() {
