@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
+import { useNotification } from "components/notifications";
 import { submitContactForm, type ContactFormState } from "./actions";
 
 function FieldError({ error }: { error?: string }) {
@@ -12,11 +13,34 @@ function FieldError({ error }: { error?: string }) {
 }
 
 export function ContactForm() {
+  const { showNotification } = useNotification();
   const [state, formAction, isPending] = useActionState<
     ContactFormState,
     FormData
   >(submitContactForm, null);
+  const handledState = useRef<ContactFormState>(null);
   const fieldErrors = state?.fieldErrors ?? {};
+
+  useEffect(() => {
+    if (!state || handledState.current === state) {
+      return;
+    }
+
+    handledState.current = state;
+
+    if (state.success) {
+      showNotification(
+        "success",
+        "Message sent",
+        "We typically respond within one business day.",
+      );
+      return;
+    }
+
+    if (state.error && !state.fieldErrors) {
+      showNotification("error", "Could not send message", state.error);
+    }
+  }, [showNotification, state]);
 
   if (state?.success) {
     return (

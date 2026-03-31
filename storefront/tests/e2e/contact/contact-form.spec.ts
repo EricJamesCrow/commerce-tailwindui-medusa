@@ -132,9 +132,10 @@ test.describe("Contact form", () => {
     await submitButton.click();
 
     await expect(successMessage).toBeVisible({ timeout: 15_000 });
-    await expect(form).toHaveCount(0);
+    await expect(page.getByText("Message sent", { exact: true })).toBeVisible();
     await expect(
       page.getByText("We typically respond within one business day."),
     ).toBeVisible();
+    await expect(form).toHaveCount(0);
   });
 });
