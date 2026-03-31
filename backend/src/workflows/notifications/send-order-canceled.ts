@@ -79,8 +79,12 @@ export const sendOrderCanceledWorkflow = createWorkflow(
     );
 
     const formatted = formatOrderForEmailStep({ order });
+    const orderUpdateRecipientEmail = transform(
+      { formatted },
+      ({ formatted }) => formatted.email?.toLowerCase() ?? null,
+    );
     const shouldSendOrderUpdateEmail = shouldSendOrderUpdateEmailStep({
-      email: order.email,
+      email: orderUpdateRecipientEmail,
     });
 
     const notifications = transform(

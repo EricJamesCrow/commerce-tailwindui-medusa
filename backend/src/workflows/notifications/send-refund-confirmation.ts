@@ -46,12 +46,12 @@ export const sendRefundConfirmationWorkflow = createWorkflow(
     });
 
     const formatted = formatRefundForEmailStep({ payment });
-    const orderEmail = transform({ payment }, ({ payment }) => {
-      const paymentRecord = payment as Record<string, any>;
-      return paymentRecord.payment_collection?.order?.email ?? null;
-    });
+    const orderUpdateRecipientEmail = transform(
+      { formatted },
+      ({ formatted }) => formatted.email?.toLowerCase() ?? null,
+    );
     const shouldSendOrderUpdateEmail = shouldSendOrderUpdateEmailStep({
-      email: orderEmail,
+      email: orderUpdateRecipientEmail,
     });
 
     // Gracefully skip if payment can't be traced to an order (orphan payment).

@@ -7,6 +7,7 @@ import type {
   ProviderSendNotificationDTO,
   ProviderSendNotificationResultsDTO,
 } from "@medusajs/framework/types";
+import * as Sentry from "@sentry/node";
 import React from "react";
 import { Resend } from "resend";
 import { render } from "@react-email/render";
@@ -291,7 +292,24 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
       return templateData;
     }
 
-    const preferencesUrl = buildEmailPreferencesUrl(recipientEmail);
+    let preferencesUrl: string | null = null;
+
+    try {
+      preferencesUrl = buildEmailPreferencesUrl(recipientEmail);
+    } catch (error) {
+      Sentry.withScope((scope) => {
+        scope.setTag("provider", ResendNotificationProviderService.identifier);
+        scope.setTag("template_id", templateId);
+        scope.setExtra("has_recipient_email", Boolean(recipientEmail));
+        Sentry.captureException(error);
+      });
+      this.logger.error(
+        `Failed to build email preferences URL for template "${templateId}"`,
+        error,
+      );
+      return templateData;
+    }
+
     if (!preferencesUrl) {
       return templateData;
     }

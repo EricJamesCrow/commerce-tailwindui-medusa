@@ -71,8 +71,12 @@ export const sendShippingConfirmationWorkflow = createWorkflow(
     const formatted = formatOrderForEmailStep({
       order: orderAndTracking.order,
     });
+    const orderUpdateRecipientEmail = transform(
+      { formatted },
+      ({ formatted }) => formatted.email?.toLowerCase() ?? null,
+    );
     const shouldSendOrderUpdateEmail = shouldSendOrderUpdateEmailStep({
-      email: orderAndTracking.order.email,
+      email: orderUpdateRecipientEmail,
     });
 
     const notifications = transform(

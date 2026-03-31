@@ -55,8 +55,12 @@ export const sendOrderConfirmationWorkflow = createWorkflow(
     });
 
     const formatted = formatOrderForEmailStep({ order });
+    const orderUpdateRecipientEmail = transform(
+      { formatted },
+      ({ formatted }) => formatted.email?.toLowerCase() ?? null,
+    );
     const shouldSendOrderUpdateEmail = shouldSendOrderUpdateEmailStep({
-      email: order.email,
+      email: orderUpdateRecipientEmail,
     });
 
     // Fetch invoice config to check attach_to_email toggle
