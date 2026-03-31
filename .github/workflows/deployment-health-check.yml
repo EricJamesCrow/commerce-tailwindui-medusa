@@ -1,0 +1,36 @@
+name: Deployment Health Check
+
+on:
+  workflow_dispatch:
+    inputs:
+      storefront_url:
+        description: "Public storefront URL to verify (preview or production)"
+        required: true
+        type: string
+      backend_url:
+        description: "Public backend URL to verify (preview, staging, or production)"
+        required: true
+        type: string
+      expected_storefront_environment:
+        description: "Expected storefront health environment field"
+        required: false
+        default: "preview"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  deployment-health-check:
+    name: deployment-health-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run deployment health checks
+        env:
+          STOREFRONT_URL: ${{ inputs.storefront_url }}
+          BACKEND_URL: ${{ inputs.backend_url }}
+          EXPECTED_STOREFRONT_ENVIRONMENT: ${{ inputs.expected_storefront_environment }}
+        run: bash .github/scripts/check-deployment-health.sh
