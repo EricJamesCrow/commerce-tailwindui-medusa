@@ -7,6 +7,15 @@ import process from "node:process";
 const scopeArg = process.argv.find((arg) => arg.startsWith("--scope="));
 const scope = scopeArg?.split("=")[1] ?? "root";
 
+if (
+  process.env.CI === "true" ||
+  process.env.CI === "1" ||
+  process.env.GITHUB_ACTIONS === "true" ||
+  process.env.SKIP_LOCAL_ENV_CHECK === "1"
+) {
+  process.exit(0);
+}
+
 const requiredFilesByScope = {
   root: [
     {
