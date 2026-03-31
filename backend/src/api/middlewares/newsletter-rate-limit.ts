@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/node";
 import type { RequestHandler } from "express";
 import Redis from "ioredis";
+import { getClientIp } from "./client-ip";
 
 const MAX_REQUESTS = 5;
 const WINDOW_SECONDS = 60; // 1 minute
@@ -11,32 +12,6 @@ let warned = false;
 // In-process fallback when Redis is unavailable
 const inProcessStore = new Map<string, { count: number; resetAt: number }>();
 let warnedFallback = false;
-
-function getForwardedHeaderValue(
-  value: string | string[] | undefined,
-): string | undefined {
-  if (!value) {
-    return undefined;
-  }
-
-  const candidate = Array.isArray(value) ? value[0] : value;
-  return candidate
-    .split(",")
-    .map((entry) => entry.trim())
-    .find(Boolean);
-}
-
-function getClientIp(req: Parameters<RequestHandler>[0]): string | undefined {
-  return (
-    req.ip ||
-    getForwardedHeaderValue(req.headers["cf-connecting-ip"]) ||
-    getForwardedHeaderValue(req.headers["true-client-ip"]) ||
-    getForwardedHeaderValue(req.headers["x-real-ip"]) ||
-    getForwardedHeaderValue(req.headers["x-forwarded-for"]) ||
-    req.socket.remoteAddress ||
-    undefined
-  );
-}
 
 function getRedis(): Redis | null {
   if (redis) return redis;

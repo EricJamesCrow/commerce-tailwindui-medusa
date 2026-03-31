@@ -29,12 +29,18 @@ function buildContentSecurityPolicy(): string {
   const isDev = process.env.NODE_ENV !== "production";
   const backendOrigin = getCspOrigin(
     process.env.MEDUSA_BACKEND_URL,
-    "http://localhost:9000",
+    isDev ? "http://localhost:9000" : "",
   );
   const meilisearchOrigin = getCspOrigin(
     process.env.NEXT_PUBLIC_MEILISEARCH_HOST,
   );
   const posthogOrigin = getCspOrigin(process.env.NEXT_PUBLIC_POSTHOG_HOST);
+
+  if (!isDev && !backendOrigin) {
+    console.warn(
+      "[next.config] MEDUSA_BACKEND_URL is not set - CSP will block backend requests",
+    );
+  }
 
   const scriptSrc = joinCspSources([
     "'self'",
@@ -96,6 +102,8 @@ export default withSentryConfig(
             { key: "X-Frame-Options", value: "DENY" },
             { key: "X-Content-Type-Options", value: "nosniff" },
             {
+              // Keeps cross-site origin attribution available for ads/analytics
+              // without exposing full-path referrers off-origin.
               key: "Referrer-Policy",
               value: "origin-when-cross-origin",
             },

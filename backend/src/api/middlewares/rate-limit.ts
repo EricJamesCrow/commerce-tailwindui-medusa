@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/node";
 import type { RequestHandler } from "express";
 import Redis from "ioredis";
+import { getClientIp } from "./client-ip";
 
 const MAX_ATTEMPTS = 5;
 const WINDOW_SECONDS = 900; // 15 minutes
@@ -47,7 +48,7 @@ export function authRateLimit(): RequestHandler {
     const client = getRedis();
     if (!client) return next();
 
-    const ip = req.ip || req.socket.remoteAddress;
+    const ip = getClientIp(req);
     if (!ip) {
       console.warn(
         "[rate-limit] Could not determine client IP — skipping rate limit.",

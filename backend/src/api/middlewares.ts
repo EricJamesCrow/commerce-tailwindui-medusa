@@ -64,25 +64,6 @@ export default defineMiddlewares({
     next(error);
   },
   routes: [
-    // --- Trust proxy for correct IP detection behind reverse proxy ---
-    {
-      matcher: "/auth*",
-      middlewares: [
-        (req, _res, next) => {
-          req.app.set("trust proxy", true);
-          next();
-        },
-      ],
-    },
-    {
-      matcher: "/store/newsletter*",
-      middlewares: [
-        (req, _res, next) => {
-          req.app.set("trust proxy", true);
-          next();
-        },
-      ],
-    },
     // --- Normalize email to lowercase before auth (case-sensitive matching) ---
     {
       matcher: "/auth/*/emailpass*",
