@@ -32,7 +32,7 @@ export function ImportButton({ shareToken }: { shareToken: string }) {
       disabled={isPending}
       className={clsx(
         "bg-primary-600 hover:bg-primary-500 focus-visible:outline-primary-600 inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold text-white shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2",
-        isPending && "cursor-not-allowed opacity-50",
+        isPending ? "cursor-not-allowed opacity-50" : "cursor-pointer",
       )}
     >
       <HeartIcon className="-ml-0.5 size-5" />

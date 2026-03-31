@@ -260,7 +260,7 @@ export function CheckoutReview({
               onEditStep("email");
               trackClient("checkout_step_edited", { step_name: "email" });
             }}
-            className="text-primary-600 hover:text-primary-500"
+            className="text-primary-600 hover:text-primary-500 cursor-pointer"
           >
             Edit
           </button>
@@ -278,7 +278,7 @@ export function CheckoutReview({
               onEditStep("address");
               trackClient("checkout_step_edited", { step_name: "address" });
             }}
-            className="text-primary-600 hover:text-primary-500"
+            className="text-primary-600 hover:text-primary-500 cursor-pointer"
           >
             Edit
           </button>
@@ -298,7 +298,7 @@ export function CheckoutReview({
               onEditStep("address");
               trackClient("checkout_step_edited", { step_name: "address" });
             }}
-            className="text-primary-600 hover:text-primary-500"
+            className="text-primary-600 hover:text-primary-500 cursor-pointer"
           >
             Edit
           </button>
@@ -314,7 +314,7 @@ export function CheckoutReview({
               onEditStep("shipping");
               trackClient("checkout_step_edited", { step_name: "shipping" });
             }}
-            className="text-primary-600 hover:text-primary-500"
+            className="text-primary-600 hover:text-primary-500 cursor-pointer"
           >
             Edit
           </button>
@@ -330,7 +330,7 @@ export function CheckoutReview({
               onEditStep("payment");
               trackClient("checkout_step_edited", { step_name: "payment" });
             }}
-            className="text-primary-600 hover:text-primary-500"
+            className="text-primary-600 hover:text-primary-500 cursor-pointer"
           >
             Edit
           </button>
@@ -344,7 +344,7 @@ export function CheckoutReview({
           type="button"
           onClick={handlePlaceOrder}
           disabled={isSubmitting}
-          className="bg-primary-600 hover:bg-primary-700 focus:ring-primary-500 w-full rounded-md border border-transparent px-6 py-3 text-base font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
+          className="bg-primary-600 hover:bg-primary-700 focus:ring-primary-500 w-full cursor-pointer rounded-md border border-transparent px-6 py-3 text-base font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
         >
           {isSubmitting ? "Placing order..." : "Place Order"}
         </button>

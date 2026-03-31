@@ -47,14 +47,14 @@ export function AddressCard({ address, onEdit }: AddressCardProps) {
         <button
           type="button"
           onClick={onEdit}
-          className="text-primary-600 hover:text-primary-500"
+          className="text-primary-600 hover:text-primary-500 cursor-pointer"
         >
           Edit
         </button>
         <button
           type="button"
           onClick={handleDelete}
-          className="text-red-600 hover:text-red-500"
+          className="cursor-pointer text-red-600 hover:text-red-500"
         >
           Delete
         </button>

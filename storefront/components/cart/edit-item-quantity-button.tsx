@@ -20,7 +20,7 @@ function SubmitButton({
         type === "plus" ? "Increase item quantity" : "Reduce item quantity"
       }
       className={clsx(
-        "ease focus-visible:outline-primary-600 flex h-full flex-none items-center justify-center rounded-full transition-all duration-200 hover:border-neutral-800 hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2",
+        "ease focus-visible:outline-primary-600 flex h-full flex-none cursor-pointer items-center justify-center rounded-full transition-all duration-200 hover:border-neutral-800 hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2",
         size === "xs"
           ? "max-w-[28px] min-w-[28px] p-1"
           : size === "sm"

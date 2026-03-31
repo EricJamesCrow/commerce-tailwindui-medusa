@@ -123,7 +123,7 @@ export function ReviewForm({
               <button
                 type="button"
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-500"
+                className="cursor-pointer text-gray-400 hover:text-gray-500"
               >
                 <span className="sr-only">Close</span>
                 <XMarkIcon className="size-6" aria-hidden="true" />
@@ -150,7 +150,7 @@ export function ReviewForm({
                       onClick={() => setRating(star)}
                       onMouseEnter={() => setHoverRating(star)}
                       onMouseLeave={() => setHoverRating(0)}
-                      className="p-0.5"
+                      className="cursor-pointer p-0.5"
                     >
                       {displayRating >= star ? (
                         <StarIconSolid className="size-8 text-yellow-400" />
@@ -214,7 +214,7 @@ export function ReviewForm({
                       <button
                         type="button"
                         onClick={() => removeFile(i)}
-                        className="absolute -top-1 -right-1 rounded-full bg-gray-900 p-0.5 text-white"
+                        className="absolute -top-1 -right-1 cursor-pointer rounded-full bg-gray-900 p-0.5 text-white"
                       >
                         <XMarkIcon className="size-3" />
                       </button>
@@ -245,7 +245,7 @@ export function ReviewForm({
                   "w-full rounded-md px-4 py-2.5 text-sm font-semibold text-white shadow-sm",
                   isDisabled
                     ? "cursor-not-allowed bg-gray-300"
-                    : "bg-primary-600 hover:bg-primary-500 focus-visible:outline-primary-600 focus-visible:outline-2 focus-visible:outline-offset-2",
+                    : "bg-primary-600 hover:bg-primary-500 focus-visible:outline-primary-600 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2",
                 )}
               >
                 {submitButtonLabel()}

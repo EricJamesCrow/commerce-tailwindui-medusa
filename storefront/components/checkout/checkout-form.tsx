@@ -205,7 +205,7 @@ export function CheckoutForm({
                     <button
                       type="button"
                       onClick={() => onEditStep(step)}
-                      className="text-primary-600 hover:text-primary-500 text-sm font-medium"
+                      className="text-primary-600 hover:text-primary-500 cursor-pointer text-sm font-medium"
                     >
                       Edit
                     </button>

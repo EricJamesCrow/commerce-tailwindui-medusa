@@ -56,7 +56,7 @@ export function CookieConsentBanner({
             <button
               type="button"
               onClick={onClose}
-              className="text-sm font-semibold text-white/70 transition hover:text-white"
+              className="cursor-pointer text-sm font-semibold text-white/70 transition hover:text-white"
             >
               Close
             </button>
@@ -64,14 +64,14 @@ export function CookieConsentBanner({
           <button
             type="button"
             onClick={onDeclineAnalytics}
-            className="text-sm font-semibold text-white transition hover:text-white/80"
+            className="cursor-pointer text-sm font-semibold text-white transition hover:text-white/80"
           >
             Only essentials
           </button>
           <button
             type="button"
             onClick={onAcceptAnalytics}
-            className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="cursor-pointer rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             Accept analytics
           </button>

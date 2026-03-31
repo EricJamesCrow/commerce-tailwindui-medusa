@@ -57,7 +57,7 @@ export function WishlistPageClient({ wishlists }: { wishlists: Wishlist[] }) {
                 type="button"
                 onClick={() => setActiveTab(index)}
                 className={clsx(
-                  "border-b-2 px-1 py-4 text-sm font-medium whitespace-nowrap",
+                  "cursor-pointer border-b-2 px-1 py-4 text-sm font-medium whitespace-nowrap",
                   index === activeTab
                     ? "border-primary-600 text-primary-600"
                     : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700",
@@ -164,7 +164,7 @@ function WishlistItemCard({
         type="button"
         onClick={handleRemove}
         disabled={isRemoving}
-        className="absolute top-2 right-2 z-10 rounded-full bg-white/80 p-1.5 text-gray-400 shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-gray-600"
+        className="absolute top-2 right-2 z-10 cursor-pointer rounded-full bg-white/80 p-1.5 text-gray-400 shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-gray-600"
         aria-label="Remove from wishlist"
       >
         <XMarkIcon className="size-5" />
@@ -221,6 +221,7 @@ function WishlistItemCard({
               disabled={isAddingToCart}
               className={clsx(
                 "relative flex w-full items-center justify-center rounded-md border border-transparent bg-gray-100 px-8 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200",
+                !isAddingToCart && "cursor-pointer",
                 isAddingToCart && "cursor-not-allowed opacity-50",
               )}
             >
@@ -298,6 +299,7 @@ function ShareButton({ wishlistId }: { wishlistId: string }) {
       disabled={isPending}
       className={clsx(
         "inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50",
+        !isPending && "cursor-pointer",
         isPending && "cursor-not-allowed opacity-50",
       )}
     >
@@ -334,7 +336,7 @@ function NewWishlistButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="bg-primary-600 hover:bg-primary-500 focus-visible:outline-primary-600 inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="bg-primary-600 hover:bg-primary-500 focus-visible:outline-primary-600 inline-flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2"
       >
         <PlusIcon className="-ml-0.5 size-4" />
         New Wishlist
@@ -384,7 +386,7 @@ function NewWishlistButton() {
                     <button
                       type="button"
                       onClick={() => setOpen(false)}
-                      className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
+                      className="cursor-pointer rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
                     >
                       Cancel
                     </button>
@@ -393,7 +395,9 @@ function NewWishlistButton() {
                       disabled={isPending}
                       className={clsx(
                         "bg-primary-600 hover:bg-primary-500 focus-visible:outline-primary-600 rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2",
-                        isPending && "cursor-not-allowed opacity-50",
+                        isPending
+                          ? "cursor-not-allowed opacity-50"
+                          : "cursor-pointer",
                       )}
                     >
                       {isPending ? "Creating..." : "Create"}
@@ -426,7 +430,7 @@ function WishlistActionsMenu({
   return (
     <>
       <Menu as="div" className="relative">
-        <MenuButton className="inline-flex items-center rounded-md bg-white p-2 text-gray-400 shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50 hover:text-gray-500">
+        <MenuButton className="inline-flex cursor-pointer items-center rounded-md bg-white p-2 text-gray-400 shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50 hover:text-gray-500">
           <span className="sr-only">Wishlist options</span>
           <EllipsisVerticalIcon className="size-5" />
         </MenuButton>
@@ -439,7 +443,7 @@ function WishlistActionsMenu({
             <button
               type="button"
               onClick={() => setRenameOpen(true)}
-              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:text-gray-900"
+              className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:text-gray-900"
             >
               <PencilIcon className="size-4" />
               Rename
@@ -449,7 +453,7 @@ function WishlistActionsMenu({
             <button
               type="button"
               onClick={() => setDeleteOpen(true)}
-              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 data-focus:bg-red-50 data-focus:text-red-700"
+              className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-sm text-red-600 data-focus:bg-red-50 data-focus:text-red-700"
             >
               <TrashIcon className="size-4" />
               Delete
@@ -543,7 +547,7 @@ function RenameWishlistDialog({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
+                  className="cursor-pointer rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
                 >
                   Cancel
                 </button>
@@ -636,7 +640,9 @@ function DeleteWishlistDialog({
                 disabled={isPending}
                 className={clsx(
                   "rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600",
-                  isPending && "cursor-not-allowed opacity-50",
+                  isPending
+                    ? "cursor-not-allowed opacity-50"
+                    : "cursor-pointer",
                 )}
               >
                 {isPending ? "Deleting..." : "Delete"}

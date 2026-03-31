@@ -63,7 +63,7 @@ export function ForgotPasswordForm() {
         <button
           type="submit"
           disabled={isPending}
-          className="bg-primary-600 hover:bg-primary-500 focus-visible:outline-primary-600 flex w-full justify-center rounded-md px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className="bg-primary-600 hover:bg-primary-500 focus-visible:outline-primary-600 flex w-full cursor-pointer justify-center rounded-md px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isPending ? "Sending..." : "Send reset instructions"}
         </button>

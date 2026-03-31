@@ -71,7 +71,7 @@ export default function GlobalError({
                   <button
                     type="button"
                     onClick={() => reset()}
-                    className="bg-primary-600 hover:bg-primary-500 focus-visible:outline-primary-600 inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-5 py-3 text-sm font-semibold text-white shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    className="bg-primary-600 hover:bg-primary-500 focus-visible:outline-primary-600 inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md px-5 py-3 text-sm font-semibold text-white shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                   >
                     <ArrowPathIcon aria-hidden="true" className="size-5" />
                     Try again

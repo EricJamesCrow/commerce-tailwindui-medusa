@@ -26,7 +26,7 @@ type AccountDropdownProps = {
 export function AccountDropdown({ firstName, lastName }: AccountDropdownProps) {
   return (
     <Menu as="div" className="relative">
-      <MenuButton className="bg-primary-100 text-primary-700 hover:bg-primary-200 focus-visible:outline-primary-600 flex items-center rounded-full text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+      <MenuButton className="bg-primary-100 text-primary-700 hover:bg-primary-200 focus-visible:outline-primary-600 flex cursor-pointer items-center rounded-full text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
         <span className="sr-only">Open user menu</span>
         <span className="inline-flex size-8 items-center justify-center rounded-full">
           {getInitials(firstName, lastName)}
@@ -62,7 +62,7 @@ export function AccountDropdown({ firstName, lastName }: AccountDropdownProps) {
             <form action={signout}>
               <button
                 type="submit"
-                className="group flex w-full items-center px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:text-gray-900"
+                className="group flex w-full cursor-pointer items-center px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:text-gray-900"
               >
                 <ArrowRightStartOnRectangleIcon className="mr-3 size-5 text-gray-400 group-data-focus:text-gray-500" />
                 Sign out
