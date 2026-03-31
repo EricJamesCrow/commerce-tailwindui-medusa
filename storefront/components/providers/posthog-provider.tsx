@@ -3,22 +3,22 @@
 import { useEffect, useRef } from "react";
 import posthog from "posthog-js";
 import { PostHogProvider as PHProvider } from "posthog-js/react";
-import { useStorefrontConsent } from "components/consent/consent-provider";
 import { setPostHogClient } from "lib/analytics";
 import { sanitizeEnvValue } from "lib/env";
 
 type Props = {
   children: React.ReactNode;
+  analyticsEnabled: boolean;
   bootstrapDistinctId: string | null;
   bootstrapFlags?: Record<string, boolean | string>;
 };
 
 export function PostHogProvider({
   children,
+  analyticsEnabled,
   bootstrapDistinctId,
   bootstrapFlags,
 }: Props) {
-  const { analyticsEnabled } = useStorefrontConsent();
   const hasInitialized = useRef(false);
   const prevDistinctId = useRef<string | null>(null);
   const key = sanitizeEnvValue(process.env.NEXT_PUBLIC_POSTHOG_KEY);

@@ -88,7 +88,6 @@ export function StorefrontConsentProvider({
         isOpen={isBannerOpen}
         onAcceptAnalytics={grantAnalyticsConsent}
         onDeclineAnalytics={denyAnalyticsConsent}
-        onOpenPreferences={() => setIsBannerOpen(true)}
         onClose={() => setIsBannerOpen(false)}
       />
     </StorefrontConsentContext.Provider>
@@ -105,4 +104,8 @@ export function useStorefrontConsent(): StorefrontConsentContextValue {
   }
 
   return context;
+}
+
+export function useOptionalStorefrontConsent(): StorefrontConsentContextValue | null {
+  return useContext(StorefrontConsentContext);
 }

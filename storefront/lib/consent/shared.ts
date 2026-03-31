@@ -1,3 +1,5 @@
+import { sanitizeEnvValue } from "lib/env";
+
 export const STOREFRONT_CONSENT_COOKIE = "_cc_storefront_consent";
 export const STOREFRONT_CONSENT_COOKIE_MAX_AGE = 60 * 60 * 24 * 180;
 
@@ -18,6 +20,14 @@ export const DEFAULT_STOREFRONT_CONSENT: StorefrontConsentState = {
   analytics: "pending",
   updatedAt: null,
 };
+
+export function isStorefrontConsentFoundationEnabled(): boolean {
+  const value = sanitizeEnvValue(
+    process.env.NEXT_PUBLIC_CONSENT_FOUNDATION_ENABLED,
+  );
+
+  return value !== "false";
+}
 
 export function createStorefrontConsentState(
   analytics: Exclude<AnalyticsConsentStatus, "pending">,

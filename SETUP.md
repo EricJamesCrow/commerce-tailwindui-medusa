@@ -90,29 +90,30 @@ cp storefront/.env.example storefront/.env.local
 
 Edit `storefront/.env.local` — at minimum, set `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` after seeding:
 
-| Variable                                | Required         | Default (dev)                                    | Purpose                                                             |
-| --------------------------------------- | ---------------- | ------------------------------------------------ | ------------------------------------------------------------------- |
-| `MEDUSA_BACKEND_URL`                    | Yes              | `http://localhost:9000`                          | Medusa API endpoint                                                 |
-| `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY`    | Yes              | —                                                | `pk_...` from seed output or admin                                  |
-| `NEXT_PUBLIC_STRIPE_KEY`                | No               | —                                                | `pk_test_...` from Stripe dashboard                                 |
-| `NEXT_PUBLIC_DEFAULT_REGION_ID`         | No               | —                                                | Skip region detection (use specific region)                         |
-| `NEXT_PUBLIC_SITE_URL`                  | No               | Vercel production URL or `http://localhost:3000` | Preferred canonical/site URL for metadata, sitemap, robots, JSON-LD |
-| `NEXT_PUBLIC_SITE_LOGO_URL`             | No               | —                                                | Logo URL for homepage Organization JSON-LD                          |
-| `SITE_NAME`                             | No               | —                                                | Browser tab title, OG images                                        |
-| `COMPANY_NAME`                          | No               | —                                                | Footer copyright                                                    |
-| `SITE_COMPANY_LEGAL_NAME`               | No               | —                                                | Legal entity name for Organization JSON-LD                          |
-| `SITE_COMPANY_PHONE`                    | No               | —                                                | Support phone number for Organization JSON-LD                       |
-| `SITE_COMPANY_EMAIL`                    | No               | —                                                | Support email for Organization JSON-LD                              |
-| `SITE_COMPANY_SAME_AS`                  | No               | —                                                | Comma-separated social/profile URLs for Organization JSON-LD        |
-| `REVALIDATE_SECRET`                     | No               | —                                                | On-demand cache revalidation token                                  |
-| `S3_IMAGE_HOSTNAME`                     | No               | —                                                | R2 public hostname for `next/image` (e.g. `pub-abc123.r2.dev`)      |
-| `CART_RECOVERY_SECRET`                  | If cart recovery | —                                                | Same secret as backend (HMAC verification)                          |
-| `NEXT_PUBLIC_SENTRY_DSN`                | No               | —                                                | Sentry DSN (safe to expose client-side)                             |
-| `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` | No               | `0.2`                                            | Client-side trace sample rate                                       |
-| `SENTRY_TRACES_SAMPLE_RATE`             | No               | `0.2`                                            | Server-side trace sample rate                                       |
-| `NEXT_PUBLIC_MEILISEARCH_HOST`          | No               | —                                                | Meilisearch server URL (e.g. `http://127.0.0.1:7700`)               |
-| `NEXT_PUBLIC_MEILISEARCH_API_KEY`       | If Meilisearch   | —                                                | Meilisearch search-only API key                                     |
-| `NEXT_PUBLIC_MEILISEARCH_INDEX_NAME`    | No               | `products`                                       | Meilisearch index name for products                                 |
+| Variable                                 | Required         | Default (dev)                                    | Purpose                                                                      |
+| ---------------------------------------- | ---------------- | ------------------------------------------------ | ---------------------------------------------------------------------------- |
+| `MEDUSA_BACKEND_URL`                     | Yes              | `http://localhost:9000`                          | Medusa API endpoint                                                          |
+| `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY`     | Yes              | —                                                | `pk_...` from seed output or admin                                           |
+| `NEXT_PUBLIC_STRIPE_KEY`                 | No               | —                                                | `pk_test_...` from Stripe dashboard                                          |
+| `NEXT_PUBLIC_DEFAULT_REGION_ID`          | No               | —                                                | Skip region detection (use specific region)                                  |
+| `NEXT_PUBLIC_SITE_URL`                   | No               | Vercel production URL or `http://localhost:3000` | Preferred canonical/site URL for metadata, sitemap, robots, JSON-LD          |
+| `NEXT_PUBLIC_SITE_LOGO_URL`              | No               | —                                                | Logo URL for homepage Organization JSON-LD                                   |
+| `SITE_NAME`                              | No               | —                                                | Browser tab title, OG images                                                 |
+| `COMPANY_NAME`                           | No               | —                                                | Footer copyright                                                             |
+| `SITE_COMPANY_LEGAL_NAME`                | No               | —                                                | Legal entity name for Organization JSON-LD                                   |
+| `SITE_COMPANY_PHONE`                     | No               | —                                                | Support phone number for Organization JSON-LD                                |
+| `SITE_COMPANY_EMAIL`                     | No               | —                                                | Support email for Organization JSON-LD                                       |
+| `SITE_COMPANY_SAME_AS`                   | No               | —                                                | Comma-separated social/profile URLs for Organization JSON-LD                 |
+| `REVALIDATE_SECRET`                      | No               | —                                                | On-demand cache revalidation token                                           |
+| `NEXT_PUBLIC_CONSENT_FOUNDATION_ENABLED` | No               | `true`                                           | Enable cookie consent UI and consent-gated PostHog; attribution persistence stays on either way |
+| `S3_IMAGE_HOSTNAME`                      | No               | —                                                | R2 public hostname for `next/image` (e.g. `pub-abc123.r2.dev`)               |
+| `CART_RECOVERY_SECRET`                   | If cart recovery | —                                                | Same secret as backend (HMAC verification)                                   |
+| `NEXT_PUBLIC_SENTRY_DSN`                 | No               | —                                                | Sentry DSN (safe to expose client-side)                                      |
+| `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE`  | No               | `0.2`                                            | Client-side trace sample rate                                                |
+| `SENTRY_TRACES_SAMPLE_RATE`              | No               | `0.2`                                            | Server-side trace sample rate                                                |
+| `NEXT_PUBLIC_MEILISEARCH_HOST`           | No               | —                                                | Meilisearch server URL (e.g. `http://127.0.0.1:7700`)                        |
+| `NEXT_PUBLIC_MEILISEARCH_API_KEY`        | If Meilisearch   | —                                                | Meilisearch search-only API key                                              |
+| `NEXT_PUBLIC_MEILISEARCH_INDEX_NAME`     | No               | `products`                                       | Meilisearch index name for products                                          |
 
 ## Local Development
 
@@ -314,6 +315,7 @@ When migrating to a CMS (e.g., Payload), swap the import source in each route fi
    SITE_COMPANY_EMAIL=                      # Support email (optional)
    SITE_COMPANY_SAME_AS=                    # Comma-separated social/profile URLs (optional)
    REVALIDATE_SECRET=                       # Generate: openssl rand -hex 32
+   NEXT_PUBLIC_CONSENT_FOUNDATION_ENABLED=  # true for consent UI + gated PostHog, false for legacy always-on analytics without the consent layer
    NEXT_PUBLIC_SENTRY_DSN=                  # Sentry project DSN
    SENTRY_AUTH_TOKEN=                       # Source map uploads (sentry.io/settings/auth-tokens/)
    SENTRY_ORG=                              # Sentry organization slug

@@ -5,6 +5,8 @@ This storefront foundation adds two versioned, template-safe primitives:
 - `storefront/lib/utm/*` persists `utm_*`, `gclid`, and `fbclid` in a first-party cookie and rehydrates those values into the URL on internal navigation.
 - `storefront/lib/consent/*` stores the analytics consent decision in a first-party cookie that both server and client code can read.
 
+The consent layer is gated by `NEXT_PUBLIC_CONSENT_FOUNDATION_ENABLED` and defaults to enabled. Setting it to `false` disables the consent banner, footer preferences link, and consent-gated PostHog startup. Attribution persistence and the standard analytics pipeline remain active in both modes.
+
 ## Site-wide wiring
 
 - `NuqsAdapter` is installed in [`storefront/app/layout.tsx`](../../storefront/app/layout.tsx) so query-state helpers are available across the App Router tree.

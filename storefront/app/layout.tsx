@@ -24,6 +24,7 @@ import { getFeatureFlags } from "lib/feature-flags";
 import { WebVitals } from "./web-vitals";
 import { getCart } from "lib/medusa";
 import { retrieveCustomer } from "lib/medusa/customer";
+import { isStorefrontConsentFoundationEnabled } from "lib/consent/shared";
 import { getPostHogAnonId } from "lib/posthog-cookies";
 
 const siteName = process.env.SITE_NAME?.trim() || siteBrand.siteName;
@@ -43,35 +44,54 @@ export const metadata: Metadata = {
 async function AppProviders({ children }: { children: ReactNode }) {
   const cartPromise = getCart();
   const customer = await retrieveCustomer();
-  const consent = await getStorefrontConsentState();
-  const analyticsEnabled = consent.analytics === "granted";
-  const anonId = analyticsEnabled ? await getPostHogAnonId() : undefined;
-  const distinctId = customer?.id || (analyticsEnabled ? anonId || null : null);
-  const bootstrapFlags =
-    analyticsEnabled && distinctId ? await getFeatureFlags(distinctId) : {};
+  const consentFoundationEnabled = isStorefrontConsentFoundationEnabled();
+  const consent = consentFoundationEnabled
+    ? await getStorefrontConsentState()
+    : null;
+  const analyticsEnabled = consentFoundationEnabled
+    ? consent?.analytics === "granted"
+    : true;
+  const anonId =
+    analyticsEnabled || !consentFoundationEnabled
+      ? await getPostHogAnonId()
+      : undefined;
+  const distinctId = customer?.id || anonId || null;
+  const bootstrapFlags = distinctId ? await getFeatureFlags(distinctId) : {};
+
+  const appShell = (
+    <PostHogProvider
+      analyticsEnabled={analyticsEnabled}
+      bootstrapDistinctId={distinctId}
+      bootstrapFlags={bootstrapFlags}
+    >
+      <SentryUserProvider customerId={customer?.id ?? null} />
+      <WebVitals />
+      <NotificationProvider>
+        <SearchProvider>
+          <NotificationContainer />
+          <SearchDialog />
+          <Navbar />
+          <main>{children}</main>
+          <Incentives />
+          <Footer />
+        </SearchProvider>
+      </NotificationProvider>
+    </PostHogProvider>
+  );
 
   return (
     <CartProvider cartPromise={cartPromise}>
-      <StorefrontConsentProvider initialConsent={consent}>
-        <AttributionPersistence />
-        <PostHogProvider
-          bootstrapDistinctId={distinctId}
-          bootstrapFlags={bootstrapFlags}
-        >
-          <SentryUserProvider customerId={customer?.id ?? null} />
-          <WebVitals />
-          <NotificationProvider>
-            <SearchProvider>
-              <NotificationContainer />
-              <SearchDialog />
-              <Navbar />
-              <main>{children}</main>
-              <Incentives />
-              <Footer />
-            </SearchProvider>
-          </NotificationProvider>
-        </PostHogProvider>
-      </StorefrontConsentProvider>
+      {consentFoundationEnabled && consent ? (
+        <StorefrontConsentProvider initialConsent={consent}>
+          <AttributionPersistence />
+          {appShell}
+        </StorefrontConsentProvider>
+      ) : (
+        <>
+          <AttributionPersistence />
+          {appShell}
+        </>
+      )}
     </CartProvider>
   );
 }

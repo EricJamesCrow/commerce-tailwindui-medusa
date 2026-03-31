@@ -1,6 +1,7 @@
 "use client";
 
 import { readStorefrontConsentFromDocument } from "lib/consent/client";
+import { isStorefrontConsentFoundationEnabled } from "lib/consent/shared";
 import { useReportWebVitals } from "next/web-vitals";
 import { useRef } from "react";
 
@@ -10,7 +11,12 @@ export function WebVitals() {
   useReportWebVitals((metric) => {
     if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return;
     if (!shouldSample.current) return;
-    if (readStorefrontConsentFromDocument().analytics !== "granted") return;
+    if (
+      isStorefrontConsentFoundationEnabled() &&
+      readStorefrontConsentFromDocument().analytics !== "granted"
+    ) {
+      return;
+    }
 
     import("posthog-js").then((posthog) => {
       if (!posthog.default?.capture) return;

@@ -7,7 +7,6 @@ type CookieConsentBannerProps = {
   isOpen: boolean;
   onAcceptAnalytics: () => void;
   onDeclineAnalytics: () => void;
-  onOpenPreferences: () => void;
   onClose: () => void;
 };
 
@@ -16,53 +15,35 @@ export function CookieConsentBanner({
   isOpen,
   onAcceptAnalytics,
   onDeclineAnalytics,
-  onOpenPreferences,
   onClose,
 }: CookieConsentBannerProps) {
   if (!isOpen) {
-    return (
-      <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-start px-4 sm:px-6 lg:px-8">
-        <button
-          type="button"
-          onClick={onOpenPreferences}
-          className="pointer-events-auto inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm transition hover:border-stone-400 hover:text-stone-900"
-        >
-          Privacy settings
-        </button>
-      </div>
-    );
+    return null;
   }
 
   const analyticsEnabled = consent.analytics === "granted";
   const hasDecision = consent.analytics !== "pending";
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-stone-200 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-5 sm:px-6 lg:flex-row lg:items-end lg:justify-between lg:px-8">
-        <div className="max-w-3xl space-y-3">
-          <div>
-            <p className="text-sm font-semibold tracking-[0.18em] text-amber-700 uppercase">
-              Cookie preferences
-            </p>
-            <h2 className="mt-1 text-lg font-semibold text-stone-900">
-              Essential store cookies stay on. Analytics only turns on if you
-              say yes.
-            </h2>
-          </div>
-          <p className="text-sm leading-6 text-stone-600">
-            We persist campaign parameters for later checkout and form
-            attribution with first-party storage. PostHog pageviews and session
-            replay stay disabled until analytics consent is granted.
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 sm:px-6 sm:pb-5 lg:px-8">
+      <div className="pointer-events-auto flex flex-col gap-4 bg-gray-900 px-6 py-5 sm:flex-row sm:items-end sm:justify-between sm:rounded-xl sm:py-4 sm:pr-4 sm:pl-6">
+        <div className="max-w-xl">
+          <p className="text-sm font-semibold text-white">
+            Essential cookies stay on. Analytics only with your consent.
           </p>
-          <div className="flex flex-wrap gap-2 text-xs text-stone-500">
-            <span className="rounded-full bg-stone-100 px-3 py-1">
+          <p className="mt-1 text-sm leading-6 text-white/60">
+            We use first-party storage for campaign attribution. PostHog
+            pageviews and session replay stay off until you say yes.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="inline-flex items-center rounded-md bg-white/10 px-2 py-1 text-xs font-medium text-white/80 ring-1 ring-white/20 ring-inset">
               Essential: always active
             </span>
             <span
-              className={`rounded-full px-3 py-1 ${
+              className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${
                 analyticsEnabled
-                  ? "bg-emerald-100 text-emerald-800"
-                  : "bg-stone-100 text-stone-600"
+                  ? "bg-emerald-500/20 text-emerald-300 ring-emerald-500/30"
+                  : "bg-white/10 text-white/60 ring-white/20"
               }`}
             >
               Analytics: {analyticsEnabled ? "allowed" : "blocked"}
@@ -70,12 +51,12 @@ export function CookieConsentBanner({
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex flex-shrink-0 items-center gap-x-4">
           {hasDecision ? (
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full border border-stone-300 px-5 py-2.5 text-sm font-medium text-stone-700 transition hover:border-stone-400 hover:text-stone-900"
+              className="text-sm font-semibold text-white/70 transition hover:text-white"
             >
               Close
             </button>
@@ -83,14 +64,14 @@ export function CookieConsentBanner({
           <button
             type="button"
             onClick={onDeclineAnalytics}
-            className="rounded-full border border-stone-300 px-5 py-2.5 text-sm font-medium text-stone-700 transition hover:border-stone-400 hover:text-stone-900"
+            className="text-sm font-semibold text-white transition hover:text-white/80"
           >
             Only essentials
           </button>
           <button
             type="button"
             onClick={onAcceptAnalytics}
-            className="rounded-full bg-stone-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-stone-700"
+            className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             Accept analytics
           </button>
