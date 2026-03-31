@@ -1,5 +1,10 @@
 import "server-only";
 import { cookies as nextCookies } from "next/headers";
+import {
+  getExpiredNewsletterUnsubscribeCookieOptions,
+  getNewsletterUnsubscribeCookieName,
+  isValidNewsletterUnsubscribeFlowId,
+} from "../newsletter-unsubscribe-cookie";
 
 // --- Cart Cookie ---
 
@@ -71,6 +76,34 @@ export async function setWishlistId(wishlistId: string): Promise<void> {
 export async function removeWishlistId(): Promise<void> {
   const cookies = await nextCookies();
   cookies.set(WISHLIST_COOKIE, "", { maxAge: -1 });
+}
+
+// --- Newsletter Unsubscribe Token ---
+
+export async function getNewsletterUnsubscribeToken(
+  flowId: string | null | undefined,
+): Promise<string | undefined> {
+  if (!isValidNewsletterUnsubscribeFlowId(flowId)) {
+    return undefined;
+  }
+
+  const cookies = await nextCookies();
+  return cookies.get(getNewsletterUnsubscribeCookieName(flowId))?.value;
+}
+
+export async function removeNewsletterUnsubscribeToken(
+  flowId: string | null | undefined,
+): Promise<void> {
+  if (!isValidNewsletterUnsubscribeFlowId(flowId)) {
+    return;
+  }
+
+  const cookies = await nextCookies();
+  cookies.set(
+    getNewsletterUnsubscribeCookieName(flowId),
+    "",
+    getExpiredNewsletterUnsubscribeCookieOptions(),
+  );
 }
 
 // --- Auth Headers ---

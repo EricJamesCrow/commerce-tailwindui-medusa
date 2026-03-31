@@ -1,10 +1,52 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { randomUUID } from "node:crypto";
+import {
+  NEWSLETTER_UNSUBSCRIBE_FLOW_PARAM,
+  getNewsletterUnsubscribeCookieName,
+  getNewsletterUnsubscribeCookieOptions,
+} from "./lib/newsletter-unsubscribe-cookie";
 
 const PH_ANON_COOKIE = "_ph_anon_id";
 export const PH_ANON_HEADER = "x-ph-anon-id";
 
+function redirectNewsletterUnsubscribeToken(
+  request: NextRequest,
+): NextResponse | null {
+  if (request.nextUrl.pathname !== "/newsletter/unsubscribe") {
+    return null;
+  }
+
+  const token = request.nextUrl.searchParams.get("token");
+
+  if (!token) {
+    return null;
+  }
+
+  const cleanUrl = request.nextUrl.clone();
+  const flowId = randomUUID();
+  cleanUrl.searchParams.delete("token");
+  cleanUrl.searchParams.delete("status");
+  cleanUrl.searchParams.set(NEWSLETTER_UNSUBSCRIBE_FLOW_PARAM, flowId);
+
+  const response = NextResponse.redirect(cleanUrl);
+  response.cookies.set(
+    getNewsletterUnsubscribeCookieName(flowId),
+    token,
+    getNewsletterUnsubscribeCookieOptions(),
+  );
+  response.headers.set("Cache-Control", "private, no-store, max-age=0");
+  response.headers.set("Referrer-Policy", "no-referrer");
+
+  return response;
+}
+
 export function proxy(request: NextRequest): NextResponse {
+  const unsubscribeRedirect = redirectNewsletterUnsubscribeToken(request);
+
+  if (unsubscribeRedirect) {
+    return unsubscribeRedirect;
+  }
+
   const existingId = request.cookies.get(PH_ANON_COOKIE)?.value;
   const anonId = existingId || randomUUID();
 

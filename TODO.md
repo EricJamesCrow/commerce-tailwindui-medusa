@@ -198,8 +198,8 @@ Implementation scope:
 
 ### From PR #33 (Newsletter Signup)
 
-- [x] Replace the old HMAC-style unsubscribe flow with an opaque server-stored token — PR #66 now stores the token on the subscriber record, clears it on unsubscribe, reissues it on re-subscribe, and redirects tokenized links onto the tokenless `/newsletter/unsubscribe` page before the form loads
-- [ ] Email preferences page — the footer preferences link still has no real destination. Support both a logged-in `/account/settings` email preferences section and an email-link flow that works without an account, then wire `legalLinks.preferences` to the right page.
+- [x] Harden newsletter unsubscribe landing flow — PR #66 already replaced the old HMAC link with an opaque server-stored token and invalidates it on successful unsubscribe / re-subscribe. The remaining hardening work is to scrub the token before the unsubscribe page renders, keep the confirmation flow server-side, add replay / expiry regression coverage, and document the residual risk that the very first inbound request URL still reaches infrastructure logs outside the browser.
+- [ ] Email preferences page — currently the "manage your email preferences" link is hidden in email footers because no page exists. Two approaches: (1) for logged-in customers, add an email preferences section to `/account/settings` where they can toggle newsletter, order updates, and marketing emails; (2) for account-agnostic access, create a standalone `/email-preferences` page that accepts a signed token (same pattern as unsubscribe) and lets anyone with a valid link manage preferences for their email address without requiring an account. Ideal: support both — account settings for logged-in users, token-based page for email links. Wire the `legalLinks.preferences` config in the email footer to point to the appropriate URL.
 
 ### From PR #32 (Meilisearch Integration)
 
@@ -221,7 +221,7 @@ Implementation scope:
 ## Template Hardening
 
 - [x] Add a root `LICENSE` covering the full monorepo and document downstream fork usage, Tailwind Plus licensing expectations, and inherited third-party licenses in `README.md`
-- [ ] Close the last newsletter privacy gap for production-template use — PR #66 already shipped opaque server-stored unsubscribe tokens plus a tokenless confirmation redirect. Remaining work is to verify analytics never retain the initial tokenized landing URL and to add regression coverage around expiry/replay behavior.
+- [x] Harden newsletter unsubscribe for production-template use — keep the shipped opaque server-stored token model, scrub the token via middleware redirect before the unsubscribe page renders, move confirmation to a server-only cookie-backed flow, add replay/expiry regression coverage, and note the residual risk that the initial inbound request URL can still exist in upstream infrastructure logs
 - [ ] Build a real email preferences flow and wire the footer preferences link to it — support both logged-in account management and link-based access from emails
 - [ ] Expand CI/CD from code quality to deploy confidence — add preview/health checks against the deployed storefront/backend, plus a documented failure triage path for preview-only regressions
 - [ ] Fix Vercel Sentry env configuration and verify the next production build successfully creates releases and uploads sourcemaps
