@@ -3,6 +3,167 @@
 > For feature status and project overview, see [README.md](README.md).
 > For in-progress feature details, see [docs/features/](docs/features/).
 
+## Manual Agent Task Contracts
+
+Use the task labels below as shorthand when spawning agents manually. Example:
+`@TODO.md Task A`
+
+### Task A
+
+Cursor-pointer audit and fix pass.
+
+Required workflow:
+
+- Create a new dedicated git worktree for this task before making repo-tracked edits.
+- Inside that worktree, create a new Graphite branch before any repo-tracked edits.
+- Do not use `git push`, `git checkout -b`, or `gh pr create`. Use Graphite only.
+- Keep the write scope isolated to storefront interactive UI and any minimal related test/style files.
+- Run relevant verification for changed files.
+- Run `cr review` before submission, address valid findings, and commit fixes on the same branch.
+- Submit with `gt submit --stack --no-interactive`.
+- Mark the PR ready with `gh pr ready <number>` unless there is a real reason to keep it draft.
+- Update the PR description with summary and test plan.
+
+Implementation scope:
+
+- Audit cursor-pointer behavior across interactive storefront UI elements.
+- Check buttons, links, cards acting as links, toggles, tabs, drawer/menu triggers, pagination, product option selectors, account UI, cart UI, and newsletter UI.
+- Fix inconsistent pointer/default cursor behavior.
+- Preserve existing TailwindPlus/TailwindUI patterns.
+- Avoid unrelated redesigns.
+- Add or update tests only if there is an obvious low-cost assertion path.
+- Update `TODO.md` when complete.
+
+### Task B
+
+Newsletter unsubscribe hardening completion.
+
+Required workflow:
+
+- Create a new dedicated git worktree for this task before making repo-tracked edits.
+- Inside that worktree, create a new Graphite branch before any repo-tracked edits.
+- Do not use `git push`, `git checkout -b`, or `gh pr create`. Use Graphite only.
+- Keep the write scope isolated to newsletter unsubscribe backend/storefront flow, tests, and minimal docs updates.
+- Run relevant verification for changed files.
+- Run `cr review` before submission, address valid findings, and commit fixes on the same branch.
+- Submit with `gt submit --stack --no-interactive`.
+- Mark the PR ready with `gh pr ready <number>` unless there is a real reason to keep it draft.
+- Update the PR description with summary and test plan.
+
+Important context:
+
+- PR #66 already replaced the old HMAC/non-opaque unsubscribe flow with opaque server-stored tokens.
+- Do not re-implement that shipped work.
+- The remaining gap is first-request token exposure before the client-side scrub runs, plus replay/expiry regression coverage.
+
+Implementation scope:
+
+- Minimize token visibility on first load as much as the current product UX reasonably allows.
+- If full removal of initial URL exposure is not practical, implement the safest practical mitigation and document the residual risk clearly.
+- Add regression coverage for replay and expiry behavior.
+- Update `TODO.md` so it no longer describes the stale pre-PR-66 HMAC problem.
+- Do not drift into the email preferences task.
+
+### Task C
+
+Real email preferences flow.
+
+Required workflow:
+
+- Create a new dedicated git worktree for this task before making repo-tracked edits.
+- Inside that worktree, create a new Graphite branch before any repo-tracked edits.
+- Do not use `git push`, `git checkout -b`, or `gh pr create`. Use Graphite only.
+- Keep the write scope isolated to email preferences, related account/email-link UX, analytics/Sentry, tests, and docs.
+- Run relevant verification for changed files.
+- Run `cr review` before submission, address valid findings, and commit fixes on the same branch.
+- Submit with `gt submit --stack --no-interactive`.
+- Mark the PR ready with `gh pr ready <number>` unless there is a real reason to keep it draft.
+- Update the PR description with summary and test plan.
+
+Implementation scope:
+
+- Build a production-usable email preferences flow.
+- Prefer support for both logged-in account management and link-based access from emails if achievable without destabilizing the template.
+- Wire the email footer preferences link correctly.
+- Add analytics and Sentry where appropriate.
+- Update `TODO.md` and any relevant docs.
+- Keep this task separate from newsletter unsubscribe hardening.
+
+### Task D
+
+Licensing and template-fork documentation.
+
+Required workflow:
+
+- Create a new dedicated git worktree for this task before making repo-tracked edits.
+- Inside that worktree, create a new Graphite branch before any repo-tracked edits.
+- Do not use `git push`, `git checkout -b`, or `gh pr create`. Use Graphite only.
+- Keep the write scope isolated to `LICENSE` and documentation files.
+- Run relevant verification for changed files.
+- Run `cr review` before submission, address valid findings, and commit fixes on the same branch.
+- Submit with `gt submit --stack --no-interactive`.
+- Mark the PR ready with `gh pr ready <number>` unless there is a real reason to keep it draft.
+- Update the PR description with summary and test plan.
+
+Implementation scope:
+
+- Add a root `LICENSE` for the monorepo.
+- Update `README.md` and `docs/forking.md` with downstream fork usage guidance.
+- Document Tailwind Plus / Tailwind UI licensing expectations clearly.
+- Document inherited upstream and third-party license handling clearly.
+- Keep wording precise, practical, and template-consumer friendly.
+- Update `TODO.md` when complete.
+
+### Task E
+
+Docs hygiene and template status cleanup.
+
+Required workflow:
+
+- Create a new dedicated git worktree for this task before making repo-tracked edits.
+- Inside that worktree, create a new Graphite branch before any repo-tracked edits.
+- Do not use `git push`, `git checkout -b`, or `gh pr create`. Use Graphite only.
+- Keep the write scope isolated to `README.md`, `TODO.md`, `docs/features/*`, `docs/forking.md`, and similarly relevant docs only.
+- Run relevant verification for changed files.
+- Run `cr review` before submission, address valid findings, and commit fixes on the same branch.
+- Submit with `gt submit --stack --no-interactive`.
+- Mark the PR ready with `gh pr ready <number>` unless there is a real reason to keep it draft.
+- Update the PR description with summary and test plan.
+
+Implementation scope:
+
+- Reconcile `README.md`, `TODO.md`, and relevant feature docs with the actual shipped code.
+- Remove stale claims.
+- Make shipped vs partial vs deferred status accurate.
+- Ensure newsletter hardening language reflects PR #66 correctly.
+- Add or complete a lightweight docs hygiene checkpoint in `TODO.md`.
+- Keep this as a docs/status cleanup task, not a product implementation task.
+
+### Task F
+
+Production-hardening triage for externally blocked items.
+
+Required workflow:
+
+- Create a new dedicated git worktree for this task before making repo-tracked edits.
+- Inside that worktree, create a new Graphite branch before any repo-tracked edits.
+- Do not use `git push`, `git checkout -b`, or `gh pr create`. Use Graphite only.
+- Keep the write scope isolated to docs, CI/config, and minimal repo-side hardening changes related to this task.
+- Run relevant verification for changed files.
+- Run `cr review` before submission, address valid findings, and commit fixes on the same branch.
+- Submit with `gt submit --stack --no-interactive`.
+- Mark the PR ready with `gh pr ready <number>` unless there is a real reason to keep it draft.
+- Update the PR description with summary and test plan.
+
+Implementation scope:
+
+- Triage preview/health checks, Vercel Sentry env configuration, and production catalog revalidation verification.
+- Do not pretend to verify external systems you cannot access.
+- Produce implementation-ready checklists/runbooks where direct external verification is blocked.
+- Identify exact local code/config changes needed.
+- Clearly mark what still requires Vercel, Railway, dashboard, or production validation.
+- Update `TODO.md` and any relevant docs such as `README.md` or `SETUP.md`.
+
 ## Code Review Follow-ups
 
 ### From PR #8
