@@ -40,7 +40,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "enumItems": ["footer", "checkout", "account", "import"],
+          "enumItems": ["footer", "checkout", "account", "import", "email_link"],
           "mappedType": "enum"
         },
         "customer_id": {
@@ -60,6 +60,16 @@
           "primary": false,
           "nullable": true,
           "mappedType": "text"
+        },
+        "order_updates_enabled": {
+          "name": "order_updates_enabled",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "true",
+          "mappedType": "boolean"
         },
         "unsubscribe_token": {
           "name": "unsubscribe_token",
@@ -162,7 +172,12 @@
           "unique": true
         }
       ],
-      "checks": [],
+      "checks": [
+        {
+          "name": "newsletter_subscriber_source_check",
+          "expression": "check ((source = ANY (ARRAY['footer'::text, 'checkout'::text, 'account'::text, 'import'::text, 'email_link'::text])))"
+        }
+      ],
       "foreignKeys": {},
       "nativeEnums": {}
     }

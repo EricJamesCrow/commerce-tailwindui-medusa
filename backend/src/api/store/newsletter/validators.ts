@@ -14,3 +14,16 @@ export const SubscribeSchema = z.object({
 export const UnsubscribeSchema = z.object({
   token: z.string().min(1),
 });
+
+export const EmailPreferencesSchema = z.object({
+  newsletter_enabled: z.boolean(),
+  order_updates_enabled: z.boolean(),
+});
+
+export const TokenEmailPreferencesSchema = EmailPreferencesSchema.extend({
+  token: z.string().min(1),
+});
+
+export const GetEmailPreferencesQuerySchema = z.object({
+  token: z.string().min(1),
+});

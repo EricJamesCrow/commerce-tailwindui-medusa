@@ -7,6 +7,7 @@ import type {
   ProviderSendNotificationDTO,
   ProviderSendNotificationResultsDTO,
 } from "@medusajs/framework/types";
+import * as Sentry from "@sentry/node";
 import React from "react";
 import { Resend } from "resend";
 import { render } from "@react-email/render";
@@ -49,6 +50,7 @@ import {
   isValidNewsletterWelcomeBackData,
 } from "./templates/newsletter-welcome-back";
 import { EmailTemplates } from "./templates/template-registry";
+import { buildEmailPreferencesUrl } from "../../utils/email-preferences-token";
 
 type ResendOptions = {
   api_key: string;
@@ -148,6 +150,10 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
       defaultSubject: "Welcome Back!",
     },
   };
+  private customerFacingTemplates = new Set<string>([
+    EmailTemplates.NEWSLETTER_WELCOME,
+    EmailTemplates.NEWSLETTER_WELCOME_BACK,
+  ]);
 
   constructor({ logger }: InjectedDependencies, options: ResendOptions) {
     super();
@@ -198,18 +204,23 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
       attachments: rawAttachments,
       ...templateData
     } = rawData as Record<string, any>;
+    const templateProps = this.withEmailPreferencesLink(
+      templateId,
+      templateData,
+      notification.to,
+    );
 
-    if (!entry.validate(templateData)) {
+    if (!entry.validate(templateProps)) {
       this.logger.error(
         `Invalid data for template "${templateId}". ` +
-          `Received keys: ${Object.keys(templateData).join(", ")}`,
+          `Received keys: ${Object.keys(templateProps).join(", ")}`,
       );
       return {};
     }
 
     try {
       const html = await render(
-        React.createElement(entry.component, templateData),
+        React.createElement(entry.component, templateProps),
       );
 
       // Subject precedence: caller > centralized default > auto-generated from ID
@@ -270,6 +281,60 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
       );
       return {};
     }
+  }
+
+  private withEmailPreferencesLink(
+    templateId: string,
+    templateData: Record<string, any>,
+    recipientEmail: string,
+  ): Record<string, any> {
+    if (!this.customerFacingTemplates.has(templateId)) {
+      return templateData;
+    }
+
+    let preferencesUrl: string | null = null;
+
+    try {
+      preferencesUrl = buildEmailPreferencesUrl(recipientEmail);
+    } catch (error) {
+      Sentry.withScope((scope) => {
+        scope.setTag("provider", ResendNotificationProviderService.identifier);
+        scope.setTag("template_id", templateId);
+        scope.setExtra("has_recipient_email", Boolean(recipientEmail));
+        Sentry.captureException(error);
+      });
+      this.logger.error(
+        `Failed to build email preferences URL for template "${templateId}"`,
+        error,
+      );
+      return templateData;
+    }
+
+    if (!preferencesUrl) {
+      return templateData;
+    }
+
+    const brandConfig =
+      typeof templateData.brandConfig === "object" &&
+      templateData.brandConfig !== null
+        ? templateData.brandConfig
+        : {};
+    const legalLinks =
+      typeof brandConfig.legalLinks === "object" &&
+      brandConfig.legalLinks !== null
+        ? brandConfig.legalLinks
+        : {};
+
+    return {
+      ...templateData,
+      brandConfig: {
+        ...brandConfig,
+        legalLinks: {
+          ...legalLinks,
+          preferences: preferencesUrl,
+        },
+      },
+    };
   }
 }
 

@@ -25,7 +25,10 @@ import {
 } from "./store/wishlists/validators";
 import { PostAdminInvoiceConfigSchema } from "./admin/invoice-config/route";
 import {
+  EmailPreferencesSchema,
+  GetEmailPreferencesQuerySchema,
   SubscribeSchema,
+  TokenEmailPreferencesSchema,
   UnsubscribeSchema,
 } from "./store/newsletter/validators";
 import * as Sentry from "@sentry/node";
@@ -282,6 +285,34 @@ export default defineMiddlewares({
       middlewares: [
         newsletterRateLimit(),
         validateAndTransformBody(UnsubscribeSchema),
+      ],
+    },
+    {
+      matcher: "/store/newsletter/preferences",
+      method: ["GET"],
+      middlewares: [
+        validateAndTransformQuery(GetEmailPreferencesQuerySchema, {}),
+      ],
+    },
+    {
+      matcher: "/store/newsletter/preferences",
+      method: ["POST"],
+      middlewares: [
+        newsletterRateLimit(),
+        validateAndTransformBody(TokenEmailPreferencesSchema),
+      ],
+    },
+    {
+      matcher: "/store/customers/me/email-preferences",
+      method: ["GET"],
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/customers/me/email-preferences",
+      method: ["POST"],
+      middlewares: [
+        authenticate("customer", ["session", "bearer"]),
+        validateAndTransformBody(EmailPreferencesSchema),
       ],
     },
   ],

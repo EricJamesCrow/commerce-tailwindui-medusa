@@ -9,6 +9,7 @@ import {
   sendNotificationsStep,
 } from "@medusajs/medusa/core-flows";
 import { formatRefundForEmailStep } from "../steps/format-refund-for-email";
+import { shouldSendOrderUpdateEmailStep } from "../steps/should-send-order-update-email";
 import { EmailTemplates } from "../../modules/resend/templates/template-registry";
 
 type SendRefundConfirmationInput = {
@@ -45,6 +46,13 @@ export const sendRefundConfirmationWorkflow = createWorkflow(
     });
 
     const formatted = formatRefundForEmailStep({ payment });
+    const orderUpdateRecipientEmail = transform(
+      { formatted },
+      ({ formatted }) => formatted.email?.toLowerCase() ?? null,
+    );
+    const shouldSendOrderUpdateEmail = shouldSendOrderUpdateEmailStep({
+      email: orderUpdateRecipientEmail,
+    });
 
     // Gracefully skip if payment can't be traced to an order (orphan payment).
     // Don't throw — refunds can exist without orders in edge cases.
@@ -77,8 +85,13 @@ export const sendRefundConfirmationWorkflow = createWorkflow(
         },
       ];
     });
+    const filteredNotifications = transform(
+      { notifications, shouldSendOrderUpdateEmail },
+      ({ notifications: queuedNotifications, shouldSendOrderUpdateEmail }) =>
+        shouldSendOrderUpdateEmail ? queuedNotifications : [],
+    );
 
-    sendNotificationsStep(notifications);
+    sendNotificationsStep(filteredNotifications);
 
     return new WorkflowResponse({
       paymentId: input.paymentId,

@@ -4,8 +4,11 @@
   "private": true,
   "workspaces": ["storefront", "backend", "packages/*", "tooling/*"],
   "scripts": {
+    "predev": "node scripts/check-local-envs.mjs --scope=root",
     "dev": "turbo dev dev:emails --parallel",
+    "predev:storefront": "node scripts/check-local-envs.mjs --scope=root",
     "dev:storefront": "turbo dev --filter=@repo/storefront",
+    "predev:backend": "node scripts/check-local-envs.mjs --scope=root",
     "dev:backend": "turbo dev --filter=@repo/backend",
     "dev:emails": "turbo dev:emails --filter=@repo/backend",
     "build": "turbo build",

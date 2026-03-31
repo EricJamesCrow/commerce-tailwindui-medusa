@@ -125,6 +125,15 @@ export type AnalyticsEvents = {
   // --- Newsletter ---
   newsletter_subscribed: { source: "footer" };
   newsletter_subscribe_failed: { source: "footer"; error: string };
+  email_preferences_updated: {
+    source: "account" | "email_link";
+    newsletter_enabled: boolean;
+    order_updates_enabled: boolean;
+  };
+  email_preferences_update_failed: {
+    source: "account" | "email_link";
+    error_type: "validation" | "backend" | "unknown";
+  };
 
   // --- Contact ---
   contact_form_submitted: {

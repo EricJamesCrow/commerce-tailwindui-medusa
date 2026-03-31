@@ -2,6 +2,7 @@
   "name": "@repo/storefront",
   "private": true,
   "scripts": {
+    "predev": "node ../scripts/check-local-envs.mjs --scope=storefront",
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",

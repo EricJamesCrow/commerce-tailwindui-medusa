@@ -5,6 +5,11 @@ import {
   getNewsletterUnsubscribeCookieName,
   isValidNewsletterUnsubscribeFlowId,
 } from "../newsletter-unsubscribe-cookie";
+import {
+  getEmailPreferencesCookieName,
+  getExpiredEmailPreferencesCookieOptions,
+  isValidEmailPreferencesFlowId,
+} from "../email-preferences-cookie";
 
 // --- Cart Cookie ---
 
@@ -103,6 +108,34 @@ export async function removeNewsletterUnsubscribeToken(
     getNewsletterUnsubscribeCookieName(flowId),
     "",
     getExpiredNewsletterUnsubscribeCookieOptions(),
+  );
+}
+
+// --- Email Preferences Token ---
+
+export async function getEmailPreferencesToken(
+  flowId: string | null | undefined,
+): Promise<string | undefined> {
+  if (!isValidEmailPreferencesFlowId(flowId)) {
+    return undefined;
+  }
+
+  const cookies = await nextCookies();
+  return cookies.get(getEmailPreferencesCookieName(flowId))?.value;
+}
+
+export async function removeEmailPreferencesToken(
+  flowId: string | null | undefined,
+): Promise<void> {
+  if (!isValidEmailPreferencesFlowId(flowId)) {
+    return;
+  }
+
+  const cookies = await nextCookies();
+  cookies.set(
+    getEmailPreferencesCookieName(flowId),
+    "",
+    getExpiredEmailPreferencesCookieOptions(),
   );
 }
 

@@ -10,6 +10,7 @@ import {
   sendNotificationsStep,
 } from "@medusajs/medusa/core-flows";
 import { formatOrderForEmailStep } from "../steps/format-order-for-email";
+import { shouldSendOrderUpdateEmailStep } from "../steps/should-send-order-update-email";
 import { tryGenerateInvoicePdfStep } from "../steps/try-generate-invoice-pdf";
 import { EmailTemplates } from "../../modules/resend/templates/template-registry";
 
@@ -54,6 +55,13 @@ export const sendOrderConfirmationWorkflow = createWorkflow(
     });
 
     const formatted = formatOrderForEmailStep({ order });
+    const orderUpdateRecipientEmail = transform(
+      { formatted },
+      ({ formatted }) => formatted.email?.toLowerCase() ?? null,
+    );
+    const shouldSendOrderUpdateEmail = shouldSendOrderUpdateEmailStep({
+      email: orderUpdateRecipientEmail,
+    });
 
     // Fetch invoice config to check attach_to_email toggle
     const { data: invoiceConfigs } = useQueryGraphStep({
@@ -144,8 +152,13 @@ export const sendOrderConfirmationWorkflow = createWorkflow(
         ];
       },
     );
+    const filteredNotifications = transform(
+      { notifications, shouldSendOrderUpdateEmail },
+      ({ notifications: queuedNotifications, shouldSendOrderUpdateEmail }) =>
+        shouldSendOrderUpdateEmail ? queuedNotifications : [],
+    );
 
-    sendNotificationsStep(notifications);
+    sendNotificationsStep(filteredNotifications);
 
     return new WorkflowResponse({
       orderId: input.id,

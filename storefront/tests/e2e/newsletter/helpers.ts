@@ -7,6 +7,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import type { Page } from "@playwright/test";
 import { BACKEND_URL, PUBLISHABLE_KEY } from "../fixtures/api.fixture";
 
@@ -24,6 +25,12 @@ const NEWSLETTER_RATE_LIMIT_STATE_PATH = resolve(
   NEWSLETTER_RATE_LIMIT_DIR,
   "state.json",
 );
+const EMAIL_PREFERENCES_TOKEN_UTIL_URL = pathToFileURL(
+  resolve(
+    __dirname,
+    "../../../../backend/src/utils/email-preferences-token.ts",
+  ),
+).href;
 const NEWSLETTER_REQUEST_INTERVAL_MS = 13_000;
 const LOCK_RETRY_MS = 100;
 const LOCK_STALE_MS = 30_000;
@@ -144,6 +151,64 @@ export function expireStoredUnsubscribeToken(email: string): void {
      SET unsubscribe_token_expires_at = NOW() - INTERVAL '1 minute'
      WHERE email = '${normalizedEmail}' AND deleted_at IS NULL`,
   );
+}
+
+export function createEmailPreferencesToken(email: string): string {
+  const token = execFileSync(
+    "bun",
+    [
+      "-e",
+      `
+        const moduleUrl = process.argv[2];
+        const email = process.argv[3] || "";
+        const { issueEmailPreferencesToken } = await import(moduleUrl);
+        console.log(issueEmailPreferencesToken(email));
+      `,
+      "--",
+      EMAIL_PREFERENCES_TOKEN_UTIL_URL,
+      email.toLowerCase(),
+    ],
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        JWT_SECRET: process.env.JWT_SECRET || "test-email-preferences-secret",
+        NODE_ENV: "test",
+      },
+      timeout: 10_000,
+    },
+  ).trim();
+
+  if (!token) {
+    throw new Error(`Could not generate email preferences token for ${email}`);
+  }
+
+  return token;
+}
+
+export function getSubscriberPreferences(email: string): {
+  status: string;
+  orderUpdatesEnabled: boolean;
+} | null {
+  const normalizedEmail = escapeSqlString(email.toLowerCase());
+  const row = runSql(
+    `SELECT status, order_updates_enabled
+     FROM newsletter_subscriber
+     WHERE email = '${normalizedEmail}' AND deleted_at IS NULL
+     LIMIT 1`,
+  );
+
+  if (!row) {
+    return null;
+  }
+
+  const [status, orderUpdatesEnabled] = row.split("|");
+
+  return {
+    status: status || "",
+    orderUpdatesEnabled: orderUpdatesEnabled === "t",
+  };
 }
 
 export function newsletterSubscriberExists(email: string): boolean {

@@ -1,6 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { randomUUID } from "node:crypto";
 import {
+  EMAIL_PREFERENCES_FLOW_PARAM,
+  getEmailPreferencesCookieName,
+  getEmailPreferencesCookieOptions,
+} from "./lib/email-preferences-cookie";
+import {
   NEWSLETTER_UNSUBSCRIBE_FLOW_PARAM,
   getNewsletterUnsubscribeCookieName,
   getNewsletterUnsubscribeCookieOptions,
@@ -40,11 +45,47 @@ function redirectNewsletterUnsubscribeToken(
   return response;
 }
 
+function redirectEmailPreferencesToken(
+  request: NextRequest,
+): NextResponse | null {
+  if (request.nextUrl.pathname !== "/email-preferences") {
+    return null;
+  }
+
+  const token = request.nextUrl.searchParams.get("token");
+
+  if (!token) {
+    return null;
+  }
+
+  const cleanUrl = request.nextUrl.clone();
+  const flowId = randomUUID();
+  cleanUrl.searchParams.delete("token");
+  cleanUrl.searchParams.set(EMAIL_PREFERENCES_FLOW_PARAM, flowId);
+
+  const response = NextResponse.redirect(cleanUrl);
+  response.cookies.set(
+    getEmailPreferencesCookieName(flowId),
+    token,
+    getEmailPreferencesCookieOptions(),
+  );
+  response.headers.set("Cache-Control", "private, no-store, max-age=0");
+  response.headers.set("Referrer-Policy", "no-referrer");
+
+  return response;
+}
+
 export function proxy(request: NextRequest): NextResponse {
   const unsubscribeRedirect = redirectNewsletterUnsubscribeToken(request);
 
   if (unsubscribeRedirect) {
     return unsubscribeRedirect;
+  }
+
+  const emailPreferencesRedirect = redirectEmailPreferencesToken(request);
+
+  if (emailPreferencesRedirect) {
+    return emailPreferencesRedirect;
   }
 
   const existingId = request.cookies.get(PH_ANON_COOKIE)?.value;
