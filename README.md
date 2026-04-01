@@ -1,4 +1,4 @@
-# CrowCommerce
+# CrowCommerce Medusa TailwindUI
 
 ![Version](https://img.shields.io/badge/version-0.0.0-2563eb)
 ![License](https://img.shields.io/badge/license-MIT%20%2B%20third--party%20terms-6b7280)
