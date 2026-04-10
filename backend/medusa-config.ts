@@ -1,10 +1,17 @@
 import { loadEnv, defineConfig } from "@medusajs/framework/utils";
+import { randomUUID } from "node:crypto";
 import { siteModules } from "./src/site";
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd());
 
 const isProd = process.env.NODE_ENV === "production";
-const INSECURE_SECRETS = ["supersecret", "change-me-to-a-secure-random-string"];
+const INSECURE_SECRETS = [
+  "supersecret",
+  "change-me-to-a-secure-random-string",
+  "replace-with-long-random-secret",
+];
+const devJwtSecret = process.env.JWT_SECRET || randomUUID();
+const devCookieSecret = process.env.COOKIE_SECRET || randomUUID();
 const storefrontUrl = process.env.STOREFRONT_URL?.trim();
 const revalidateSecret = process.env.REVALIDATE_SECRET?.trim();
 
@@ -119,8 +126,8 @@ module.exports = defineConfig({
       storeCors: process.env.STORE_CORS!,
       adminCors: process.env.ADMIN_CORS!,
       authCors: process.env.AUTH_CORS!,
-      jwtSecret: process.env.JWT_SECRET || "supersecret",
-      cookieSecret: process.env.COOKIE_SECRET || "supersecret",
+      jwtSecret: process.env.JWT_SECRET || devJwtSecret,
+      cookieSecret: process.env.COOKIE_SECRET || devCookieSecret,
     },
   },
   modules: [
